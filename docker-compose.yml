@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: event_inventory_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: event_inventory_db
+      MYSQL_USER: event_user
+      MYSQL_PASSWORD: event_password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: event_inventory_app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: mysql+pymysql://event_user:event_password123@db:3306/event_inventory_db
+      SECRET_KEY: production_secure_key_change_in_production
+      FLASK_ENV: production
+      PORT: 5000
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python scripts/seed_demo_data.py && python wsgi.py"
+
+volumes:
+  mysql_data:
+    driver: local

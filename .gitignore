@@ -1,0 +1,30 @@
+# Environment files
+.env
+.env.local
+
+# Python cache & virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Database files
+*.db
+*.sqlite3
+database/*.db
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ML models & artifacts
+backend/ml/saved_models/*.joblib
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
