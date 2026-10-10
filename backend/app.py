@@ -200,21 +200,11 @@ def create_app(config_class=Config) -> Flask:
 
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({
-            "error": "Resource not found.",
-            "requested_path": request.path,
-            "environ_path_info": request.environ.get("PATH_INFO"),
-            "target_header": request.headers.get("X-Target-Path")
-        }), 404
+        return jsonify({"error": "Resource not found."}), 404
 
     @app.errorhandler(405)
     def method_not_allowed(error):
-        return jsonify({
-            "error": f"Method {request.method} not allowed on endpoint '{request.path}'",
-            "path": request.path,
-            "method": request.method,
-            "headers": {k: v for k, v in request.headers.items() if any(x in k.lower() for x in ['x-', 'uri', 'path', 'host'])}
-        }), 405
+        return jsonify({"error": "Method not allowed on this endpoint."}), 405
 
     @app.route("/api/debug", methods=["GET"])
     def debug_endpoint():
