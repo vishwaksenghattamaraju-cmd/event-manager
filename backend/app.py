@@ -41,7 +41,7 @@ def create_app(config_class=Config) -> Flask:
         if alt_folder.exists():
             frontend_folder = alt_folder
 
-    app = Flask(__name__, static_folder=str(frontend_folder), static_url_path="")
+    app = Flask(__name__, static_folder=str(frontend_folder), static_url_path="/static")
     app.config.from_object(config_class)
 
     # Initialize CORS
@@ -178,7 +178,21 @@ def create_app(config_class=Config) -> Flask:
 
     @app.errorhandler(405)
     def method_not_allowed(error):
-        return jsonify({"error": "Method not allowed on this endpoint."}), 405
+        return jsonify({
+            "error": f"Method {request.method} not allowed on endpoint '{request.path}'",
+            "path": request.path,
+            "method": request.method,
+            "headers": {k: v for k, v in request.headers.items() if any(x in k.lower() for x in ['x-', 'uri', 'path', 'host'])}
+        }), 405
+
+    @app.route("/api/debug", methods=["GET", "POST"])
+    def debug_endpoint():
+        return jsonify({
+            "path": request.path,
+            "method": request.method,
+            "environ_keys": list(request.environ.keys()),
+            "headers": dict(request.headers)
+        }), 200
 
     @app.errorhandler(409)
     def conflict(error):

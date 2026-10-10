@@ -29,6 +29,10 @@ try:
                 environ.get("HTTP_X_FORWARDED_URI")
                 or environ.get("HTTP_X_NOW_ROUTE_MATCHES")
                 or environ.get("HTTP_X_MATCHED_PATH")
+                or environ.get("HTTP_X_VERCEL_PATH")
+                or environ.get("HTTP_X_ORIGINAL_URI")
+                or environ.get("RAW_URI")
+                or environ.get("REQUEST_URI")
             )
             if forwarded:
                 environ["PATH_INFO"] = forwarded.split("?")[0]
