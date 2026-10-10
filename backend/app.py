@@ -186,11 +186,13 @@ def create_app(config_class=Config) -> Flask:
         }), 405
 
     @app.route("/api/debug", methods=["GET", "POST"])
+    @app.route("/api/index.py", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
+    @app.route("/api/index", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
     def debug_endpoint():
         return jsonify({
             "path": request.path,
             "method": request.method,
-            "environ_keys": list(request.environ.keys()),
+            "environ": {k: str(v) for k, v in request.environ.items() if isinstance(v, (str, int, float, bool))},
             "headers": dict(request.headers)
         }), 200
 
