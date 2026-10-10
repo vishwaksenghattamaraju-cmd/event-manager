@@ -17,11 +17,19 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production-12345")
 
     # Database connection URL
-    # Default is SQLite for fast local development and testing
-    DATABASE_URL = os.getenv(
-        "DATABASE_URL",
-        f"sqlite:///{BASE_DIR / 'database' / 'event_inventory.db'}"
-    )
+    # Automatically adapts to writable /tmp storage if running in Vercel serverless environment
+    _is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
+    _default_db = "sqlite:////tmp/event_inventory.db" if _is_vercel else f"sqlite:///{BASE_DIR / 'database' / 'event_inventory.db'}"
+    _db_url = os.getenv("DATABASE_URL", _default_db).strip()
+
+    # Safety checks for Vercel
+    if _is_vercel and _db_url.startswith("sqlite:///") and not _db_url.startswith("sqlite:////tmp/"):
+        _db_url = "sqlite:////tmp/event_inventory.db"
+    elif "user:password@ep-host.neon.tech" in _db_url:
+        # Fallback to local /tmp sqlite if placeholder connection string was pasted without real credentials
+        _db_url = "sqlite:////tmp/event_inventory.db"
+
+    DATABASE_URL = _db_url
 
     # Session cookie security settings
     SESSION_COOKIE_HTTPONLY = os.getenv("SESSION_COOKIE_HTTPONLY", "True").lower() == "true"

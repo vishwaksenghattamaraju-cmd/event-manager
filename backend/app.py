@@ -34,17 +34,61 @@ logger = logging.getLogger("event_inventory")
 
 def create_app(config_class=Config) -> Flask:
     """Application factory for the Flask backend."""
-    frontend_folder = Path(__file__).resolve().parent.parent / "frontend"
+    root_dir = Path(__file__).resolve().parent.parent
+    frontend_folder = root_dir / "frontend"
+    if not frontend_folder.exists():
+        alt_folder = Path.cwd() / "frontend"
+        if alt_folder.exists():
+            frontend_folder = alt_folder
+
     app = Flask(__name__, static_folder=str(frontend_folder), static_url_path="")
     app.config.from_object(config_class)
 
     # Initialize CORS
     CORS(app, supports_credentials=True)
 
-    # Initialize Database
-    init_database(app.config["DATABASE_URL"])
-    # Ensure tables exist (will not overwrite existing data)
-    create_all_tables()
+    # Initialize Database safely
+    try:
+        init_database(app.config["DATABASE_URL"])
+        create_all_tables()
+
+        # Self-healing: auto-seed admin if database is newly initialized
+        try:
+            from backend.models.user import User, UserRole
+            if not db_session.query(User).filter(User.role == UserRole.ADMIN).first():
+                create_admin_user(db_session, "admin", "admin@eventinventory.com", "Admin@123")
+                logger.info("Auto-seeded default administrator: admin / Admin@123")
+        except Exception as seed_err:
+            logger.warning(f"Default admin initialization skipped: {seed_err}")
+            db_session.rollback()
+
+        # Self-healing: auto-seed demo inventory items if catalog is empty
+        try:
+            from backend.models.inventory import InventoryItem
+            from backend.services.inventory_service import create_item
+            if db_session.query(InventoryItem).count() == 0:
+                sample_items = [
+                    {"name": "Wireless Microphone Set", "category": "Audio", "total_stock": 25, "minimum_threshold": 5, "unit": "sets", "purchase_cost": 120.0},
+                    {"name": "Stage PAR Can LED Light", "category": "Lighting", "total_stock": 40, "minimum_threshold": 8, "unit": "pieces", "purchase_cost": 65.0},
+                    {"name": "Active PA Speaker 1000W", "category": "Audio", "total_stock": 16, "minimum_threshold": 4, "unit": "pieces", "purchase_cost": 250.0},
+                    {"name": "Round Banquet Table (60in)", "category": "Furniture", "total_stock": 30, "minimum_threshold": 6, "unit": "pieces", "purchase_cost": 85.0},
+                    {"name": "Chavari Banquet Chair", "category": "Furniture", "total_stock": 150, "minimum_threshold": 25, "unit": "pieces", "purchase_cost": 35.0},
+                    {"name": "HD Laser Projector 5000L", "category": "Visual", "total_stock": 8, "minimum_threshold": 2, "unit": "pieces", "purchase_cost": 800.0},
+                    {"name": "Motorized Projector Screen", "category": "Visual", "total_stock": 10, "minimum_threshold": 2, "unit": "pieces", "purchase_cost": 150.0},
+                    {"name": "Silk Floral Centerpiece", "category": "Decor", "total_stock": 50, "minimum_threshold": 10, "unit": "sets", "purchase_cost": 25.0},
+                    {"name": "Chafing Dish Buffet Warmer", "category": "Catering", "total_stock": 20, "minimum_threshold": 4, "unit": "pieces", "purchase_cost": 45.0},
+                    {"name": "Paper Napkins Pack (100ct)", "category": "Consumables", "total_stock": 100, "minimum_threshold": 20, "unit": "packs", "purchase_cost": 5.0, "is_consumable": True},
+                ]
+                admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
+                for item_data in sample_items:
+                    create_item(db_session, item_data, user_id=admin.id if admin else None)
+                logger.info("Auto-seeded catalog items for initial deployment.")
+        except Exception as cat_err:
+            logger.warning(f"Catalog auto-seed skipped: {cat_err}")
+            db_session.rollback()
+
+    except Exception as db_err:
+        logger.error(f"Database initialization warning: {db_err}")
 
     # Register blueprints
     app.register_blueprint(auth_bp)
