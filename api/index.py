@@ -10,6 +10,25 @@ if str(root_dir) not in sys.path:
 
 try:
     from wsgi import app
+
+    _wsgi_app = app.wsgi_app
+
+    def vercel_path_fix(environ, start_response):
+        path_info = environ.get("PATH_INFO", "")
+        # If Vercel rewrote to the entrypoint filename, restore the client's original URI
+        if path_info in ("/api/index.py", "/api/index", "/api"):
+            forwarded = (
+                environ.get("HTTP_X_FORWARDED_URI")
+                or environ.get("HTTP_X_NOW_ROUTE_MATCHES")
+                or environ.get("HTTP_X_MATCHED_PATH")
+            )
+            if forwarded:
+                environ["PATH_INFO"] = forwarded.split("?")[0]
+            else:
+                environ["PATH_INFO"] = "/"
+        return _wsgi_app(environ, start_response)
+
+    app.wsgi_app = vercel_path_fix
 except Exception as e:
     err_tb = traceback.format_exc()
     print("FATAL STARTUP ERROR in wsgi:", err_tb)
