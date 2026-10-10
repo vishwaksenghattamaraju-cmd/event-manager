@@ -174,7 +174,12 @@ def create_app(config_class=Config) -> Flask:
 
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({"error": "Resource not found."}), 404
+        return jsonify({
+            "error": "Resource not found.",
+            "requested_path": request.path,
+            "environ_path_info": request.environ.get("PATH_INFO"),
+            "target_header": request.headers.get("X-Target-Path")
+        }), 404
 
     @app.errorhandler(405)
     def method_not_allowed(error):
