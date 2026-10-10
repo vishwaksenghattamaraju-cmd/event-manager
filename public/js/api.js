@@ -13,7 +13,8 @@ const API = {
   async fetch(url, options = {}) {
     const defaultHeaders = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'X-Target-Path': url
     };
 
     // Attach CSRF token on mutating methods

@@ -14,16 +14,22 @@ try:
     _wsgi_app = app.wsgi_app
 
     def vercel_path_fix(environ, start_response):
-        query_string = environ.get("QUERY_STRING", "")
-        # 1. Check if Vercel rewrite passed __path__ query parameter
-        if "__path__=" in query_string:
+        # 1. Primary: Check X-Target-Path header sent by frontend API client
+        target = environ.get("HTTP_X_TARGET_PATH")
+        if target:
+            environ["PATH_INFO"] = target.split("?")[0]
+            if "?" in target:
+                environ["QUERY_STRING"] = target.split("?", 1)[1]
+        # 2. Query string fallback: __path__ or target_path
+        elif "__path__=" in environ.get("QUERY_STRING", "") or "target_path=" in environ.get("QUERY_STRING", ""):
             import urllib.parse
-            params = urllib.parse.parse_qs(query_string)
-            if "__path__" in params and params["__path__"]:
-                environ["PATH_INFO"] = params["__path__"][0]
-                remaining = [(k, v) for k, vs in params.items() if k != "__path__" for v in vs]
+            params = urllib.parse.parse_qs(environ.get("QUERY_STRING", ""))
+            param_key = "__path__" if "__path__" in params else "target_path"
+            if param_key in params and params[param_key]:
+                environ["PATH_INFO"] = params[param_key][0]
+                remaining = [(k, v) for k, vs in params.items() if k != param_key for v in vs]
                 environ["QUERY_STRING"] = urllib.parse.urlencode(remaining)
-        # 2. Check if reverse proxy header provided original path
+        # 3. Standard proxy headers fallback
         elif environ.get("PATH_INFO") in ("/api/index.py", "/api/index", "/api"):
             forwarded = (
                 environ.get("HTTP_X_FORWARDED_URI")
