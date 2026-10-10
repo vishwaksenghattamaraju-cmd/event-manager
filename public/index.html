@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login &bull; Event Inventory AI</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+</head>
+<body>
+  <div style="position: fixed; top: 1.25rem; right: 1.25rem; z-index: 100;">
+    <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="UI.toggleTheme()">
+      🌙
+    </button>
+  </div>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--accent-gradient); border-radius: 12px; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: bold; color: white;">⚡</div>
+        <h1 class="auth-title">Event Inventory System</h1>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.25rem;">AI-Driven Resource & Booking Platform</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div id="tab-login" class="auth-tab active">Log In</div>
+        <div id="tab-register" class="auth-tab">Register Organizer</div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label" for="login-username">Username or Email</label>
+          <input type="text" id="login-username" class="form-input" placeholder="e.g. admin or organizer1" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div id="login-error" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+        <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="form-register" style="display: none;">
+        <div class="form-group">
+          <label class="form-label" for="reg-username">Username</label>
+          <input type="text" id="reg-username" class="form-input" placeholder="e.g. event_lead" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password (min 8 chars, 1 number)</label>
+          <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+        </div>
+        <div id="reg-error" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+        <button type="submit" id="btn-reg-submit" class="btn btn-primary" style="width: 100%;">Create Organizer Account</button>
+      </form>
+
+      <div style="margin-top: 1.5rem; text-align: center; font-size: 0.8rem; color: var(--text-dim);">
+        Secure Session Authentication &bull; Role-Based Access Control
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

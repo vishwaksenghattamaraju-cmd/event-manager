@@ -14,9 +14,17 @@ try:
     _wsgi_app = app.wsgi_app
 
     def vercel_path_fix(environ, start_response):
-        path_info = environ.get("PATH_INFO", "")
-        # If Vercel rewrote to the entrypoint filename, restore the client's original URI
-        if path_info in ("/api/index.py", "/api/index", "/api"):
+        query_string = environ.get("QUERY_STRING", "")
+        # 1. Check if Vercel rewrite passed __path__ query parameter
+        if "__path__=" in query_string:
+            import urllib.parse
+            params = urllib.parse.parse_qs(query_string)
+            if "__path__" in params and params["__path__"]:
+                environ["PATH_INFO"] = params["__path__"][0]
+                remaining = [(k, v) for k, vs in params.items() if k != "__path__" for v in vs]
+                environ["QUERY_STRING"] = urllib.parse.urlencode(remaining)
+        # 2. Check if reverse proxy header provided original path
+        elif environ.get("PATH_INFO") in ("/api/index.py", "/api/index", "/api"):
             forwarded = (
                 environ.get("HTTP_X_FORWARDED_URI")
                 or environ.get("HTTP_X_NOW_ROUTE_MATCHES")
@@ -24,8 +32,7 @@ try:
             )
             if forwarded:
                 environ["PATH_INFO"] = forwarded.split("?")[0]
-            else:
-                environ["PATH_INFO"] = "/"
+
         return _wsgi_app(environ, start_response)
 
     app.wsgi_app = vercel_path_fix

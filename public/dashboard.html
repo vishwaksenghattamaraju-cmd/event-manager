@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard &bull; Event Inventory AI</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="/dashboard" class="nav-brand">
+      <div class="brand-icon">⚡</div>
+      <span>Event Inventory AI</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/dashboard" class="nav-link active">Dashboard</a></li>
+      <li><a href="/inventory" class="nav-link">Inventory</a></li>
+      <li><a href="/events" class="nav-link">Events & Bookings</a></li>
+    </ul>
+    <div id="nav-user-display" class="nav-user">
+      <!-- Populated dynamically by UI.initNavbar() -->
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Executive Overview</h1>
+        <p class="page-subtitle">Real-time inventory metrics, active bookings, and shortage alerts</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="/api/reports/inventory-csv" class="btn btn-secondary" download>📥 Export Catalog CSV</a>
+        <a href="/events" class="btn btn-primary">+ New Booking</a>
+      </div>
+    </div>
+
+    <!-- 4 Metric Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Catalog Items</span>
+          <div class="metric-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">📦</div>
+        </div>
+        <div id="metric-total-items" class="metric-value">—</div>
+        <div class="metric-sub">Active trackable resource types</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Physical Stock Units</span>
+          <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">📊</div>
+        </div>
+        <div id="metric-total-stock" class="metric-value">—</div>
+        <div id="metric-stock-sub" class="metric-sub">Total physical units in warehouse</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Items at Risk</span>
+          <div class="metric-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">⚠️</div>
+        </div>
+        <div id="metric-items-at-risk" class="metric-value" style="color: #f87171;">—</div>
+        <div class="metric-sub">Net stock &le; safety threshold</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Upcoming Events</span>
+          <div class="metric-icon" style="background: rgba(139, 92, 246, 0.15); color: #a78bfa;">📅</div>
+        </div>
+        <div id="metric-upcoming-events" class="metric-value">—</div>
+        <div class="metric-sub">Confirmed events scheduled</div>
+      </div>
+    </div>
+
+    <!-- Main Grid: Chart & At-Risk Items -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <!-- Chart Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Stock Units by Category</h2>
+        </div>
+        <div style="height: 280px; position: relative;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Items at Risk Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Low Stock / Attention Required</h2>
+          <a href="/inventory" class="btn btn-secondary btn-sm">Manage Inventory</a>
+        </div>
+        <div id="at-risk-container" class="table-responsive">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Checking inventory levels...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Shortage Risk Radar Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">⚡ AI Shortage Risk Radar (Next 14 Days)</h2>
+        <span class="badge badge-info" style="font-size: 0.75rem;">Predictive Horizon Classifier</span>
+      </div>
+      <div id="ai-risk-container" class="table-responsive">
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Scanning upcoming reservation commitments...</p>
+      </div>
+    </div>
+
+    <!-- Recent Bookings Table -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Recent Event Bookings</h2>
+        <a href="/events" class="btn btn-secondary btn-sm">View All Bookings</a>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Event Title</th>
+              <th>Type</th>
+              <th>Window</th>
+              <th>Reserved Items</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="recent-events-tbody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading bookings...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

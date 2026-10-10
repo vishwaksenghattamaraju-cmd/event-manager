@@ -6,8 +6,24 @@
   },
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/api/index.py"
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/inventory",
+      "destination": "/inventory.html"
+    },
+    {
+      "source": "/events",
+      "destination": "/events.html"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.py?__path__=/api/$1"
     }
   ]
 }

@@ -100,10 +100,8 @@ def create_app(config_class=Config) -> Flask:
 
     # Static page routing
     @app.route("/")
-    @app.route("/api/index.py")
-    @app.route("/api/index")
     def index():
-        return app.send_static_file("pages/dashboard.html")
+        return app.send_static_file("pages/login.html")
 
     @app.route("/login")
     def login_page():
