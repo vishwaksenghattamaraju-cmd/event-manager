@@ -10,7 +10,7 @@ root_dir = Path(__file__).resolve().parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, send_from_directory
 from flask_cors import CORS
 import click
 
@@ -120,6 +120,20 @@ def create_app(config_class=Config) -> Flask:
     @app.route("/events")
     def events_page():
         return app.send_static_file("pages/events.html")
+
+    @app.route("/css/<path:filename>")
+    def serve_css(filename):
+        for candidate in [frontend_folder / "css", root_dir / "public" / "css"]:
+            if candidate.exists() and (candidate / filename).exists():
+                return send_from_directory(str(candidate), filename, mimetype="text/css")
+        return jsonify({"error": "CSS file not found"}), 404
+
+    @app.route("/js/<path:filename>")
+    def serve_js(filename):
+        for candidate in [frontend_folder / "js", root_dir / "public" / "js"]:
+            if candidate.exists() and (candidate / filename).exists():
+                return send_from_directory(str(candidate), filename, mimetype="application/javascript")
+        return jsonify({"error": "JS file not found"}), 404
 
     # Teardown database session after each request
     @app.teardown_appcontext
