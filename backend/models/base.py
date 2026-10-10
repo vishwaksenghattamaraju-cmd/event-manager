@@ -17,7 +17,11 @@ def get_engine(database_url: str):
     """
     Creates and configures the SQLAlchemy engine.
     Applies SQLite-specific settings (foreign keys PRAGMA and StaticPool for in-memory tests).
+    Normalizes postgres:// scheme to postgresql:// for compatibility with Neon/Supabase.
     """
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
     connect_args = {}
     engine_kwargs = {"pool_pre_ping": True}
 
