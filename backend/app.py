@@ -32,6 +32,31 @@ logging.basicConfig(
 logger = logging.getLogger("event_inventory")
 
 
+class VercelPathMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        target = environ.get("HTTP_X_TARGET_PATH")
+        if target:
+            environ["PATH_INFO"] = target.split("?")[0]
+            if "?" in target:
+                environ["QUERY_STRING"] = target.split("?", 1)[1]
+        elif environ.get("PATH_INFO") in ("/api/index.py", "/api/index", "/api"):
+            forwarded = (
+                environ.get("HTTP_X_FORWARDED_URI")
+                or environ.get("HTTP_X_NOW_ROUTE_MATCHES")
+                or environ.get("HTTP_X_MATCHED_PATH")
+                or environ.get("HTTP_X_VERCEL_PATH")
+                or environ.get("HTTP_X_ORIGINAL_URI")
+                or environ.get("RAW_URI")
+                or environ.get("REQUEST_URI")
+            )
+            if forwarded:
+                environ["PATH_INFO"] = forwarded.split("?")[0]
+        return self.wsgi_app(environ, start_response)
+
+
 def create_app(config_class=Config) -> Flask:
     """Application factory for the Flask backend."""
     root_dir = Path(__file__).resolve().parent.parent
@@ -42,6 +67,7 @@ def create_app(config_class=Config) -> Flask:
             frontend_folder = alt_folder
 
     app = Flask(__name__, static_folder=str(frontend_folder), static_url_path="/static")
+    app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
     app.config.from_object(config_class)
 
     # Initialize CORS
