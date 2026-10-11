@@ -36,6 +36,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-submit-draft')?.addEventListener('click', () => {
     submitBooking('DRAFT');
   });
+
+  // Listen for role toggle
+  window.addEventListener('roleChanged', (e) => {
+    if (e.detail && e.detail.user) {
+      currentUser = e.detail.user;
+      loadEvents();
+    }
+  });
 });
 
 async function handleAiRecommend() {

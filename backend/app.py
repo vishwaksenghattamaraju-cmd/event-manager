@@ -82,15 +82,18 @@ def create_app(config_class=Config) -> Flask:
         try:
             from backend.models.user import User, UserRole
             from backend.services.auth_service import register_organizer
-            if not db_session.query(User).filter(User.role == UserRole.ADMIN).first():
+            if not db_session.query(User).filter(User.username == "admin").first():
                 create_admin_user(db_session, "admin", "admin@eventinventory.com", "Admin@123")
                 logger.info("Auto-seeded default administrator: admin / Admin@123")
 
-            if not db_session.query(User).filter(User.role == UserRole.ORGANIZER).first():
-                register_organizer(db_session, "organizer", "organizer@eventinventory.com", "Organizer@123")
-                register_organizer(db_session, "vishwaksen", "vishwaksen@eventinventory.com", "Organizer@123")
-                register_organizer(db_session, "vishwaksen ghattamaraju", "vishwaksen.ghattamaraju@gmail.com", "Organizer@123")
-                logger.info("Auto-seeded default organizers: organizer, vishwaksen, and vishwaksen ghattamaraju / Organizer@123")
+            for org_user, org_email in [
+                ("organizer", "organizer@eventinventory.com"),
+                ("vishwaksen", "vishwaksen@eventinventory.com"),
+                ("vishwaksen ghattamaraju", "vishwaksen.ghattamaraju@gmail.com")
+            ]:
+                if not db_session.query(User).filter(User.username == org_user).first():
+                    register_organizer(db_session, org_user, org_email, "Organizer@123")
+            logger.info("Verified default organizers present in database.")
         except Exception as seed_err:
             logger.warning(f"Default user initialization skipped: {seed_err}")
             db_session.rollback()

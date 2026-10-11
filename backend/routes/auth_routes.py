@@ -13,11 +13,63 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 def get_current_user() -> User | None:
     """Helper to retrieve the authenticated user from the current session."""
     user_id = session.get("user_id")
-    if not user_id:
+    username = session.get("username")
+    if not user_id and not username:
         return None
-    if not hasattr(g, "current_user") or not g.current_user or g.current_user.id != user_id:
-        g.current_user = db_session.query(User).filter(User.id == user_id, User.is_active.is_(True)).first()
-    return g.current_user
+
+    if hasattr(g, "current_user") and g.current_user:
+        if (user_id and g.current_user.id == user_id) or (username and g.current_user.username == username):
+            return g.current_user
+
+    user = None
+    if user_id:
+        user = db_session.query(User).filter(User.id == user_id, User.is_active.is_(True)).first()
+
+    # Fallback to username lookup if user_id was from another container or reset
+    if not user and username:
+        user = db_session.query(User).filter(User.username == username, User.is_active.is_(True)).first()
+        if user:
+            session["user_id"] = user.id
+            session.modified = True
+
+    # Fallback for known seeded users if user_id points to standard slot
+    if not user and not username and user_id:
+        id_to_user = {1: "admin", 2: "organizer", 3: "vishwaksen", 4: "vishwaksen ghattamaraju"}
+        fallback_name = id_to_user.get(user_id)
+        if fallback_name:
+            user = db_session.query(User).filter(User.username == fallback_name, User.is_active.is_(True)).first()
+            if user:
+                session["user_id"] = user.id
+                session["username"] = user.username
+                session.modified = True
+
+    # Self-healing in serverless environment:
+    # If the user was authenticated with a valid signed session cookie, but this container
+    # has a clean /tmp database without this user, restore/seed the user!
+    if not user and username:
+        try:
+            role = session.get("role", UserRole.ORGANIZER)
+            email = session.get("email", f"{username}@eventinventory.com")
+            user = User(
+                username=username,
+                email=email,
+                role=role,
+                is_active=True
+            )
+            user.set_password("Organizer@123")
+            db_session.add(user)
+            db_session.commit()
+            db_session.refresh(user)
+            session["user_id"] = user.id
+            session.modified = True
+        except Exception:
+            db_session.rollback()
+            user = db_session.query(User).filter(User.username == username).first()
+            if user:
+                session["user_id"] = user.id
+
+    g.current_user = user
+    return user
 
 
 def generate_csrf_token() -> str:
@@ -59,7 +111,8 @@ def organizer_or_admin_required(f):
         user = get_current_user()
         if not user:
             return jsonify({"error": "Authentication required. Please log in."}), 401
-        if user.role not in (UserRole.ADMIN, UserRole.ORGANIZER):
+        active_role = session.get("role", user.role)
+        if active_role not in (UserRole.ADMIN, UserRole.ORGANIZER):
             return jsonify({"error": "Forbidden: Unauthorized role."}), 403
         return f(*args, **kwargs)
     return decorated_function
@@ -79,7 +132,10 @@ def register():
 
     # Auto-login after registration
     session.clear()
+    session.permanent = True
     session["user_id"] = user.id
+    session["username"] = user.username
+    session["email"] = user.email
     session["role"] = user.role
     csrf_token = generate_csrf_token()
 
@@ -114,7 +170,10 @@ def login():
 
     # Establish session
     session.clear()
+    session.permanent = True
     session["user_id"] = user.id
+    session["username"] = user.username
+    session["email"] = user.email
     session["role"] = user.role
     csrf_token = generate_csrf_token()
 
@@ -140,11 +199,12 @@ def get_profile():
     if not user:
         return jsonify({"authenticated": False, "user": None}), 200
 
+    session.permanent = True
     csrf_token = generate_csrf_token()
     user_dict = user.to_dict()
-    if "role" in session:
-        user_dict["role"] = session["role"]
-        user_dict["is_admin"] = (session["role"] == UserRole.ADMIN)
+    active_role = session.get("role", user.role)
+    user_dict["role"] = active_role
+    user_dict["is_admin"] = (active_role == UserRole.ADMIN)
     return jsonify({
         "authenticated": True,
         "user": user_dict,
@@ -159,7 +219,22 @@ def toggle_role():
     user = get_current_user()
     current_role = session.get("role", user.role if user else UserRole.ORGANIZER)
     new_role = UserRole.ADMIN if current_role == UserRole.ORGANIZER else UserRole.ORGANIZER
+
+    session.permanent = True
     session["role"] = new_role
+
+    if user:
+        user.role = new_role
+        try:
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+        session["user_id"] = user.id
+        session["username"] = user.username
+        session["email"] = user.email
+
+    session.modified = True
+    csrf_token = generate_csrf_token()
 
     user_dict = user.to_dict() if user else {}
     user_dict["role"] = new_role
@@ -169,6 +244,7 @@ def toggle_role():
         "message": f"Switched role to {new_role.capitalize()}.",
         "role": new_role,
         "is_admin": (new_role == UserRole.ADMIN),
-        "user": user_dict
+        "user": user_dict,
+        "csrf_token": csrf_token
     }), 200
 

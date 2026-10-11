@@ -37,9 +37,9 @@ const API = {
     try {
       const response = await fetch(url, mergedOptions);
       
-      // Auto-redirect if unauthorized (unless on login page)
+      // Auto-redirect if unauthorized (unless on login page or role toggle)
       if (response.status === 401) {
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes('/login') && !url.includes('/api/auth/toggle-role')) {
           sessionStorage.removeItem('csrf_token');
           window.location.href = '/login';
         }
@@ -359,6 +359,25 @@ const UI = {
   },
 
   /**
+   * Update navbar user badge and admin-only visibility in-place.
+   */
+  updateNavbarUser(user) {
+    if (!user) return;
+    const roleTag = document.querySelector('#nav-user-display .role-tag');
+    if (roleTag) {
+      roleTag.className = `role-tag ${user.is_admin ? 'role-admin' : 'role-organizer'}`;
+      roleTag.textContent = user.is_admin ? 'Admin' : 'Organizer';
+    }
+    const userName = document.querySelector('#nav-user-display .user-name');
+    if (userName) {
+      userName.textContent = `👤 ${user.username}`;
+    }
+    document.querySelectorAll('.admin-only').forEach(el => {
+      el.style.display = user.is_admin ? '' : 'none';
+    });
+  },
+
+  /**
    * Initialize standard navigation bar on application pages.
    */
   async initNavbar() {
@@ -392,13 +411,41 @@ const UI = {
         <button id="btn-nav-logout" class="btn btn-secondary btn-sm">Log Out</button>
       `;
 
-      document.getElementById('btn-toggle-role')?.addEventListener('click', async () => {
-        const res = await API.fetch('/api/auth/toggle-role', { method: 'POST' });
-        if (res.ok) {
-          UI.toast(`Switched mode to: ${res.data.role.toUpperCase()}`, 'info');
-          setTimeout(() => window.location.reload(), 400);
-        } else {
-          UI.toast('Failed to switch role: ' + res.error, 'error');
+      document.getElementById('btn-toggle-role')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-toggle-role');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = '...';
+        }
+        try {
+          const res = await API.fetch('/api/auth/toggle-role', { method: 'POST' });
+          if (res.ok && res.data && res.data.user) {
+            API.currentUser = res.data.user;
+            if (res.data.csrf_token) {
+              API.csrfToken = res.data.csrf_token;
+              sessionStorage.setItem('csrf_token', res.data.csrf_token);
+            }
+            UI.toast(`Switched mode to: ${res.data.role.toUpperCase()}`, 'info');
+            UI.updateNavbarUser(res.data.user);
+            window.dispatchEvent(new CustomEvent('roleChanged', { detail: { role: res.data.role, user: res.data.user } }));
+
+            setTimeout(() => {
+              window.location.reload();
+            }, 350);
+          } else {
+            if (btn) {
+              btn.disabled = false;
+              btn.textContent = '⇄ Switch';
+            }
+            UI.toast('Failed to switch role: ' + (res.error || 'Server error'), 'error');
+          }
+        } catch (err) {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '⇄ Switch';
+          }
+          UI.toast('Failed to switch role: ' + (err.message || 'Network error'), 'error');
         }
       });
 

@@ -8,6 +8,10 @@ let categoryChartInstance = null;
 document.addEventListener('DOMContentLoaded', async () => {
   await UI.initNavbar();
   await loadDashboardData();
+
+  window.addEventListener('roleChanged', () => {
+    loadDashboardData();
+  });
 });
 
 async function loadDashboardData() {

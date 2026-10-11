@@ -110,3 +110,66 @@ def test_rate_limiting_triggers_after_repeated_failures(client, organizer_user):
     assert blocked_resp.status_code == 429
     assert "Too many failed login attempts" in blocked_resp.get_json()["error"]
     clear_failed_logins(organizer_user.username)
+
+
+def test_toggle_role_from_organizer_to_admin_and_back(client, organizer_user):
+    """Ensure switching from Organizer to Admin persists across requests and updates role."""
+    # 1. Log in as organizer
+    login_resp = client.post(
+        "/api/auth/login",
+        json={"username": organizer_user.username, "password": "OrganizerPass123!"},
+    )
+    assert login_resp.status_code == 200
+    csrf = login_resp.get_json()["csrf_token"]
+
+    # 2. Toggle role to Admin
+    toggle_resp = client.post(
+        "/api/auth/toggle-role",
+        headers={"X-CSRF-Token": csrf}
+    )
+    assert toggle_resp.status_code == 200
+    data = toggle_resp.get_json()
+    assert data["role"] == "admin"
+    assert data["is_admin"] is True
+    assert data["user"]["role"] == "admin"
+    assert data["user"]["is_admin"] is True
+
+    # 3. Verify /me immediately reflects Admin role and stays authenticated
+    me_resp = client.get("/api/auth/me")
+    assert me_resp.status_code == 200
+    me_data = me_resp.get_json()
+    assert me_data["authenticated"] is True
+    assert me_data["user"]["role"] == "admin"
+    assert me_data["user"]["is_admin"] is True
+
+    # 4. Toggle back to Organizer
+    toggle_back_resp = client.post(
+        "/api/auth/toggle-role",
+        headers={"X-CSRF-Token": csrf}
+    )
+    assert toggle_back_resp.status_code == 200
+    data_back = toggle_back_resp.get_json()
+    assert data_back["role"] == "organizer"
+    assert data_back["is_admin"] is False
+
+    # 5. Verify /me reflects Organizer role
+    me_resp2 = client.get("/api/auth/me")
+    assert me_resp2.status_code == 200
+    assert me_resp2.get_json()["user"]["role"] == "organizer"
+    assert me_resp2.get_json()["user"]["is_admin"] is False
+
+
+def test_session_recovery_by_username_if_user_id_mismatched(client, organizer_user):
+    """Ensure session recovers authenticated user via username if user_id points to stale ID."""
+    with client.session_transaction() as sess:
+        sess["user_id"] = 999999  # stale or non-existent ID
+        sess["username"] = organizer_user.username
+        sess["role"] = "organizer"
+
+    me_resp = client.get("/api/auth/me")
+    assert me_resp.status_code == 200
+    me_data = me_resp.get_json()
+    assert me_data["authenticated"] is True
+    assert me_data["user"]["username"] == organizer_user.username
+    assert me_data["user"]["id"] == organizer_user.id
+

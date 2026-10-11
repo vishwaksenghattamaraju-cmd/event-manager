@@ -18,6 +18,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Adjust Stock form submit
   document.getElementById('form-adjust-stock')?.addEventListener('submit', handleAdjustStockSubmit);
+
+  // Listen for role toggle
+  window.addEventListener('roleChanged', (e) => {
+    if (e.detail && e.detail.user) {
+      currentUser = e.detail.user;
+      renderInventoryTable();
+    }
+  });
 });
 
 async function loadInventory() {
