@@ -107,12 +107,12 @@ const API = {
   },
 
   /**
-   * Register new event organizer.
+   * Register new user (organizer or admin).
    */
-  async register(username, email, password) {
+  async register(username, email, password, role = 'organizer') {
     const res = await this.fetch('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username, email, password, role })
     });
 
     if (res.ok) {

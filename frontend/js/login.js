@@ -82,6 +82,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  const roleSelect = document.getElementById('reg-role');
+  const regSubmitBtn = document.getElementById('btn-reg-submit');
+  if (roleSelect && regSubmitBtn) {
+    roleSelect.addEventListener('change', () => {
+      regSubmitBtn.textContent = roleSelect.value === 'admin'
+        ? 'Create Administrator Account'
+        : 'Create Organizer Account';
+    });
+  }
+
   // Handle Registration submission
   formRegister.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -92,14 +102,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const username = document.getElementById('reg-username').value.trim();
     const email = document.getElementById('reg-email').value.trim();
+    const role = document.getElementById('reg-role')?.value || 'organizer';
     const password = document.getElementById('reg-password').value;
 
-    const result = await API.register(username, email, password);
+    const result = await API.register(username, email, password, role);
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Create Organizer Account';
+    submitBtn.textContent = role === 'admin' ? 'Create Administrator Account' : 'Create Organizer Account';
 
     if (result.success) {
-      UI.toast('Account created successfully! Redirecting...', 'success');
+      const roleName = role === 'admin' ? 'Administrator' : 'Organizer';
+      UI.toast(`${roleName} account created successfully! Redirecting...`, 'success');
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 500);

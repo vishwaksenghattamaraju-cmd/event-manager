@@ -5,7 +5,7 @@ from functools import wraps
 from flask import Blueprint, request, jsonify, session, g
 from backend.models.base import db_session
 from backend.models.user import User, UserRole
-from backend.services.auth_service import authenticate_user, register_organizer
+from backend.services.auth_service import authenticate_user, register_organizer, register_user
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
@@ -120,13 +120,16 @@ def organizer_or_admin_required(f):
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    """Endpoint for Event Organizers to register an account."""
+    """Endpoint to register an account (Organizer or Admin)."""
     data = request.get_json() or {}
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
+    role = (data.get("role") or UserRole.ORGANIZER).lower().strip()
+    if role not in UserRole.ALL_ROLES:
+        role = UserRole.ORGANIZER
 
-    user, error = register_organizer(db_session, username, email, password)
+    user, error = register_user(db_session, username, email, password, role=role)
     if error:
         return jsonify({"error": error}), 400
 
@@ -140,7 +143,7 @@ def register():
     csrf_token = generate_csrf_token()
 
     return jsonify({
-        "message": "Registration successful.",
+        "message": f"{role.capitalize()} registration successful.",
         "user": user.to_dict(),
         "csrf_token": csrf_token
     }), 201

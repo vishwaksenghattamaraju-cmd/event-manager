@@ -173,3 +173,29 @@ def test_session_recovery_by_username_if_user_id_mismatched(client, organizer_us
     assert me_data["user"]["username"] == organizer_user.username
     assert me_data["user"]["id"] == organizer_user.id
 
+
+def test_register_admin_user(client):
+    """Ensure user can register directly with the admin role."""
+    resp = client.post(
+        "/api/auth/register",
+        json={
+            "username": "new_admin_user",
+            "email": "newadmin@eventinventory.com",
+            "password": "AdminPassword123!",
+            "role": "admin",
+        },
+    )
+    assert resp.status_code == 201
+    data = resp.get_json()
+    assert data["user"]["username"] == "new_admin_user"
+    assert data["user"]["role"] == "admin"
+
+    # Verify session is established with admin privileges
+    me_resp = client.get("/api/auth/me")
+    assert me_resp.status_code == 200
+    me_data = me_resp.get_json()
+    assert me_data["authenticated"] is True
+    assert me_data["user"]["role"] == "admin"
+    assert me_data["user"]["is_admin"] is True
+
+

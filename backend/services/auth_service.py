@@ -92,12 +92,15 @@ def authenticate_user(
     return user, None
 
 
-def register_organizer(
-    db: Session, username: str, email: str, password: str
+def register_user(
+    db: Session, username: str, email: str, password: str, role: str = UserRole.ORGANIZER
 ) -> Tuple[Optional[User], Optional[str]]:
-    """Registers a new Event Organizer user account."""
+    """Registers a new user account with specified role (Admin or Organizer)."""
     username = (username or "").strip()
     email = (email or "").strip().lower()
+    role = (role or UserRole.ORGANIZER).strip().lower()
+    if role not in UserRole.ALL_ROLES:
+        role = UserRole.ORGANIZER
 
     if not username or len(username) < 3:
         return None, "Username must be at least 3 characters long."
@@ -117,7 +120,7 @@ def register_organizer(
         user = User(
             username=username,
             email=email,
-            role=UserRole.ORGANIZER,
+            role=role,
             is_active=True,
         )
         user.set_password(password)
@@ -128,6 +131,13 @@ def register_organizer(
     except Exception as e:
         db.rollback()
         return None, f"Registration failed: {str(e)}"
+
+
+def register_organizer(
+    db: Session, username: str, email: str, password: str
+) -> Tuple[Optional[User], Optional[str]]:
+    """Registers a new Event Organizer user account."""
+    return register_user(db, username, email, password, role=UserRole.ORGANIZER)
 
 
 def create_admin_user(
