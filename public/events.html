@@ -33,7 +33,7 @@
         <h1 class="page-title">Event Bookings</h1>
         <p class="page-subtitle">Schedule events, reserve warehouse inventory, and prevent double-booking</p>
       </div>
-      <div style="display: flex; gap: 0.75rem;">
+      <div class="page-header-actions">
         <a href="/api/reports/event-summary-csv" class="btn btn-secondary" id="btn-export-events-csv" download>
           📥 Export Events CSV
         </a>
@@ -44,7 +44,7 @@
     <!-- Filter Bar -->
     <div class="search-bar">
       <input type="text" id="event-search" class="form-input search-input" placeholder="Search events by title or description...">
-      <select id="filter-event-status" class="form-select" style="max-width: 200px;">
+      <select id="filter-event-status" class="form-select">
         <option value="">All Statuses</option>
         <option value="confirmed">Confirmed</option>
         <option value="draft">Draft</option>
@@ -130,7 +130,7 @@
 
           <!-- Items Selection Section -->
           <div style="margin-top: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div class="booking-items-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
               <label class="form-label" style="margin-bottom: 0;">Requested Inventory Items</label>
               <div style="display: flex; gap: 0.5rem;">
                 <button type="button" id="btn-ai-recommend" class="btn btn-secondary btn-sm" style="color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">⚡ AI Auto-Recommend</button>

@@ -225,7 +225,7 @@ const UI = {
       modal.id = 'modal-alerts-center';
       modal.className = 'modal-backdrop';
       modal.innerHTML = `
-        <div class="modal" style="max-width: 650px;">
+        <div class="modal-container" style="max-width: 650px;">
           <div class="modal-header">
             <div>
               <h3 class="modal-title">🔔 Alert & Shortage Radar</h3>
@@ -385,7 +385,7 @@ const UI = {
           <span id="nav-alert-badge" class="nav-alert-badge" style="display: none;">0</span>
         </button>
         <div class="user-badge">
-          <span>👤 ${user.username}</span>
+          <span class="user-name">👤 ${user.username}</span>
           <span class="role-tag ${roleClass}">${roleText}</span>
           <button id="btn-toggle-role" class="btn btn-secondary btn-sm" title="Toggle role between Admin and Organizer" style="font-size: 0.72rem; padding: 0.15rem 0.45rem; margin-left: 0.25rem;">⇄ Switch</button>
         </div>

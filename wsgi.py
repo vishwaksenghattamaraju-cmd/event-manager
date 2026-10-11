@@ -20,5 +20,5 @@ app = create_app(Config)
 if __name__ == "__main__":
     from waitress import serve
     port = int(os.environ.get("PORT", 5000))
-    print(f"🚀 Starting Event Inventory Production Server on http://0.0.0.0:{port}")
+    print(f"[SERVER] Starting Event Inventory Production Server on http://0.0.0.0:{port}")
     serve(app, host="0.0.0.0", port=port, threads=8)

@@ -92,10 +92,12 @@ function renderCategoryChart(distribution) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'right',
+          position: window.innerWidth <= 640 ? 'bottom' : 'right',
           labels: {
             color: isLight ? '#475569' : '#94a3b8',
-            font: { family: 'Outfit', size: 12 }
+            font: { family: 'Outfit', size: window.innerWidth <= 640 ? 11 : 12 },
+            boxWidth: window.innerWidth <= 640 ? 12 : 16,
+            padding: window.innerWidth <= 640 ? 8 : 12
           }
         },
         tooltip: {

@@ -33,7 +33,7 @@
         <h1 class="page-title">Inventory Catalog</h1>
         <p class="page-subtitle">Track physical stock, safety thresholds, and warehouse availability</p>
       </div>
-      <div style="display: flex; gap: 0.75rem;">
+      <div class="page-header-actions">
         <a href="/api/reports/inventory-csv" class="btn btn-secondary" id="btn-export-inventory-csv" download>
           📥 Export Catalog CSV
         </a>
@@ -44,7 +44,7 @@
     <!-- Search & Filters -->
     <div class="search-bar">
       <input type="text" id="inventory-search" class="form-input search-input" placeholder="Search by item name or SKU...">
-      <select id="filter-category" class="form-select" style="max-width: 200px;">
+      <select id="filter-category" class="form-select">
         <option value="">All Categories</option>
         <option value="Audio">Audio</option>
         <option value="Visual">Visual</option>
@@ -55,7 +55,7 @@
         <option value="Consumables">Consumables</option>
         <option value="Other">Other</option>
       </select>
-      <select id="filter-status" class="form-select" style="max-width: 180px;">
+      <select id="filter-status" class="form-select">
         <option value="">All Statuses</option>
         <option value="in_stock">In Stock</option>
         <option value="low_stock">Low Stock</option>
