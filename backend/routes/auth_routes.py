@@ -94,7 +94,11 @@ def register():
 def login():
     """Endpoint for user login with password verification and rate limiting."""
     data = request.get_json() or {}
-    username_or_email = data.get("username") or data.get("email")
+    username_or_email = (
+        data.get("username_or_email")
+        or data.get("username")
+        or data.get("email")
+    )
     password = data.get("password")
     client_ip = request.remote_addr
 

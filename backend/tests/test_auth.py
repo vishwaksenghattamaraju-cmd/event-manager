@@ -27,6 +27,25 @@ def test_valid_login_works(client, organizer_user):
     assert me_data["user"]["id"] == organizer_user.id
 
 
+def test_login_with_username_or_email_payload_key(client, organizer_user):
+    """Test login succeeds when using the frontend 'username_or_email' payload key."""
+    # Test using username in username_or_email
+    res1 = client.post(
+        "/api/auth/login",
+        json={"username_or_email": organizer_user.username, "password": "OrganizerPass123!"},
+    )
+    assert res1.status_code == 200
+    assert res1.get_json()["user"]["username"] == organizer_user.username
+
+    # Test using email in username_or_email
+    res2 = client.post(
+        "/api/auth/login",
+        json={"username_or_email": organizer_user.email, "password": "OrganizerPass123!"},
+    )
+    assert res2.status_code == 200
+    assert res2.get_json()["user"]["email"] == organizer_user.email
+
+
 def test_wrong_password_is_rejected(client, organizer_user):
     """Test 2: Incorrect password returns 401 Unauthorized."""
     clear_failed_logins(organizer_user.username)

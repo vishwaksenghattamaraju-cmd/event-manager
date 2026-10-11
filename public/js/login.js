@@ -77,11 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     submitBtn.textContent = 'Create Organizer Account';
 
     if (result.success) {
-      UI.toast('Account created successfully! Please log in.', 'success');
-      // Switch back to login form with username filled
-      tabLogin.click();
-      document.getElementById('login-username').value = username;
-      document.getElementById('login-password').focus();
+      UI.toast('Account created successfully! Redirecting...', 'success');
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 500);
     } else {
       regError.textContent = result.error || 'Registration failed';
       regError.style.display = 'block';

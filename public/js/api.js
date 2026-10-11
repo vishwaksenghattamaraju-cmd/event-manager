@@ -89,6 +89,7 @@ const API = {
     const res = await this.fetch('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({
+        username: usernameOrEmail,
         username_or_email: usernameOrEmail,
         password: password
       })
@@ -115,7 +116,14 @@ const API = {
     });
 
     if (res.ok) {
-      return { success: true, message: res.data.message };
+      if (res.data && res.data.user) {
+        this.currentUser = res.data.user;
+      }
+      if (res.data && res.data.csrf_token) {
+        this.csrfToken = res.data.csrf_token;
+        sessionStorage.setItem('csrf_token', res.data.csrf_token);
+      }
+      return { success: true, message: res.data ? res.data.message : 'Registration successful', user: res.data ? res.data.user : null };
     }
     return { success: false, error: res.error };
   },
