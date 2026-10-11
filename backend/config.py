@@ -20,7 +20,11 @@ class Config:
     # Automatically adapts to writable /tmp storage if running in Vercel serverless environment
     _is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
     _default_db = "sqlite:////tmp/event_inventory.db" if _is_vercel else f"sqlite:///{BASE_DIR / 'database' / 'event_inventory.db'}"
-    _db_url = os.getenv("DATABASE_URL", _default_db).strip()
+    _db_url = (os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL") or _default_db).strip()
+
+    # Normalization: ensure postgresql:// scheme for SQLAlchemy 2.0+
+    if _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
 
     # Safety checks for Vercel
     if _is_vercel and _db_url.startswith("sqlite:///") and not _db_url.startswith("sqlite:////tmp/"):

@@ -34,6 +34,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     regError.style.display = 'none';
   });
 
+  // Instant Demo login button helpers
+  document.getElementById('btn-fill-admin')?.addEventListener('click', () => {
+    tabLogin.click();
+    document.getElementById('login-username').value = 'admin';
+    document.getElementById('login-password').value = 'Admin@123';
+    document.getElementById('btn-login-submit').click();
+  });
+
+  document.getElementById('btn-fill-organizer')?.addEventListener('click', () => {
+    tabLogin.click();
+    document.getElementById('login-username').value = 'organizer';
+    document.getElementById('login-password').value = 'Organizer@123';
+    document.getElementById('btn-login-submit').click();
+  });
+
+  document.getElementById('btn-fill-vishwak')?.addEventListener('click', () => {
+    tabLogin.click();
+    document.getElementById('login-username').value = 'vishwaksen';
+    document.getElementById('login-password').value = 'Organizer@123';
+    document.getElementById('btn-login-submit').click();
+  });
+
   // Handle Login submission
   formLogin.addEventListener('submit', async (e) => {
     e.preventDefault();

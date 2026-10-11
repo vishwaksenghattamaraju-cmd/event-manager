@@ -81,11 +81,18 @@ def create_app(config_class=Config) -> Flask:
         # Self-healing: auto-seed admin if database is newly initialized
         try:
             from backend.models.user import User, UserRole
+            from backend.services.auth_service import register_organizer
             if not db_session.query(User).filter(User.role == UserRole.ADMIN).first():
                 create_admin_user(db_session, "admin", "admin@eventinventory.com", "Admin@123")
                 logger.info("Auto-seeded default administrator: admin / Admin@123")
+
+            if not db_session.query(User).filter(User.role == UserRole.ORGANIZER).first():
+                register_organizer(db_session, "organizer", "organizer@eventinventory.com", "Organizer@123")
+                register_organizer(db_session, "vishwaksen", "vishwaksen@eventinventory.com", "Organizer@123")
+                register_organizer(db_session, "vishwaksen ghattamaraju", "vishwaksen.ghattamaraju@gmail.com", "Organizer@123")
+                logger.info("Auto-seeded default organizers: organizer, vishwaksen, and vishwaksen ghattamaraju / Organizer@123")
         except Exception as seed_err:
-            logger.warning(f"Default admin initialization skipped: {seed_err}")
+            logger.warning(f"Default user initialization skipped: {seed_err}")
             db_session.rollback()
 
         # Self-healing: auto-seed demo inventory items if catalog is empty
