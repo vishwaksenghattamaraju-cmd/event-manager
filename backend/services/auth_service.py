@@ -173,3 +173,79 @@ def create_admin_user(
     except Exception as e:
         db.rollback()
         return None, f"Failed to create admin user: {str(e)}"
+
+
+def update_user_profile(
+    db: Session,
+    user_id: int,
+    email: Optional[str] = None,
+    current_password: Optional[str] = None,
+    new_password: Optional[str] = None,
+) -> Tuple[Optional[User], Optional[str]]:
+    """Updates user profile information (email and/or password)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return None, "User not found."
+
+    if email:
+        email = email.strip().lower()
+        if not email or "@" not in email:
+            return None, "A valid email address is required."
+        existing = db.query(User).filter(User.email == email, User.id != user_id).first()
+        if existing:
+            return None, f"Email '{email}' is already registered to another account."
+        user.email = email
+
+    if new_password:
+        if not current_password or not user.check_password(current_password):
+            return None, "Current password is incorrect. Verification required to change password."
+        if len(new_password) < 6:
+            return None, "New password must be at least 6 characters long."
+        user.set_password(new_password)
+
+    try:
+        db.commit()
+        db.refresh(user)
+        return user, None
+    except Exception as e:
+        db.rollback()
+        return None, f"Failed to update profile: {str(e)}"
+
+
+def delete_user_account(db: Session, user_id: int) -> Tuple[bool, Optional[str]]:
+    """
+    Permanently deletes a user account and cleans up associated records.
+    Returns (success, error_message).
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False, "User not found."
+
+    # Prevent deleting an admin account if it is the only administrator in the system
+    if user.is_admin:
+        admin_count = db.query(User).filter(User.role == UserRole.ADMIN, User.is_active.is_(True)).count()
+        if admin_count <= 1:
+            return False, "The primary administrator account cannot be deleted. At least one administrator must remain."
+
+    try:
+        from backend.models.event import Event
+        from backend.models.inventory import InventoryTransaction
+
+        # Decouple user_id on audit transactions so transaction history remains intact
+        db.query(InventoryTransaction).filter(InventoryTransaction.user_id == user.id).update(
+            {"user_id": None}, synchronize_session=False
+        )
+
+        # Delete any events organized by this user
+        events = db.query(Event).filter(Event.organizer_id == user.id).all()
+        for ev in events:
+            db.delete(ev)
+
+        # Delete the user account
+        db.delete(user)
+        db.commit()
+        return True, None
+    except Exception as e:
+        db.rollback()
+        return False, f"Failed to delete account: {str(e)}"
+

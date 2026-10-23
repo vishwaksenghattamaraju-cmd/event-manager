@@ -157,6 +157,25 @@ const API = {
       method: 'POST'
     });
     return res.ok ? { success: true, data: res.data } : { success: false, error: res.error };
+  },
+
+  /**
+   * Update profile information (email and/or password).
+   */
+  async updateProfile(payload) {
+    return await this.fetch('/api/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  /**
+   * Permanently delete user account.
+   */
+  async deleteAccount() {
+    return await this.fetch('/api/auth/account', {
+      method: 'DELETE'
+    });
   }
 };
 
@@ -359,6 +378,255 @@ const UI = {
   },
 
   /**
+   * Open the User Profile & Account Settings modal with Delete Account option.
+   */
+  async openProfileModal() {
+    let modal = document.getElementById('modal-user-profile');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-user-profile';
+      modal.className = 'modal-backdrop';
+      modal.innerHTML = `
+        <div class="modal-container" style="max-width: 580px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">👤 User Profile</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">Account credentials, privileges, and preferences</p>
+            </div>
+            <button class="modal-close" id="btn-close-profile-modal">&times;</button>
+          </div>
+          <div class="modal-body" id="profile-modal-body" style="padding: 1.25rem;">
+            <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading profile details...</p>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const closeModal = () => {
+        modal.classList.remove('open');
+        modal.classList.remove('active');
+      };
+
+      document.getElementById('btn-close-profile-modal')?.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+    }
+
+    modal.classList.add('open');
+    modal.classList.add('active');
+
+    const body = document.getElementById('profile-modal-body');
+    const user = await API.getCurrentUser();
+    if (!user) {
+      body.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+          <p style="color: var(--danger);">Session expired. Please log in again.</p>
+          <button class="btn btn-primary" onclick="window.location.href='/login'" style="margin-top: 1rem;">Go to Login</button>
+        </div>
+      `;
+      return;
+    }
+
+    const initial = (user.username || 'U')[0].toUpperCase();
+    const roleText = user.is_admin ? 'Administrator' : 'Event Organizer';
+    const roleTagClass = user.is_admin ? 'role-admin' : 'role-organizer';
+    const joinDate = user.created_at ? UI.formatDate(user.created_at) : 'Active';
+    const eventsCount = user.events_count ?? 0;
+
+    body.innerHTML = `
+      <!-- Profile Hero Card -->
+      <div class="profile-hero">
+        <div class="profile-avatar-large">${initial}</div>
+        <div class="profile-hero-info">
+          <div class="profile-hero-username">
+            <span>${user.username}</span>
+            <span class="role-tag ${roleTagClass}">${user.is_admin ? 'Admin' : 'Organizer'}</span>
+          </div>
+          <div class="profile-hero-meta">
+            <span>📧 ${user.email}</span>
+            <span>📅 Joined: ${joinDate}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Grid -->
+      <div class="profile-stats-grid">
+        <div class="profile-stat-box">
+          <div class="profile-stat-label">System Role</div>
+          <div class="profile-stat-val" style="font-size: 0.92rem;">${roleText}</div>
+        </div>
+        <div class="profile-stat-box">
+          <div class="profile-stat-label">Booked Events</div>
+          <div class="profile-stat-val">${eventsCount}</div>
+        </div>
+        <div class="profile-stat-box">
+          <div class="profile-stat-label">Account Status</div>
+          <div class="profile-stat-val" style="color: #34d399; font-size: 0.92rem;">Active ✓</div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Section -->
+      <form id="form-edit-profile" style="margin-bottom: 1.5rem;">
+        <div class="profile-section-title">
+          <span>⚙️ Account Information</span>
+        </div>
+
+        <div class="profile-form-group">
+          <label for="profile-input-username">Username</label>
+          <input type="text" id="profile-input-username" class="form-input" value="${user.username}" disabled title="Username cannot be changed" style="opacity: 0.7; cursor: not-allowed;">
+        </div>
+
+        <div class="profile-form-group">
+          <label for="profile-input-email">Email Address</label>
+          <input type="email" id="profile-input-email" class="form-input" value="${user.email}" required>
+        </div>
+
+        <details style="margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; background: var(--bg-surface);">
+          <summary style="cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-main);">🔒 Change Password (Optional)</summary>
+          <div style="margin-top: 0.75rem;">
+            <div class="profile-form-group">
+              <label for="profile-input-current-pwd">Current Password</label>
+              <input type="password" id="profile-input-current-pwd" class="form-input" placeholder="Required if changing password">
+            </div>
+            <div class="profile-form-group">
+              <label for="profile-input-new-pwd">New Password</label>
+              <input type="password" id="profile-input-new-pwd" class="form-input" placeholder="Minimum 6 characters">
+            </div>
+          </div>
+        </details>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button type="submit" id="btn-save-profile" class="btn btn-primary btn-sm">💾 Save Changes</button>
+        </div>
+      </form>
+
+      <!-- Danger Zone: Delete Account -->
+      <div class="profile-danger-zone">
+        <div class="profile-danger-header">
+          <div class="profile-danger-title">⚠️ Danger Zone</div>
+        </div>
+        <div class="profile-danger-desc">
+          Permanently delete your user account, organized events, and preferences. Once confirmed, this action cannot be undone.
+        </div>
+
+        <div id="delete-account-trigger-section">
+          <button type="button" id="btn-trigger-delete" class="btn btn-danger btn-sm">🗑️ Delete Account</button>
+        </div>
+
+        <div id="delete-account-confirm-box" class="profile-delete-confirm-box" style="display: none;">
+          <div style="font-size: 0.85rem; color: #ef4444; font-weight: 600; margin-bottom: 0.5rem;">
+            ⚠️ Final Confirmation Required
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            To permanently delete this account, please type your username <strong style="color: var(--text-main);">${user.username}</strong> below:
+          </p>
+          <div style="margin-bottom: 0.75rem;">
+            <input type="text" id="input-confirm-delete-name" class="form-input" placeholder="Type ${user.username} to confirm" autocomplete="off">
+          </div>
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+            <button type="button" id="btn-cancel-delete" class="btn btn-secondary btn-sm">Cancel</button>
+            <button type="button" id="btn-confirm-delete-submit" class="btn btn-danger btn-sm" disabled>Confirm Permanent Deletion</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Attach Save Changes handler
+    document.getElementById('form-edit-profile')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('btn-save-profile');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+      }
+
+      const email = document.getElementById('profile-input-email').value.trim();
+      const currentPassword = document.getElementById('profile-input-current-pwd').value;
+      const newPassword = document.getElementById('profile-input-new-pwd').value;
+
+      const payload = { email };
+      if (newPassword) {
+        payload.current_password = currentPassword;
+        payload.new_password = newPassword;
+      }
+
+      try {
+        const res = await API.updateProfile(payload);
+        if (res.ok && res.data) {
+          API.currentUser = res.data.user;
+          UI.toast('Profile updated successfully!', 'success');
+          UI.updateNavbarUser(res.data.user);
+          setTimeout(() => UI.openProfileModal(), 400);
+        } else {
+          UI.toast(res.error || 'Failed to update profile', 'error');
+        }
+      } catch (err) {
+        UI.toast(err.message || 'Error updating profile', 'error');
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '💾 Save Changes';
+        }
+      }
+    });
+
+    // Attach Delete Account handlers
+    const triggerBtn = document.getElementById('btn-trigger-delete');
+    const confirmBox = document.getElementById('delete-account-confirm-box');
+    const confirmInput = document.getElementById('input-confirm-delete-name');
+    const confirmSubmitBtn = document.getElementById('btn-confirm-delete-submit');
+    const cancelDeleteBtn = document.getElementById('btn-cancel-delete');
+
+    triggerBtn?.addEventListener('click', () => {
+      triggerBtn.style.display = 'none';
+      confirmBox.style.display = 'block';
+      confirmInput.value = '';
+      confirmInput.focus();
+    });
+
+    cancelDeleteBtn?.addEventListener('click', () => {
+      confirmBox.style.display = 'none';
+      triggerBtn.style.display = 'inline-block';
+    });
+
+    confirmInput?.addEventListener('input', () => {
+      if (confirmInput.value.trim() === user.username) {
+        confirmSubmitBtn.disabled = false;
+      } else {
+        confirmSubmitBtn.disabled = true;
+      }
+    });
+
+    confirmSubmitBtn?.addEventListener('click', async () => {
+      if (confirmInput.value.trim() !== user.username) return;
+
+      confirmSubmitBtn.disabled = true;
+      confirmSubmitBtn.textContent = 'Deleting Account...';
+
+      try {
+        const res = await API.deleteAccount();
+        if (res.ok && res.data && res.data.deleted) {
+          UI.toast('Your account has been permanently deleted.', 'info');
+          modal.classList.remove('open');
+          modal.classList.remove('active');
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 600);
+        } else {
+          confirmSubmitBtn.disabled = false;
+          confirmSubmitBtn.textContent = 'Confirm Permanent Deletion';
+          UI.toast(res.error || 'Failed to delete account.', 'error');
+        }
+      } catch (err) {
+        confirmSubmitBtn.disabled = false;
+        confirmSubmitBtn.textContent = 'Confirm Permanent Deletion';
+        UI.toast(err.message || 'Network error deleting account.', 'error');
+      }
+    });
+  },
+
+  /**
    * Update navbar user badge and admin-only visibility in-place.
    */
   updateNavbarUser(user) {
@@ -403,16 +671,31 @@ const UI = {
           🔔
           <span id="nav-alert-badge" class="nav-alert-badge" style="display: none;">0</span>
         </button>
-        <div class="user-badge">
+        <div class="user-badge" id="btn-nav-user-badge" title="Click to view Profile & Settings" style="cursor: pointer;">
           <span class="user-name">👤 ${user.username}</span>
           <span class="role-tag ${roleClass}">${roleText}</span>
           <button id="btn-toggle-role" class="btn btn-secondary btn-sm" title="Toggle role between Admin and Organizer" style="font-size: 0.72rem; padding: 0.15rem 0.45rem; margin-left: 0.25rem;">⇄ Switch</button>
         </div>
+        <button id="btn-nav-profile" class="btn btn-secondary btn-sm" title="User Profile & Settings">Profile</button>
         <button id="btn-nav-logout" class="btn btn-secondary btn-sm">Log Out</button>
       `;
 
+      // Profile modal triggers
+      document.getElementById('btn-nav-profile')?.addEventListener('click', () => {
+        UI.openProfileModal();
+      });
+
+      document.getElementById('btn-nav-user-badge')?.addEventListener('click', (e) => {
+        // Only trigger if user did not click the switch role button inside the badge
+        if (e.target && (e.target.id === 'btn-toggle-role' || e.target.closest('#btn-toggle-role'))) {
+          return;
+        }
+        UI.openProfileModal();
+      });
+
       document.getElementById('btn-toggle-role')?.addEventListener('click', async (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const btn = document.getElementById('btn-toggle-role');
         if (btn) {
           btn.disabled = true;

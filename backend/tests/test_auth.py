@@ -199,3 +199,65 @@ def test_register_admin_user(client):
     assert me_data["user"]["is_admin"] is True
 
 
+def test_update_user_profile(organizer_client, organizer_user):
+    """Ensure authenticated user can update profile email."""
+    new_email = "updated_organizer@example.com"
+    resp = organizer_client.put(
+        "/api/auth/profile",
+        json={"email": new_email},
+    )
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["user"]["email"] == new_email
+
+    # Verify /me reflects updated email
+    me_resp = organizer_client.get("/api/auth/me")
+    assert me_resp.status_code == 200
+    assert me_resp.get_json()["user"]["email"] == new_email
+
+
+def test_delete_user_account(client):
+    """Ensure user can delete their account and subsequent access is unauthenticated."""
+    # Register a temporary user
+    reg_resp = client.post(
+        "/api/auth/register",
+        json={
+            "username": "delete_me_user",
+            "email": "deleteme@example.com",
+            "password": "Password123!",
+            "role": "organizer",
+        },
+    )
+    assert reg_resp.status_code == 201
+
+    # Verify user is logged in
+    me_resp = client.get("/api/auth/me")
+    assert me_resp.status_code == 200
+    assert me_resp.get_json()["authenticated"] is True
+
+    # Delete the account
+    del_resp = client.delete("/api/auth/account")
+    assert del_resp.status_code == 200
+    assert del_resp.get_json()["deleted"] is True
+
+    # Verify session is now terminated
+    me_after = client.get("/api/auth/me")
+    assert me_after.status_code == 200
+    assert me_after.get_json()["authenticated"] is False
+
+
+def test_delete_account_unauthenticated(client):
+    """Ensure unauthenticated request to delete account is rejected with 401."""
+    resp = client.delete("/api/auth/account")
+    assert resp.status_code == 401
+    assert "Authentication required" in resp.get_json()["error"]
+
+
+def test_cannot_delete_primary_admin(admin_client):
+    """Ensure the system prevents deleting the lone primary administrator account."""
+    resp = admin_client.delete("/api/auth/account")
+    assert resp.status_code == 400
+    assert "primary administrator account cannot be deleted" in resp.get_json()["error"]
+
+
+

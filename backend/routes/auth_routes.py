@@ -5,7 +5,14 @@ from functools import wraps
 from flask import Blueprint, request, jsonify, session, g
 from backend.models.base import db_session
 from backend.models.user import User, UserRole
-from backend.services.auth_service import authenticate_user, register_organizer, register_user
+from backend.models.event import Event
+from backend.services.auth_service import (
+    authenticate_user,
+    register_organizer,
+    register_user,
+    update_user_profile,
+    delete_user_account,
+)
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
@@ -208,10 +215,69 @@ def get_profile():
     active_role = session.get("role", user.role)
     user_dict["role"] = active_role
     user_dict["is_admin"] = (active_role == UserRole.ADMIN)
+    try:
+        user_dict["events_count"] = db_session.query(Event).filter(Event.organizer_id == user.id).count()
+    except Exception:
+        user_dict["events_count"] = 0
+
     return jsonify({
         "authenticated": True,
         "user": user_dict,
         "csrf_token": csrf_token
+    }), 200
+
+
+@auth_bp.route("/profile", methods=["PUT"])
+@login_required
+def update_profile():
+    """Updates the authenticated user's profile details (email, password)."""
+    user = get_current_user()
+    data = request.get_json() or {}
+    email = data.get("email")
+    current_password = data.get("current_password")
+    new_password = data.get("new_password")
+
+    updated_user, error = update_user_profile(
+        db_session,
+        user.id,
+        email=email,
+        current_password=current_password,
+        new_password=new_password,
+    )
+    if error:
+        return jsonify({"error": error}), 400
+
+    session["email"] = updated_user.email
+    session.modified = True
+    user_dict = updated_user.to_dict()
+    active_role = session.get("role", updated_user.role)
+    user_dict["role"] = active_role
+    user_dict["is_admin"] = (active_role == UserRole.ADMIN)
+    try:
+        user_dict["events_count"] = db_session.query(Event).filter(Event.organizer_id == updated_user.id).count()
+    except Exception:
+        user_dict["events_count"] = 0
+
+    return jsonify({
+        "message": "Profile updated successfully.",
+        "user": user_dict,
+        "csrf_token": generate_csrf_token()
+    }), 200
+
+
+@auth_bp.route("/account", methods=["DELETE"])
+@login_required
+def delete_account():
+    """Permanently deletes the authenticated user's account and terminates the session."""
+    user = get_current_user()
+    success, error = delete_user_account(db_session, user.id)
+    if not success:
+        return jsonify({"error": error}), 400
+
+    session.clear()
+    return jsonify({
+        "message": "Your account has been permanently deleted.",
+        "deleted": True
     }), 200
 
 
