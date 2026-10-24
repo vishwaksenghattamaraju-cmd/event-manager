@@ -67,17 +67,25 @@ function renderCategoryChart(distribution) {
   const labels = distribution.map(d => d.category);
   const data = distribution.map(d => d.total_stock);
 
-  const colors = [
-    'rgba(228, 12, 12, 0.88)',
-    'rgba(95, 148, 113, 0.88)',
-    'rgba(92, 7, 7, 0.88)',
-    'rgba(245, 158, 11, 0.88)',
-    'rgba(180, 20, 20, 0.88)',
-    'rgba(111, 166, 130, 0.88)',
-    'rgba(254, 242, 241, 0.75)'
-  ];
-
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
+  const colors = isLight ? [
+    'rgba(234, 88, 12, 0.88)',
+    'rgba(249, 115, 22, 0.85)',
+    'rgba(251, 146, 60, 0.85)',
+    'rgba(253, 186, 116, 0.88)',
+    'rgba(194, 65, 12, 0.88)',
+    'rgba(217, 119, 6, 0.85)',
+    'rgba(254, 215, 170, 0.90)'
+  ] : [
+    'rgba(20, 184, 166, 0.88)',
+    'rgba(45, 212, 191, 0.88)',
+    'rgba(94, 234, 212, 0.88)',
+    'rgba(15, 118, 110, 0.88)',
+    'rgba(13, 148, 136, 0.88)',
+    'rgba(153, 246, 228, 0.85)',
+    'rgba(6, 182, 212, 0.85)'
+  ];
 
   categoryChartInstance = new Chart(ctx, {
     type: 'doughnut',

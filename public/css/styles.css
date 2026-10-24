@@ -8,70 +8,71 @@
 :root,
 :root[data-theme="dark"] {
   /* ------------------------------------------------------------------------
-     Selected Dark Mode Palette:
-       - Background: #0a0000 (rgb 10, 0, 0)
-       - Primary:    #e40c0c (rgb 228, 12, 12)
-       - Secondary:  #5c0707 (rgb 92, 7, 7)
-       - Accent:     #5f9471 (rgb 95, 148, 113)
-       - Text:       #fef2f1 (rgb 254, 242, 241)
+     Coherent Dark Mode Palette:
+       - Deep Obsidian Teal: #031316
+       - Teal Surface:       #071d22
+       - Primary Teal:       #14b8a6 (rgb 20, 184, 166)
+       - Lighter Teal:       #2dd4bf (rgb 45, 212, 191)
+       - Luminous Mint Teal: #5eead4 (rgb 94, 234, 212)
+       - Crisp Teal Text:    #f0fdfa (rgb 240, 253, 250)
      ------------------------------------------------------------------------ */
-  --bg-primary: #0a0000;
-  --bg-secondary: #130404;
-  --bg-surface: #1a0505;
-  --bg-surface-raised: #240808;
-  --bg-card: rgba(19, 4, 4, 0.84);
-  --bg-card-hover: rgba(36, 8, 8, 0.94);
-  --bg-input: #150404;
-  --bg-modal: #130404;
-  --bg-pill: rgba(228, 12, 12, 0.10);
-  --bg-button-secondary: rgba(92, 7, 7, 0.45);
-  --bg-button-secondary-hover: rgba(118, 9, 9, 0.65);
-  --border-color: rgba(228, 12, 12, 0.22);
-  --border-subtle: rgba(254, 242, 241, 0.08);
-  --border-focus: #e40c0c;
-  --table-border-row: rgba(254, 242, 241, 0.06);
-  --table-row-hover: rgba(228, 12, 12, 0.06);
+  --bg-primary: #031316;
+  --bg-secondary: #071d22;
+  --bg-surface: #0b282e;
+  --bg-surface-raised: #0f353d;
+  --bg-card: rgba(7, 29, 34, 0.86);
+  --bg-card-hover: rgba(11, 40, 46, 0.95);
+  --bg-input: #07191d;
+  --bg-modal: #071d22;
+  --bg-pill: rgba(20, 184, 166, 0.12);
+  --bg-button-secondary: rgba(15, 76, 92, 0.40);
+  --bg-button-secondary-hover: rgba(20, 184, 166, 0.28);
+  --border-color: rgba(45, 212, 191, 0.22);
+  --border-subtle: rgba(240, 253, 250, 0.08);
+  --border-focus: #14b8a6;
+  --table-border-row: rgba(240, 253, 250, 0.06);
+  --table-row-hover: rgba(20, 184, 166, 0.08);
 
-  /* Primary Brand & Accents in Dark Mode */
-  --primary: #e40c0c;
-  --accent-primary: #e40c0c;
-  --accent-primary-hover: #f51d1d;
-  --accent-primary-active: #c50909;
-  --accent-subtle: rgba(228, 12, 12, 0.18);
-  --accent-glow: rgba(228, 12, 12, 0.40);
-  --accent-gradient: linear-gradient(135deg, #e40c0c 0%, #a80808 50%, #5c0707 100%);
-  --secondary: #5c0707;
-  --secondary-hover: #750b0b;
+  /* Primary Brand & Accents in Dark Mode (Teal & Lighter Teal) */
+  --primary: #14b8a6;
+  --accent-primary: #14b8a6;
+  --accent-primary-hover: #2dd4bf;
+  --accent-primary-active: #0d9488;
+  --accent-subtle: rgba(20, 184, 166, 0.18);
+  --accent-glow: rgba(45, 212, 191, 0.40);
+  --accent-gradient: linear-gradient(135deg, #5eead4 0%, #14b8a6 50%, #0f766e 100%);
+  --secondary: #0f766e;
+  --secondary-hover: #115e59;
 
-  /* Accent Highlight (Sage Green #5f9471) */
-  --accent: #5f9471;
-  --accent-cyan: #5f9471;
-  --accent-highlight: #6fa682;
-  --accent-highlight-bg: rgba(95, 148, 113, 0.15);
+  /* Accent Highlight (Lighter Teal) */
+  --accent: #2dd4bf;
+  --accent-cyan: #5eead4;
+  --accent-highlight: #99f6e4;
+  --accent-highlight-bg: rgba(45, 212, 191, 0.15);
 
   /* Humanized Semantic & Status Colors */
-  --success: #5f9471;
-  --success-bg: rgba(95, 148, 113, 0.15);
-  --success-border: rgba(95, 148, 113, 0.35);
+  --success: #2dd4bf;
+  --success-bg: rgba(45, 212, 191, 0.15);
+  --success-border: rgba(45, 212, 191, 0.35);
 
-  --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.13);
-  --warning-border: rgba(245, 158, 11, 0.28);
+  --warning: #f97316;
+  --warning-bg: rgba(249, 115, 22, 0.14);
+  --warning-border: rgba(249, 115, 22, 0.30);
 
-  --danger: #e40c0c;
-  --danger-bg: rgba(228, 12, 12, 0.14);
-  --danger-border: rgba(228, 12, 12, 0.32);
+  --danger: #f43f5e;
+  --danger-bg: rgba(244, 63, 94, 0.14);
+  --danger-border: rgba(244, 63, 94, 0.32);
 
-  --info: #5f9471;
-  --info-bg: rgba(95, 148, 113, 0.14);
-  --info-border: rgba(95, 148, 113, 0.30);
+  --info: #06b6d4;
+  --info-bg: rgba(6, 182, 212, 0.14);
+  --info-border: rgba(6, 182, 212, 0.30);
 
-  /* Warm Approachable Typography */
+  /* Coherent Typography */
   --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --text-main: #fef2f1;
-  --text-muted: #d4b8b6;
-  --text-dim: #997876;
+  --text-main: #f0fdfa;
+  --text-muted: #99f6e4;
+  --text-dim: rgba(94, 234, 212, 0.65);
 
   /* Tactile Elevation, Smooth Shadows & Radii */
   --backdrop-blur: blur(18px);
@@ -89,43 +90,48 @@
 
 :root[data-theme="light"] {
   /* ------------------------------------------------------------------------
-     Coherent Light Mode Palette (Warm Ivory White & Sunlit Light Orange)
+     Coherent Light Mode Palette (Warm Orange & Orange Shade of White)
      ------------------------------------------------------------------------ */
-  --bg-primary: #faf8f5;             /* Warm, gentle matching shade of white / ivory */
+  --bg-primary: #fff8f2;             /* Inviting warm orange shade of white */
   --bg-secondary: #ffffff;           /* Clean warm white */
   --bg-surface: #ffffff;
-  --bg-surface-raised: #fcfaf7;      /* Warm alabaster pearl */
+  --bg-surface-raised: #fef3e9;      /* Delicate light orange-tinted pearl */
   --bg-card: rgba(255, 255, 255, 0.94);
   --bg-card-hover: #ffffff;
   --bg-input: #ffffff;
   --bg-modal: #ffffff;
-  --bg-pill: rgba(249, 115, 22, 0.08); /* Soft matching peach-orange tint */
-  --bg-button-secondary: rgba(28, 25, 23, 0.05);
-  --bg-button-secondary-hover: rgba(28, 25, 23, 0.09);
-  --border-color: rgba(234, 88, 12, 0.13); /* Matching light orange subtle border */
-  --border-subtle: rgba(28, 25, 23, 0.06);
-  --border-focus: #f97316;
-  --table-border-row: rgba(28, 25, 23, 0.05);
-  --table-row-hover: rgba(249, 115, 22, 0.04);
+  --bg-pill: rgba(249, 115, 22, 0.10); /* Soft matching orange tint */
+  --bg-button-secondary: rgba(249, 115, 22, 0.08);
+  --bg-button-secondary-hover: rgba(249, 115, 22, 0.15);
+  --border-color: rgba(234, 88, 12, 0.18); /* Matching subtle orange border */
+  --border-subtle: rgba(249, 115, 22, 0.08);
+  --border-focus: #ea580c;
+  --table-border-row: rgba(249, 115, 22, 0.08);
+  --table-row-hover: rgba(249, 115, 22, 0.05);
 
-  /* Primary Brand & Accents in Light Mode (Light Orange) */
-  --accent-primary: #f97316;          /* Vivid warm light orange */
-  --accent-primary-hover: #ea580c;    /* Deep sunlit orange */
-  --accent-primary-active: #c2410c;
+  /* Primary Brand & Accents in Light Mode (Orange) */
+  --accent-primary: #ea580c;          /* Deep rich warm orange */
+  --accent-primary-hover: #c2410c;    /* Sunlit rust orange */
+  --accent-primary-active: #9a3412;
   --accent-subtle: rgba(249, 115, 22, 0.12);
-  --accent-glow: rgba(249, 115, 22, 0.32);
-  --accent-gradient: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
-  --accent-cyan: #0ea5e9;
-  --primary: #f97316;
+  --accent-glow: rgba(249, 115, 22, 0.35);
+  --accent-gradient: linear-gradient(135deg, #fb923c 0%, #ea580c 50%, #c2410c 100%);
+  --accent-cyan: #f97316;
+  --primary: #ea580c;
+  --secondary: #f97316;
+  --secondary-hover: #ea580c;
+  --accent: #ea580c;
+  --accent-highlight: #fdba74;
+  --accent-highlight-bg: rgba(249, 115, 22, 0.14);
 
   /* Humanized Semantic & Status Colors in Light Mode */
   --success: #059669;
   --success-bg: rgba(5, 150, 105, 0.11);
   --success-border: rgba(5, 150, 105, 0.25);
 
-  --warning: #d97706;
-  --warning-bg: rgba(217, 119, 6, 0.11);
-  --warning-border: rgba(217, 119, 6, 0.25);
+  --warning: #ea580c;
+  --warning-bg: rgba(234, 88, 12, 0.11);
+  --warning-border: rgba(234, 88, 12, 0.25);
 
   --danger: #e11d48;
   --danger-bg: rgba(225, 29, 72, 0.11);
@@ -167,8 +173,8 @@ body {
   min-height: 100dvh;
   line-height: 1.6;
   background-image: 
-    radial-gradient(circle at 18% 12%, rgba(228, 12, 12, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 82% 80%, rgba(92, 7, 7, 0.22) 0%, transparent 45%);
+    radial-gradient(circle at 18% 12%, rgba(20, 184, 166, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 82% 80%, rgba(15, 118, 110, 0.20) 0%, transparent 45%);
   background-attachment: fixed;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
@@ -177,8 +183,8 @@ body {
 
 :root[data-theme="light"] body {
   background-image: 
-    radial-gradient(circle at 18% 12%, rgba(249, 115, 22, 0.06) 0%, transparent 45%),
-    radial-gradient(circle at 82% 80%, rgba(251, 146, 60, 0.04) 0%, transparent 45%);
+    radial-gradient(circle at 18% 12%, rgba(249, 115, 22, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 82% 80%, rgba(251, 146, 60, 0.05) 0%, transparent 45%);
 }
 
 /* --------------------------------------------------------------------------
