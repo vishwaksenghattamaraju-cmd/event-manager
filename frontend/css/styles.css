@@ -5,66 +5,79 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-:root {
+:root,
+:root[data-theme="dark"] {
   /* ------------------------------------------------------------------------
-     Coherent Dark Mode Palette (Pure Sapphire Blue & Midnight Navy - No Purple!)
+     Selected Dark Mode Palette:
+       - Background: #0a0000 (rgb 10, 0, 0)
+       - Primary:    #e40c0c (rgb 228, 12, 12)
+       - Secondary:  #5c0707 (rgb 92, 7, 7)
+       - Accent:     #5f9471 (rgb 95, 148, 113)
+       - Text:       #fef2f1 (rgb 254, 242, 241)
      ------------------------------------------------------------------------ */
-  --bg-primary: #0a0e17;
-  --bg-secondary: #0f172a;
-  --bg-surface: #131d33;
-  --bg-surface-raised: #18243e;
-  --bg-card: rgba(15, 23, 42, 0.82);
-  --bg-card-hover: rgba(24, 36, 62, 0.92);
-  --bg-input: #111c30;
-  --bg-modal: #0f172a;
-  --bg-pill: rgba(59, 130, 246, 0.08);
-  --bg-button-secondary: rgba(255, 255, 255, 0.07);
-  --bg-button-secondary-hover: rgba(255, 255, 255, 0.12);
-  --border-color: rgba(59, 130, 246, 0.14);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-focus: #3b82f6;
-  --table-border-row: rgba(255, 255, 255, 0.045);
-  --table-row-hover: rgba(59, 130, 246, 0.05);
+  --bg-primary: #0a0000;
+  --bg-secondary: #130404;
+  --bg-surface: #1a0505;
+  --bg-surface-raised: #240808;
+  --bg-card: rgba(19, 4, 4, 0.84);
+  --bg-card-hover: rgba(36, 8, 8, 0.94);
+  --bg-input: #150404;
+  --bg-modal: #130404;
+  --bg-pill: rgba(228, 12, 12, 0.10);
+  --bg-button-secondary: rgba(92, 7, 7, 0.45);
+  --bg-button-secondary-hover: rgba(118, 9, 9, 0.65);
+  --border-color: rgba(228, 12, 12, 0.22);
+  --border-subtle: rgba(254, 242, 241, 0.08);
+  --border-focus: #e40c0c;
+  --table-border-row: rgba(254, 242, 241, 0.06);
+  --table-row-hover: rgba(228, 12, 12, 0.06);
 
-  /* Primary Brand & Accents in Dark Mode (Pure Blue & Shades of Blue Only!) */
-  --accent-primary: #3b82f6;
-  --accent-primary-hover: #2563eb;
-  --accent-primary-active: #1d4ed8;
-  --accent-subtle: rgba(59, 130, 246, 0.16);
-  --accent-glow: rgba(59, 130, 246, 0.35);
-  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #0284c7 100%);
-  --accent-cyan: #38bdf8;
-  --primary: #3b82f6;
+  /* Primary Brand & Accents in Dark Mode */
+  --primary: #e40c0c;
+  --accent-primary: #e40c0c;
+  --accent-primary-hover: #f51d1d;
+  --accent-primary-active: #c50909;
+  --accent-subtle: rgba(228, 12, 12, 0.18);
+  --accent-glow: rgba(228, 12, 12, 0.40);
+  --accent-gradient: linear-gradient(135deg, #e40c0c 0%, #a80808 50%, #5c0707 100%);
+  --secondary: #5c0707;
+  --secondary-hover: #750b0b;
+
+  /* Accent Highlight (Sage Green #5f9471) */
+  --accent: #5f9471;
+  --accent-cyan: #5f9471;
+  --accent-highlight: #6fa682;
+  --accent-highlight-bg: rgba(95, 148, 113, 0.15);
 
   /* Humanized Semantic & Status Colors */
-  --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.13);
-  --success-border: rgba(16, 185, 129, 0.28);
+  --success: #5f9471;
+  --success-bg: rgba(95, 148, 113, 0.15);
+  --success-border: rgba(95, 148, 113, 0.35);
 
   --warning: #f59e0b;
   --warning-bg: rgba(245, 158, 11, 0.13);
   --warning-border: rgba(245, 158, 11, 0.28);
 
-  --danger: #f43f5e;
-  --danger-bg: rgba(244, 63, 94, 0.13);
-  --danger-border: rgba(244, 63, 94, 0.28);
+  --danger: #e40c0c;
+  --danger-bg: rgba(228, 12, 12, 0.14);
+  --danger-border: rgba(228, 12, 12, 0.32);
 
-  --info: #0ea5e9;
-  --info-bg: rgba(14, 165, 233, 0.13);
-  --info-border: rgba(14, 165, 233, 0.28);
+  --info: #5f9471;
+  --info-bg: rgba(95, 148, 113, 0.14);
+  --info-border: rgba(95, 148, 113, 0.30);
 
   /* Warm Approachable Typography */
   --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-main: #fef2f1;
+  --text-muted: #d4b8b6;
+  --text-dim: #997876;
 
   /* Tactile Elevation, Smooth Shadows & Radii */
   --backdrop-blur: blur(18px);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 30px -4px rgba(0, 0, 0, 0.45), 0 4px 10px -2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 12px 30px -4px rgba(0, 0, 0, 0.7), 0 4px 10px -2px rgba(0, 0, 0, 0.45);
   --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -154,8 +167,8 @@ body {
   min-height: 100dvh;
   line-height: 1.6;
   background-image: 
-    radial-gradient(circle at 18% 12%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 82% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 45%);
+    radial-gradient(circle at 18% 12%, rgba(228, 12, 12, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 82% 80%, rgba(92, 7, 7, 0.22) 0%, transparent 45%);
   background-attachment: fixed;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
@@ -828,7 +841,7 @@ body {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(11, 15, 25, 0.78);
+  background: rgba(10, 0, 0, 0.84);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   display: none;
@@ -1109,15 +1122,15 @@ body {
 }
 
 .toast {
-  background: rgba(24, 24, 27, 0.94);
+  background: rgba(19, 4, 4, 0.95);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  color: #fafafa;
+  color: var(--text-main);
   padding: 0.9rem 1.35rem;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-left: 4px solid var(--accent-primary);
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.5), 0 6px 14px -4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7), 0 6px 14px -4px rgba(0, 0, 0, 0.4);
   font-size: 0.9rem;
   font-weight: 500;
   animation: toastIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1129,7 +1142,7 @@ body {
 }
 
 .toast span {
-  color: #fafafa;
+  color: var(--text-main);
 }
 
 .toast.toast-info { border-left-color: var(--info); }

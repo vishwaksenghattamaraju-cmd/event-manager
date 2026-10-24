@@ -68,13 +68,13 @@ function renderCategoryChart(distribution) {
   const data = distribution.map(d => d.total_stock);
 
   const colors = [
-    'rgba(59, 130, 246, 0.85)',
-    'rgba(139, 92, 246, 0.85)',
-    'rgba(16, 185, 129, 0.85)',
-    'rgba(245, 158, 11, 0.85)',
-    'rgba(239, 68, 68, 0.85)',
-    'rgba(6, 182, 212, 0.85)',
-    'rgba(236, 72, 153, 0.85)'
+    'rgba(228, 12, 12, 0.88)',
+    'rgba(95, 148, 113, 0.88)',
+    'rgba(92, 7, 7, 0.88)',
+    'rgba(245, 158, 11, 0.88)',
+    'rgba(180, 20, 20, 0.88)',
+    'rgba(111, 166, 130, 0.88)',
+    'rgba(254, 242, 241, 0.75)'
   ];
 
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -86,7 +86,7 @@ function renderCategoryChart(distribution) {
       datasets: [{
         data: data,
         backgroundColor: colors.slice(0, labels.length),
-        borderColor: isLight ? '#ffffff' : '#111827',
+        borderColor: isLight ? '#ffffff' : '#0a0000',
         borderWidth: 2,
         hoverOffset: 6
       }]
@@ -98,7 +98,7 @@ function renderCategoryChart(distribution) {
         legend: {
           position: window.innerWidth <= 640 ? 'bottom' : 'right',
           labels: {
-            color: isLight ? '#475569' : '#94a3b8',
+            color: isLight ? '#475569' : '#d4b8b6',
             font: { family: 'Outfit', size: window.innerWidth <= 640 ? 11 : 12 },
             boxWidth: window.innerWidth <= 640 ? 12 : 16,
             padding: window.innerWidth <= 640 ? 8 : 12
@@ -121,8 +121,8 @@ function renderCategoryChart(distribution) {
 window.addEventListener('themeChanged', (e) => {
   if (categoryChartInstance) {
     const isLight = e.detail.theme === 'light';
-    categoryChartInstance.data.datasets[0].borderColor = isLight ? '#ffffff' : '#111827';
-    categoryChartInstance.options.plugins.legend.labels.color = isLight ? '#475569' : '#94a3b8';
+    categoryChartInstance.data.datasets[0].borderColor = isLight ? '#ffffff' : '#0a0000';
+    categoryChartInstance.options.plugins.legend.labels.color = isLight ? '#475569' : '#d4b8b6';
     categoryChartInstance.update();
   }
 });
