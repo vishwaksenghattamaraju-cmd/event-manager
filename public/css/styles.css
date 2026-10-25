@@ -8,71 +8,74 @@
 :root,
 :root[data-theme="dark"] {
   /* ------------------------------------------------------------------------
-     Coherent Dark Mode Palette:
-       - Deep Obsidian Teal: #031316
-       - Teal Surface:       #071d22
-       - Primary Teal:       #14b8a6 (rgb 20, 184, 166)
-       - Lighter Teal:       #2dd4bf (rgb 45, 212, 191)
-       - Luminous Mint Teal: #5eead4 (rgb 94, 234, 212)
-       - Crisp Teal Text:    #f0fdfa (rgb 240, 253, 250)
+     Cosmic Obsidian & Prismatic Dark Mode Palette (Matched with Background Videos):
+       - Deep Obsidian Void:    #040711
+       - Midnight Surface:      #080d1a
+       - Surface Raised:        #111a33
+       - Primary Indigo Glow:   #6366f1 (rgb 99, 102, 241)
+       - Cyber Ice Cyan:        #38bdf8 (rgb 56, 189, 248)
+       - Celestial Violet:      #8b5cf6 (rgb 139, 92, 246)
+       - Warm Prism Amber:      #f59e0b (rgb 245, 158, 11)
+       - Starlight White Text:  #f8fafc (rgb 248, 250, 252)
+       - Muted Celestial Text:  #94a3b8 (rgb 148, 163, 184)
      ------------------------------------------------------------------------ */
-  --bg-primary: #031316;
-  --bg-secondary: #071d22;
-  --bg-surface: #0b282e;
-  --bg-surface-raised: #0f353d;
-  --bg-card: rgba(7, 29, 34, 0.86);
-  --bg-card-hover: rgba(11, 40, 46, 0.95);
-  --bg-input: #07191d;
-  --bg-modal: #071d22;
-  --bg-pill: rgba(20, 184, 166, 0.12);
-  --bg-button-secondary: rgba(15, 76, 92, 0.40);
-  --bg-button-secondary-hover: rgba(20, 184, 166, 0.28);
-  --border-color: rgba(45, 212, 191, 0.22);
-  --border-subtle: rgba(240, 253, 250, 0.08);
-  --border-focus: #14b8a6;
-  --table-border-row: rgba(240, 253, 250, 0.06);
-  --table-row-hover: rgba(20, 184, 166, 0.08);
+  --bg-primary: #040711;
+  --bg-secondary: #080d1a;
+  --bg-surface: #0c1326;
+  --bg-surface-raised: #111a33;
+  --bg-card: rgba(8, 13, 26, 0.78);
+  --bg-card-hover: rgba(14, 22, 42, 0.90);
+  --bg-input: rgba(6, 10, 22, 0.85);
+  --bg-modal: #080d1c;
+  --bg-pill: rgba(99, 102, 241, 0.14);
+  --bg-button-secondary: rgba(99, 102, 241, 0.12);
+  --bg-button-secondary-hover: rgba(99, 102, 241, 0.24);
+  --border-color: rgba(99, 102, 241, 0.22);
+  --border-subtle: rgba(224, 231, 255, 0.08);
+  --border-focus: #38bdf8;
+  --table-border-row: rgba(224, 231, 255, 0.06);
+  --table-row-hover: rgba(99, 102, 241, 0.10);
 
-  /* Primary Brand & Accents in Dark Mode (Teal & Lighter Teal) */
-  --primary: #14b8a6;
-  --accent-primary: #14b8a6;
-  --accent-primary-hover: #2dd4bf;
-  --accent-primary-active: #0d9488;
-  --accent-subtle: rgba(20, 184, 166, 0.18);
-  --accent-glow: rgba(45, 212, 191, 0.40);
-  --accent-gradient: linear-gradient(135deg, #5eead4 0%, #14b8a6 50%, #0f766e 100%);
-  --secondary: #0f766e;
-  --secondary-hover: #115e59;
+  /* Primary Brand & Accents in Dark Mode (Electric Indigo & Cyber Ice Cyan) */
+  --primary: #6366f1;
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #818cf8;
+  --accent-primary-active: #4f46e5;
+  --accent-subtle: rgba(99, 102, 241, 0.18);
+  --accent-glow: rgba(99, 102, 241, 0.45);
+  --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 52%, #9333ea 100%);
+  --secondary: #38bdf8;
+  --secondary-hover: #0ea5e9;
 
-  /* Accent Highlight (Lighter Teal) */
-  --accent: #2dd4bf;
-  --accent-cyan: #5eead4;
-  --accent-highlight: #99f6e4;
-  --accent-highlight-bg: rgba(45, 212, 191, 0.15);
+  /* Accent Highlight (Soft Violet & Cyan) */
+  --accent: #818cf8;
+  --accent-cyan: #38bdf8;
+  --accent-highlight: #c7d2fe;
+  --accent-highlight-bg: rgba(99, 102, 241, 0.16);
 
   /* Humanized Semantic & Status Colors */
-  --success: #2dd4bf;
-  --success-bg: rgba(45, 212, 191, 0.15);
-  --success-border: rgba(45, 212, 191, 0.35);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.14);
+  --success-border: rgba(16, 185, 129, 0.32);
 
-  --warning: #f97316;
-  --warning-bg: rgba(249, 115, 22, 0.14);
-  --warning-border: rgba(249, 115, 22, 0.30);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.14);
+  --warning-border: rgba(245, 158, 11, 0.32);
 
   --danger: #f43f5e;
   --danger-bg: rgba(244, 63, 94, 0.14);
   --danger-border: rgba(244, 63, 94, 0.32);
 
-  --info: #06b6d4;
-  --info-bg: rgba(6, 182, 212, 0.14);
-  --info-border: rgba(6, 182, 212, 0.30);
+  --info: #38bdf8;
+  --info-bg: rgba(56, 189, 248, 0.14);
+  --info-border: rgba(56, 189, 248, 0.30);
 
   /* Coherent Typography */
   --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --text-main: #f0fdfa;
-  --text-muted: #99f6e4;
-  --text-dim: rgba(94, 234, 212, 0.65);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: rgba(148, 163, 184, 0.65);
 
   /* Tactile Elevation, Smooth Shadows & Radii */
   --backdrop-blur: blur(18px);
@@ -173,8 +176,8 @@ body {
   min-height: 100dvh;
   line-height: 1.6;
   background-image: 
-    radial-gradient(circle at 18% 12%, rgba(20, 184, 166, 0.14) 0%, transparent 45%),
-    radial-gradient(circle at 82% 80%, rgba(15, 118, 110, 0.20) 0%, transparent 45%);
+    radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 82% 80%, rgba(99, 102, 241, 0.16) 0%, transparent 45%);
   background-attachment: fixed;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;

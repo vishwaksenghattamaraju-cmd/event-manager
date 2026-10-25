@@ -78,13 +78,13 @@ function renderCategoryChart(distribution) {
     'rgba(217, 119, 6, 0.85)',
     'rgba(254, 215, 170, 0.90)'
   ] : [
-    'rgba(20, 184, 166, 0.88)',
-    'rgba(45, 212, 191, 0.88)',
-    'rgba(94, 234, 212, 0.88)',
-    'rgba(15, 118, 110, 0.88)',
-    'rgba(13, 148, 136, 0.88)',
-    'rgba(153, 246, 228, 0.85)',
-    'rgba(6, 182, 212, 0.85)'
+    'rgba(99, 102, 241, 0.90)',
+    'rgba(56, 189, 248, 0.90)',
+    'rgba(139, 92, 246, 0.90)',
+    'rgba(37, 99, 235, 0.90)',
+    'rgba(245, 158, 11, 0.90)',
+    'rgba(16, 185, 129, 0.90)',
+    'rgba(196, 181, 253, 0.90)'
   ];
 
   categoryChartInstance = new Chart(ctx, {
@@ -94,7 +94,7 @@ function renderCategoryChart(distribution) {
       datasets: [{
         data: data,
         backgroundColor: colors.slice(0, labels.length),
-        borderColor: isLight ? '#ffffff' : '#0a0000',
+        borderColor: isLight ? '#ffffff' : '#080d1a',
         borderWidth: 2,
         hoverOffset: 6
       }]
@@ -106,7 +106,7 @@ function renderCategoryChart(distribution) {
         legend: {
           position: window.innerWidth <= 640 ? 'bottom' : 'right',
           labels: {
-            color: isLight ? '#475569' : '#d4b8b6',
+            color: isLight ? '#475569' : '#94a3b8',
             font: { family: 'Outfit', size: window.innerWidth <= 640 ? 11 : 12 },
             boxWidth: window.innerWidth <= 640 ? 12 : 16,
             padding: window.innerWidth <= 640 ? 8 : 12
@@ -129,8 +129,8 @@ function renderCategoryChart(distribution) {
 window.addEventListener('themeChanged', (e) => {
   if (categoryChartInstance) {
     const isLight = e.detail.theme === 'light';
-    categoryChartInstance.data.datasets[0].borderColor = isLight ? '#ffffff' : '#0a0000';
-    categoryChartInstance.options.plugins.legend.labels.color = isLight ? '#475569' : '#d4b8b6';
+    categoryChartInstance.data.datasets[0].borderColor = isLight ? '#ffffff' : '#080d1a';
+    categoryChartInstance.options.plugins.legend.labels.color = isLight ? '#475569' : '#94a3b8';
     categoryChartInstance.update();
   }
 });
