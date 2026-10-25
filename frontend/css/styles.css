@@ -236,6 +236,7 @@ body {
   width: 36px;
   height: 36px;
   object-fit: contain;
+  background: #ffffff;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -261,10 +262,11 @@ body {
 .auth-logo-img {
   width: 64px;
   height: 64px;
+  background: #ffffff;
   border-radius: var(--radius-md);
   margin-bottom: 0.75rem;
   box-shadow: 0 8px 24px var(--accent-glow);
-  object-fit: cover;
+  object-fit: contain;
   display: inline-block;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
