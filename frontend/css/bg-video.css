@@ -56,15 +56,16 @@ body[data-bg-video="events"] .bg-video__overlay {
     radial-gradient(ellipse at center, transparent 30%, rgba(4, 7, 17, 0.52) 100%);
 }
 
-/* Light theme: video stays visible with crisp cool slate wash harmonizing with ambient videos */
+/* Light theme: increase transparency of the ambient video for softer, high-contrast readability */
 :root[data-theme="light"] .bg-video { background-color: var(--bg-primary); }
-:root[data-theme="light"] .bg-video__media { filter: saturate(0.9) brightness(1.02); }
+:root[data-theme="light"] .bg-video__media { filter: saturate(0.85) brightness(1.02); }
+:root[data-theme="light"] .bg-video.is-playing .bg-video__media { opacity: 0.60; }
 :root[data-theme="light"] .bg-video__overlay,
 :root[data-theme="light"] body[data-bg-video] .bg-video__overlay {
   background:
-    linear-gradient(180deg, rgba(248, 250, 252, 0.88) 0%, rgba(241, 245, 249, 0.80) 50%, rgba(248, 250, 252, 0.90) 100%),
-    radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.14) 0%, transparent 50%),
-    radial-gradient(circle at 82% 80%, rgba(99, 102, 241, 0.16) 0%, transparent 50%);
+    linear-gradient(180deg, rgba(248, 250, 252, 0.92) 0%, rgba(241, 245, 249, 0.85) 50%, rgba(248, 250, 252, 0.94) 100%),
+    radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 82% 80%, rgba(99, 102, 241, 0.14) 0%, transparent 50%);
 }
 
 /* Translucent obsidian glass panels with soft backdrop blur */
