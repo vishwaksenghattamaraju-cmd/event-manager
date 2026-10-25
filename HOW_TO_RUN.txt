@@ -1,0 +1,15 @@
+HOW TO RUN (Event Inventory AI)
+
+WINDOWS (easiest): extract the zip, open the "mini project" folder, double-click start_app.bat
+  -> it creates .venv, installs requirements, starts the server and opens http://127.0.0.1:5000
+
+MANUAL:
+  python -m venv .venv
+  .\.venv\Scripts\Activate.ps1        (Linux/macOS: source .venv/bin/activate)
+  pip install -r requirements.txt
+  python backend/app.py                  then open http://127.0.0.1:5000
+
+Background videos: frontend/videos/ (served at /videos/...). Vercel copy: public/videos/.
+Component: frontend/js/bg-video.js + frontend/css/bg-video.css
+  (add data-bg-video="login|dashboard|inventory|events" to <body>).
+Demo logins are in README.md / the login page buttons (your database may use different passwords).

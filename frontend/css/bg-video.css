@@ -1,0 +1,123 @@
+/* ==========================================================================
+   Background Video Layer (reusable)
+   Activated by <body data-bg-video="login|dashboard|inventory|events">.
+   The <div class="bg-video"> is injected by /js/bg-video.js (one per page).
+   ========================================================================== */
+
+.bg-video {
+  position: fixed;
+  inset: 0;
+  z-index: -1;                 /* behind all page content, navbar (100), modals (1000) */
+  overflow: hidden;
+  pointer-events: none;        /* never intercepts clicks, typing or scrolling */
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(20, 184, 166, 0.22) 0%, transparent 50%),
+    radial-gradient(circle at 82% 80%, rgba(15, 118, 110, 0.28) 0%, transparent 50%);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Poster frame doubles as the loading state and the fallback if the video fails */
+.bg-video.has-poster { background-image: var(--bg-video-poster); }
+
+.bg-video__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  pointer-events: none;
+}
+.bg-video.is-playing .bg-video__media { opacity: 1; }
+
+/* Readability overlay: teal-obsidian tint that matches the existing brand palette */
+.bg-video__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(3, 19, 22, 0.62) 0%, rgba(3, 19, 22, 0.38) 38%, rgba(3, 19, 22, 0.74) 100%),
+    radial-gradient(ellipse at center, transparent 35%, rgba(3, 19, 22, 0.55) 100%);
+}
+
+/* Per-page strength: content-heavy pages get a stronger overlay */
+body[data-bg-video="login"] .bg-video__overlay {
+  background:
+    linear-gradient(180deg, rgba(3, 19, 22, 0.45) 0%, rgba(3, 19, 22, 0.25) 45%, rgba(3, 19, 22, 0.65) 100%),
+    radial-gradient(ellipse at center, rgba(3, 19, 22, 0.30) 0%, rgba(3, 19, 22, 0.60) 100%);
+}
+body[data-bg-video="inventory"] .bg-video__overlay,
+body[data-bg-video="events"] .bg-video__overlay {
+  background:
+    linear-gradient(180deg, rgba(3, 19, 22, 0.74) 0%, rgba(3, 19, 22, 0.58) 40%, rgba(3, 19, 22, 0.84) 100%),
+    radial-gradient(ellipse at center, transparent 30%, rgba(3, 19, 22, 0.55) 100%);
+}
+
+/* Light theme: video stays visible but washed with warm white so dark text remains readable */
+:root[data-theme="light"] .bg-video { background-color: var(--bg-primary); }
+:root[data-theme="light"] .bg-video__media { filter: saturate(0.85); }
+:root[data-theme="light"] .bg-video__overlay,
+:root[data-theme="light"] body[data-bg-video] .bg-video__overlay {
+  background:
+    linear-gradient(180deg, rgba(255, 248, 242, 0.84) 0%, rgba(255, 248, 242, 0.74) 50%, rgba(255, 248, 242, 0.86) 100%);
+}
+
+/* Slightly firmer glass panels on data-heavy pages (tables, cards) */
+:root:not([data-theme="light"]) body[data-bg-video="inventory"],
+:root:not([data-theme="light"]) body[data-bg-video="events"] {
+  --bg-card: rgba(7, 29, 34, 0.92);
+  --bg-card-hover: rgba(11, 40, 46, 0.97);
+}
+
+/* Subtle, one-time page entrance (no looping animation) */
+@keyframes bg-page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+body[data-bg-video] main.container,
+body[data-bg-video] .auth-wrapper {
+  animation: bg-page-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Accessible pause / play control for the background motion */
+.bg-video-toggle {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 90;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.bg-video-toggle:hover,
+.bg-video-toggle:focus-visible { opacity: 1; transform: scale(1.06); }
+.bg-video-toggle:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.bg-video-toggle[hidden] { display: none; }
+
+@media (max-width: 480px) {
+  .bg-video-toggle { width: 34px; height: 34px; left: 0.75rem; bottom: 0.75rem; }
+}
+
+/* Respect reduced-motion: static poster only, no entrance animation */
+@media (prefers-reduced-motion: reduce) {
+  .bg-video__media { display: none; }
+  .bg-video-toggle { display: none; }
+  body[data-bg-video] main.container,
+  body[data-bg-video] .auth-wrapper { animation: none; }
+}

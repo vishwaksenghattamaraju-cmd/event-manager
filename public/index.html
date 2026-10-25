@@ -6,6 +6,7 @@
   <title>Login &bull; Event Inventory AI</title>
   <link rel="icon" type="image/png" href="/images/logo-badge.png?v=3">
   <link rel="stylesheet" href="/css/styles.css?v=4">
+  <link rel="stylesheet" href="/css/bg-video.css?v=1">
   <script>
     (function() {
       const saved = localStorage.getItem('theme') || 'dark';
@@ -13,7 +14,7 @@
     })();
   </script>
 </head>
-<body>
+<body data-bg-video="login">
   <div class="theme-toggle-floating" style="position: fixed; top: 1.25rem; right: 1.25rem; z-index: 100;">
     <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="UI.toggleTheme()">
       🌙
@@ -90,5 +91,6 @@
 
   <script src="/js/api.js"></script>
   <script src="/js/login.js"></script>
+  <script src="/js/bg-video.js?v=1"></script>
 </body>
 </html>

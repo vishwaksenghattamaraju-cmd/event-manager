@@ -169,6 +169,13 @@ def create_app(config_class=Config) -> Flask:
                 return send_from_directory(str(candidate), filename, mimetype="application/javascript")
         return jsonify({"error": "JS file not found"}), 404
 
+    @app.route("/videos/<path:filename>")
+    def serve_videos(filename):
+        for candidate in [frontend_folder / "videos", root_dir / "public" / "videos"]:
+            if candidate.exists() and (candidate / filename).exists():
+                return send_from_directory(str(candidate), filename, conditional=True)
+        return jsonify({"error": "Video file not found"}), 404
+
     # Teardown database session after each request
     @app.teardown_appcontext
     def shutdown_session(exception=None):
