@@ -100,10 +100,30 @@
       p.catch(function () { syncToggle(); });
     }
 
+    // In light mode, video is removed/hidden; pause playback to save resources
+    function syncTheme() {
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      if (isLight) {
+        video.pause();
+      } else if (!userPaused && !document.hidden) {
+        video.play().catch(function () {});
+      }
+    }
+    syncTheme();
+    window.addEventListener('themeChanged', function (e) {
+      if (e.detail && e.detail.theme === 'light') {
+        video.pause();
+      } else if (!userPaused && !document.hidden) {
+        video.play().catch(function () {});
+      }
+    });
+
     // Don't burn CPU/battery in background tabs.
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) video.pause();
-      else if (!userPaused) video.play().catch(function () {});
+      else if (!userPaused && document.documentElement.getAttribute('data-theme') !== 'light') {
+        video.play().catch(function () {});
+      }
     });
   }
 

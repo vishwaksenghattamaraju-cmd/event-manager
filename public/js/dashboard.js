@@ -110,7 +110,19 @@ function renderCategoryChart(distribution) {
   const labels = distribution.map(d => d.category);
   const data = distribution.map(d => d.total_stock);
 
-  const colors = [
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
+  const lightColors = [
+    'rgba(37, 99, 235, 0.90)',
+    'rgba(2, 132, 199, 0.90)',
+    'rgba(99, 102, 241, 0.90)',
+    'rgba(124, 58, 237, 0.90)',
+    'rgba(5, 150, 105, 0.90)',
+    'rgba(217, 119, 6, 0.90)',
+    'rgba(225, 29, 72, 0.85)'
+  ];
+
+  const darkColors = [
     'rgba(99, 102, 241, 0.90)',
     'rgba(56, 189, 248, 0.90)',
     'rgba(139, 92, 246, 0.90)',
@@ -120,6 +132,8 @@ function renderCategoryChart(distribution) {
     'rgba(196, 181, 253, 0.90)'
   ];
 
+  const colors = isLight ? lightColors : darkColors;
+
   categoryChartInstance = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -127,7 +141,7 @@ function renderCategoryChart(distribution) {
       datasets: [{
         data: data,
         backgroundColor: colors.slice(0, labels.length),
-        borderColor: '#080d1a',
+        borderColor: isLight ? '#ffffff' : '#080d1a',
         borderWidth: 2,
         hoverOffset: 6
       }]
@@ -139,7 +153,7 @@ function renderCategoryChart(distribution) {
         legend: {
           position: window.innerWidth <= 640 ? 'bottom' : 'right',
           labels: {
-            color: '#94a3b8',
+            color: isLight ? '#475569' : '#94a3b8',
             font: { family: "'Plus Jakarta Sans', sans-serif", size: window.innerWidth <= 640 ? 11 : 12 },
             boxWidth: window.innerWidth <= 640 ? 12 : 16,
             padding: window.innerWidth <= 640 ? 8 : 12
@@ -163,13 +177,13 @@ window.addEventListener('themeChanged', (e) => {
   if (categoryChartInstance) {
     const isLight = e.detail.theme === 'light';
     const lightColors = [
-      'rgba(79, 70, 229, 0.90)',
-      'rgba(2, 132, 199, 0.90)',
-      'rgba(124, 58, 237, 0.90)',
       'rgba(37, 99, 235, 0.90)',
-      'rgba(217, 119, 6, 0.90)',
+      'rgba(2, 132, 199, 0.90)',
+      'rgba(99, 102, 241, 0.90)',
+      'rgba(124, 58, 237, 0.90)',
       'rgba(5, 150, 105, 0.90)',
-      'rgba(99, 102, 241, 0.85)'
+      'rgba(217, 119, 6, 0.90)',
+      'rgba(225, 29, 72, 0.85)'
     ];
     const darkColors = [
       'rgba(99, 102, 241, 0.90)',
@@ -183,7 +197,7 @@ window.addEventListener('themeChanged', (e) => {
     const activeColors = isLight ? lightColors : darkColors;
     categoryChartInstance.data.datasets[0].backgroundColor = activeColors.slice(0, categoryChartInstance.data.labels.length);
     categoryChartInstance.data.datasets[0].borderColor = isLight ? '#ffffff' : '#080d1a';
-    categoryChartInstance.options.plugins.legend.labels.color = isLight ? '#334155' : '#94a3b8';
+    categoryChartInstance.options.plugins.legend.labels.color = isLight ? '#475569' : '#94a3b8';
     categoryChartInstance.update();
   }
 });
