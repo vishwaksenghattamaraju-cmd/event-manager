@@ -62,7 +62,7 @@ except Exception as e:
             <title>Server Startup Diagnostic</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 2rem; background: #0f172a; color: #f8fafc; line-height: 1.5; }}
+                body {{ font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2rem; background: #0f172a; color: #f8fafc; line-height: 1.5; }}
                 .card {{ background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; padding: 1.5rem; max-width: 800px; margin: 0 auto; }}
                 h2 {{ color: #f87171; margin-top: 0; }}
                 pre {{ background: #020617; border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; color: #fca5a5; overflow-x: auto; font-size: 0.85rem; font-family: monospace; }}

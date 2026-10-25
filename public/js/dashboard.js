@@ -154,7 +154,7 @@ function renderCategoryChart(distribution) {
           position: window.innerWidth <= 640 ? 'bottom' : 'right',
           labels: {
             color: isLight ? '#334155' : '#94a3b8',
-            font: { family: 'Roboto, sans-serif', size: window.innerWidth <= 640 ? 11 : 12 },
+            font: { family: "'Plus Jakarta Sans', sans-serif", size: window.innerWidth <= 640 ? 11 : 12 },
             boxWidth: window.innerWidth <= 640 ? 12 : 16,
             padding: window.innerWidth <= 640 ? 8 : 12
           }

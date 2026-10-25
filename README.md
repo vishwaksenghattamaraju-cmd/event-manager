@@ -35,7 +35,7 @@
   - Export full live inventory catalog with health status and unit costs.
   - Export historical and upcoming event booking schedules.
 - **🎨 Modern Dark Glassmorphism Frontend**:
-  - Custom Vanilla CSS with Outfit & JetBrains Mono typography.
+  - Custom Vanilla CSS with Plus Jakarta Sans & JetBrains Mono typography.
   - Real-time stock distribution Chart.js graphs.
   - Debounced live availability checker in booking modal.
 
