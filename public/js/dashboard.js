@@ -23,21 +23,65 @@ async function loadDashboardData() {
 
   const { inventory, events } = res.data;
 
-  // 1. Update 4 Metric Cards
-  document.getElementById('metric-total-items').textContent = inventory.total_items_count;
-  document.getElementById('metric-total-stock').textContent = inventory.total_physical_stock;
-  document.getElementById('metric-stock-sub').textContent = 
-    `${inventory.total_unavailable_stock} units currently damaged/lost`;
+  // 1. Update Bento Hero & Metric Cards
+  const totalStock = inventory.total_physical_stock || 0;
+  const unavailableStock = inventory.total_unavailable_stock || 0;
+  const operationalStock = Math.max(0, totalStock - unavailableStock);
+  const integrityPct = totalStock > 0 ? Math.round((operationalStock / totalStock) * 100) : 100;
 
-  const atRiskEl = document.getElementById('metric-items-at-risk');
-  atRiskEl.textContent = inventory.items_at_risk_count;
-  if (inventory.items_at_risk_count === 0) {
-    atRiskEl.style.color = 'var(--success)';
-  } else {
-    atRiskEl.style.color = 'var(--danger)';
+  const totalStockEl = document.getElementById('metric-total-stock');
+  if (totalStockEl) totalStockEl.textContent = totalStock;
+
+  const meterValEl = document.getElementById('metric-stock-integrity-pct');
+  if (meterValEl) meterValEl.textContent = `${integrityPct}% Operational`;
+
+  const meterBarEl = document.getElementById('metric-stock-progress-bar');
+  if (meterBarEl) meterBarEl.style.width = `${integrityPct}%`;
+
+  const stockSubEl = document.getElementById('metric-stock-sub');
+  if (stockSubEl) {
+    stockSubEl.textContent = unavailableStock === 0 
+      ? '0 units currently damaged/lost' 
+      : `${unavailableStock} units damaged/under maintenance`;
   }
 
-  document.getElementById('metric-upcoming-events').textContent = events.upcoming_confirmed_count;
+  // Catalog Diversity
+  const totalItemsEl = document.getElementById('metric-total-items');
+  if (totalItemsEl) totalItemsEl.textContent = inventory.total_items_count;
+
+  // Real-Time Shortage Sentinel
+  const atRiskEl = document.getElementById('metric-items-at-risk');
+  const riskPill = document.getElementById('metric-risk-pill');
+  const sentinelBadge = document.getElementById('sentinel-icon-badge');
+
+  if (atRiskEl) {
+    atRiskEl.textContent = inventory.items_at_risk_count;
+    if (inventory.items_at_risk_count === 0) {
+      atRiskEl.style.color = 'var(--success)';
+      if (riskPill) {
+        riskPill.className = 'bento-pill bento-pill--safe';
+        riskPill.textContent = 'Nominal';
+      }
+      if (sentinelBadge) {
+        sentinelBadge.style.background = 'rgba(16, 185, 129, 0.14)';
+        sentinelBadge.style.color = '#10b981';
+      }
+    } else {
+      atRiskEl.style.color = 'var(--danger)';
+      if (riskPill) {
+        riskPill.className = 'bento-pill bento-pill--danger';
+        riskPill.textContent = `${inventory.items_at_risk_count} Depleted`;
+      }
+      if (sentinelBadge) {
+        sentinelBadge.style.background = 'rgba(239, 68, 68, 0.16)';
+        sentinelBadge.style.color = '#ef4444';
+      }
+    }
+  }
+
+  // Event Commitments
+  const upcomingEl = document.getElementById('metric-upcoming-events');
+  if (upcomingEl) upcomingEl.textContent = events.upcoming_confirmed_count;
 
   // 2. Render Chart.js Chart
   renderCategoryChart(inventory.category_distribution);
@@ -60,7 +104,6 @@ function renderCategoryChart(distribution) {
   }
 
   if (!distribution || distribution.length === 0) {
-    // Show empty placeholder
     return;
   }
 
@@ -70,13 +113,13 @@ function renderCategoryChart(distribution) {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
   const lightColors = [
-    'rgba(79, 70, 229, 0.90)',   // Electric Indigo
-    'rgba(2, 132, 199, 0.90)',   // Cyber Sky Cyan
-    'rgba(124, 58, 237, 0.90)',  // Deep Violet
-    'rgba(37, 99, 235, 0.90)',   // Royal Blue
-    'rgba(217, 119, 6, 0.90)',   // Amber Gold
-    'rgba(5, 150, 105, 0.90)',   // Emerald
-    'rgba(99, 102, 241, 0.85)'   // Soft Indigo
+    'rgba(79, 70, 229, 0.90)',
+    'rgba(2, 132, 199, 0.90)',
+    'rgba(124, 58, 237, 0.90)',
+    'rgba(37, 99, 235, 0.90)',
+    'rgba(217, 119, 6, 0.90)',
+    'rgba(5, 150, 105, 0.90)',
+    'rgba(99, 102, 241, 0.85)'
   ];
 
   const darkColors = [
@@ -111,7 +154,7 @@ function renderCategoryChart(distribution) {
           position: window.innerWidth <= 640 ? 'bottom' : 'right',
           labels: {
             color: isLight ? '#334155' : '#94a3b8',
-            font: { family: 'Outfit', size: window.innerWidth <= 640 ? 11 : 12 },
+            font: { family: 'Roboto, sans-serif', size: window.innerWidth <= 640 ? 11 : 12 },
             boxWidth: window.innerWidth <= 640 ? 12 : 16,
             padding: window.innerWidth <= 640 ? 8 : 12
           }
@@ -163,9 +206,19 @@ function renderAtRiskTable(items) {
   const container = document.getElementById('at-risk-container');
   if (!items || items.length === 0) {
     container.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: var(--success);">
-        <p style="font-size: 1.5rem; margin-bottom: 0.5rem;">✓</p>
-        <p style="font-weight: 500;">All inventory stocks are above safety thresholds!</p>
+      <div class="sentinel-empty-state">
+        <div class="sentinel-shield-icon">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block;">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="sentinel-status-headline">All Stock Safeguards Active</div>
+        <p class="sentinel-status-desc">Every resource in your catalog maintains an operational cushion well above critical replenishment thresholds.</p>
+        <div class="sentinel-metrics-strip">
+          <span class="sentinel-metric-chip">Zero Critical Deficits</span>
+          <span class="sentinel-metric-chip">Threshold Safeguards Active</span>
+        </div>
       </div>
     `;
     return;

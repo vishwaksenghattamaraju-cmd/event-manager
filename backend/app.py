@@ -176,6 +176,13 @@ def create_app(config_class=Config) -> Flask:
                 return send_from_directory(str(candidate), filename, conditional=True)
         return jsonify({"error": "Video file not found"}), 404
 
+    @app.route("/images/<path:filename>")
+    def serve_images(filename):
+        for candidate in [frontend_folder / "images", root_dir / "public" / "images"]:
+            if candidate.exists() and (candidate / filename).exists():
+                return send_from_directory(str(candidate), filename)
+        return jsonify({"error": "Image file not found"}), 404
+
     # Teardown database session after each request
     @app.teardown_appcontext
     def shutdown_session(exception=None):

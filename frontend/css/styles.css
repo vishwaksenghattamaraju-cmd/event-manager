@@ -235,13 +235,13 @@ body {
 .brand-logo-img {
   width: 36px;
   height: 36px;
+  object-fit: contain;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 14px var(--accent-glow);
   flex-shrink: 0;
-  object-fit: cover;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
 }
 
@@ -2045,4 +2045,349 @@ h1, h2, h3, h4, h5, h6,
 [class*="heading"], [class$="-title"] {
   font-family: var(--font-main);
   letter-spacing: -0.01em;
+}
+
+
+/* ==========================================================================
+   Humanized Bento Executive Command Grid
+   Asymmetric architecture engineered for intuitive visual hierarchy
+   ========================================================================== */
+
+.bento-telemetry-section {
+  margin-bottom: 2.25rem;
+}
+
+.bento-command-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.bento-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem 1.45rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bento-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--primary);
+}
+
+/* Bento Hero Tile (Primary Operational Anchor) */
+.bento-card--hero {
+  background: linear-gradient(145deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.08) 100%);
+  border-left: 3px solid var(--primary);
+}
+
+.bento-card__badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  gap: 0.5rem;
+}
+
+.bento-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.bento-pill--primary {
+  background: rgba(99, 102, 241, 0.16);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.bento-pill--safe {
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.bento-pill--danger {
+  background: rgba(239, 68, 68, 0.18);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.bento-pill--neutral {
+  background: var(--bg-pill);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.pulse-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  animation: bentoPulse 2s infinite ease-in-out;
+}
+
+@keyframes bentoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+.bento-micro-kpi {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.bento-hero-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.bento-hero-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bento-hero-number-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.bento-hero-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.bento-hero-unit {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.bento-hero-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: rgba(99, 102, 241, 0.14);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  border: 1px solid rgba(99, 102, 241, 0.22);
+}
+
+.bento-fleet-meter {
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bento-fleet-meter__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.bento-fleet-meter__value {
+  font-weight: 600;
+  color: var(--success);
+}
+
+.bento-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin-bottom: 0.45rem;
+}
+
+:root[data-theme="light"] .bento-progress-track {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.bento-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, #10b981 0%, #38bdf8 100%);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-card__footnote {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 0.25rem;
+}
+
+/* Standard Bento Stat Card */
+.bento-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.bento-card__title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bento-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.bento-card__value-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.bento-card__value {
+  font-size: 1.95rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.bento-card__sub-badge {
+  font-size: 0.74rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-pill);
+  color: var(--text-muted);
+  font-weight: 500;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Executive Analytics Asymmetric Split */
+.executive-analytics-section {
+  margin-bottom: 2.25rem;
+}
+
+.executive-analytics-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.panel-caption {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 0.15rem;
+}
+
+/* Sentinel Empty State */
+.sentinel-empty-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.sentinel-shield-icon {
+  font-size: 2.25rem;
+  margin-bottom: 0.65rem;
+  filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.35));
+}
+
+.sentinel-status-headline {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.4rem;
+}
+
+.sentinel-status-desc {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  max-width: 320px;
+  margin: 0 auto 1.25rem;
+  line-height: 1.45;
+}
+
+.sentinel-metrics-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.sentinel-metric-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-pill);
+  background: rgba(16, 185, 129, 0.10);
+  color: var(--success);
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+  .bento-command-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .executive-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-command-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-card {
+    padding: 1.15rem 1.15rem;
+  }
 }
