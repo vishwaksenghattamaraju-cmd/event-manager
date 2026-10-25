@@ -56,50 +56,42 @@ body[data-bg-video="events"] .bg-video__overlay {
     radial-gradient(ellipse at center, transparent 30%, rgba(4, 7, 17, 0.52) 100%);
 }
 
-/* Light theme: vibrant background video presence with crystal-clear frosted readability */
+/* Light theme: vibrant cosmic background video presence matching dark palette */
 :root[data-theme="light"] .bg-video {
-  background-color: #dce5ef;
+  background-color: #040711;
 }
 :root[data-theme="light"] .bg-video__media {
-  filter: saturate(1.25) brightness(1.06) contrast(1.05);
+  filter: saturate(1.15) brightness(1.02);
 }
 :root[data-theme="light"] .bg-video.is-playing .bg-video__media {
-  opacity: 0.82;
+  opacity: 1;
 }
 :root[data-theme="light"] .bg-video__overlay,
 :root[data-theme="light"] body[data-bg-video] .bg-video__overlay {
   background:
-    linear-gradient(180deg, rgba(219, 228, 238, 0.45) 0%, rgba(235, 241, 248, 0.28) 45%, rgba(219, 228, 238, 0.55) 100%),
-    radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.20) 0%, transparent 55%),
-    radial-gradient(circle at 82% 80%, rgba(99, 102, 241, 0.24) 0%, transparent 55%);
+    linear-gradient(180deg, rgba(4, 7, 17, 0.52) 0%, rgba(4, 7, 17, 0.28) 45%, rgba(4, 7, 17, 0.68) 100%),
+    radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.15) 0%, transparent 55%),
+    radial-gradient(circle at 82% 80%, rgba(99, 102, 241, 0.18) 0%, transparent 55%);
 }
 
 :root[data-theme="light"] body[data-bg-video="login"] .bg-video__overlay {
   background:
-    linear-gradient(180deg, rgba(219, 228, 238, 0.30) 0%, rgba(235, 241, 248, 0.18) 45%, rgba(219, 228, 238, 0.40) 100%),
-    radial-gradient(ellipse at center, rgba(219, 228, 238, 0.12) 0%, rgba(219, 228, 238, 0.38) 100%);
+    linear-gradient(180deg, rgba(4, 7, 17, 0.38) 0%, rgba(4, 7, 17, 0.18) 45%, rgba(4, 7, 17, 0.55) 100%),
+    radial-gradient(ellipse at center, rgba(4, 7, 17, 0.18) 0%, rgba(4, 7, 17, 0.45) 100%);
 }
 
 :root[data-theme="light"] body[data-bg-video="inventory"] .bg-video__overlay,
 :root[data-theme="light"] body[data-bg-video="events"] .bg-video__overlay,
 :root[data-theme="light"] body[data-bg-video="dashboard"] .bg-video__overlay {
   background:
-    linear-gradient(180deg, rgba(219, 228, 238, 0.46) 0%, rgba(235, 241, 248, 0.30) 40%, rgba(219, 228, 238, 0.56) 100%),
-    radial-gradient(ellipse at center, transparent 35%, rgba(186, 201, 220, 0.38) 100%);
+    linear-gradient(180deg, rgba(4, 7, 17, 0.58) 0%, rgba(4, 7, 17, 0.34) 40%, rgba(4, 7, 17, 0.72) 100%),
+    radial-gradient(ellipse at center, transparent 35%, rgba(4, 7, 17, 0.45) 100%);
 }
 
-/* Translucent obsidian glass panels with soft backdrop blur in dark mode */
-:root:not([data-theme="light"]) body[data-bg-video="inventory"],
-:root:not([data-theme="light"]) body[data-bg-video="events"],
-:root:not([data-theme="light"]) body[data-bg-video="dashboard"] {
-  --bg-card: rgba(8, 13, 26, 0.88);
-  --bg-card-hover: rgba(14, 22, 42, 0.94);
-}
-
-/* Translucent frosted glass panels with crystal backdrop blur in light mode */
-:root[data-theme="light"] body[data-bg-video] {
-  --bg-card: rgba(255, 255, 255, 0.78);
-  --bg-card-hover: rgba(255, 255, 255, 0.92);
+/* Translucent obsidian glass panels with soft backdrop blur */
+body[data-bg-video] {
+  --bg-card: rgba(8, 13, 26, 0.78);
+  --bg-card-hover: rgba(14, 22, 42, 0.90);
 }
 
 /* Subtle, one-time page entrance (no looping animation) */
