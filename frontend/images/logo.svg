@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#04d5db" />
+      <stop offset="50%" stop-color="#02bec3" />
+      <stop offset="100%" stop-color="#01a9ae" />
+    </linearGradient>
+
+    <!-- Notepad Dark Body Gradient -->
+    <linearGradient id="padGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#181c24" />
+      <stop offset="40%" stop-color="#0f131a" />
+      <stop offset="100%" stop-color="#080b0f" />
+    </linearGradient>
+
+    <!-- Glass Reflection Gradient -->
+    <linearGradient id="glassSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16" />
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.05" />
+      <stop offset="46%" stop-color="#ffffff" stop-opacity="0.0" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Glowing Cyan Line Gradient -->
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f5ff" />
+      <stop offset="50%" stop-color="#00e1eb" />
+      <stop offset="100%" stop-color="#00c8d1" />
+    </linearGradient>
+
+    <!-- Spiral Ring Gradient -->
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7bf8ff" />
+      <stop offset="40%" stop-color="#00f0fb" />
+      <stop offset="85%" stop-color="#00aab4" />
+      <stop offset="100%" stop-color="#007982" />
+    </linearGradient>
+
+    <!-- Neon Glow Filter -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Soft Drop Shadow for Notepad -->
+    <filter id="padShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="14" dy="16" stdDeviation="10" flood-color="#016e73" flood-opacity="0.65" />
+    </filter>
+
+    <!-- Clip Path for Notepad Glass Reflection -->
+    <clipPath id="padClip">
+      <rect x="136" y="148" width="240" height="268" rx="36" ry="36" />
+    </clipPath>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)" />
+
+  <!-- Notepad 2.5D Hard Accent Shadow (as seen in logo) -->
+  <rect x="150" y="162" width="240" height="268" rx="36" ry="36" fill="#01787e" opacity="0.8" />
+
+  <!-- Main Notepad Body with Soft Shadow -->
+  <rect x="136" y="148" width="240" height="268" rx="36" ry="36" fill="url(#padGrad)" filter="url(#padShadow)" />
+
+  <!-- Diagonal Glass Sheen Highlight -->
+  <rect x="136" y="148" width="240" height="268" rx="36" ry="36" fill="url(#glassSheen)" clip-path="url(#padClip)" />
+
+  <!-- Subtle Rim Highlight Border -->
+  <rect x="136.5" y="148.5" width="239" height="267" rx="35.5" ry="35.5" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
+
+  <!-- Horizontal Checklist Lines (Pills) with Neon Glow -->
+  <g filter="url(#neonGlow)">
+    <!-- Line 1 -->
+    <rect x="172" y="224" width="168" height="15" rx="7.5" fill="url(#neonCyan)" />
+    <!-- Line 2 -->
+    <rect x="172" y="262" width="168" height="15" rx="7.5" fill="url(#neonCyan)" />
+    <!-- Line 3 -->
+    <rect x="172" y="300" width="168" height="15" rx="7.5" fill="url(#neonCyan)" />
+    <!-- Line 4 (Shorter) -->
+    <rect x="172" y="338" width="105" height="15" rx="7.5" fill="url(#neonCyan)" />
+  </g>
+
+  <!-- 4 Spiral Binder Rings on Top -->
+  <!-- Ring 1 (Center x: 178) -->
+  <g filter="url(#neonGlow)">
+    <!-- Outer loop -->
+    <path d="M 166 168 C 166 126, 190 126, 190 168" fill="none" stroke="url(#ringGrad)" stroke-width="8.5" stroke-linecap="round" />
+    <!-- Inner spiral return tuck -->
+    <path d="M 190 168 C 190 182, 172 182, 172 168" fill="none" stroke="url(#ringGrad)" stroke-width="6.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Ring 2 (Center x: 230) -->
+  <g filter="url(#neonGlow)">
+    <path d="M 218 168 C 218 126, 242 126, 242 168" fill="none" stroke="url(#ringGrad)" stroke-width="8.5" stroke-linecap="round" />
+    <path d="M 242 168 C 242 182, 224 182, 224 168" fill="none" stroke="url(#ringGrad)" stroke-width="6.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Ring 3 (Center x: 282) -->
+  <g filter="url(#neonGlow)">
+    <path d="M 270 168 C 270 126, 294 126, 294 168" fill="none" stroke="url(#ringGrad)" stroke-width="8.5" stroke-linecap="round" />
+    <path d="M 294 168 C 294 182, 276 182, 276 168" fill="none" stroke="url(#ringGrad)" stroke-width="6.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Ring 4 (Center x: 334) -->
+  <g filter="url(#neonGlow)">
+    <path d="M 322 168 C 322 126, 346 126, 346 168" fill="none" stroke="url(#ringGrad)" stroke-width="8.5" stroke-linecap="round" />
+    <path d="M 346 168 C 346 182, 328 182, 328 168" fill="none" stroke="url(#ringGrad)" stroke-width="6.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Hole Punches on Pad (Subtle dark depth dots where rings enter) -->
+  <circle cx="178" cy="168" r="4" fill="#000000" opacity="0.6" />
+  <circle cx="230" cy="168" r="4" fill="#000000" opacity="0.6" />
+  <circle cx="282" cy="168" r="4" fill="#000000" opacity="0.6" />
+  <circle cx="334" cy="168" r="4" fill="#000000" opacity="0.6" />
+</svg>
