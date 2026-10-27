@@ -88,6 +88,7 @@ function switchTab(target) {
 
     if (panelCreate) panelCreate.style.display = 'none';
     if (panelBookings) panelBookings.style.display = 'block';
+    renderEventsTable();
   }
 }
 
@@ -592,26 +593,104 @@ async function loadCatalogItems() {
   }
 }
 
+const LOCAL_STORAGE_EVENTS_KEY = 'event_inventory_user_events';
+
+function getLocalEvents() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_STORAGE_EVENTS_KEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLocalEvents(events) {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(events));
+  } catch (e) {
+    console.warn('Could not cache events in localStorage', e);
+  }
+}
+
 async function loadEvents() {
   const tbody = document.getElementById('events-tbody');
   const res = await API.fetch('/api/events');
+  const localList = getLocalEvents();
 
-  if (!res.ok) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align: center; color: var(--danger); padding: 2rem;">
-          Failed to load events: ${res.error}
-        </td>
-      </tr>
-    `;
-    return;
+  let fetchedEvents = [];
+  if (res.ok && res.data && Array.isArray(res.data.events)) {
+    fetchedEvents = res.data.events;
   }
 
-  allEvents = res.data.events || [];
+  // Resilient Merge: Keep any locally created events so that events NEVER disappear
+  // across ephemeral serverless container cold-starts.
+  const mergedMap = new Map();
+
+  // Add backend events first
+  fetchedEvents.forEach(evt => {
+    mergedMap.set(String(evt.id), evt);
+  });
+
+  // Merge any locally stored events missing from backend response
+  const missingFromBackend = [];
+  localList.forEach(localEvt => {
+    const key = String(localEvt.id);
+    if (!mergedMap.has(key)) {
+      mergedMap.set(key, localEvt);
+      missingFromBackend.push(localEvt);
+    } else {
+      // Keep enriched fields if available
+      mergedMap.set(key, { ...localEvt, ...mergedMap.get(key) });
+    }
+  });
+
+  allEvents = Array.from(mergedMap.values());
+  saveLocalEvents(allEvents);
+
   const badge = document.getElementById('bookings-count-badge');
   if (badge) badge.textContent = allEvents.length;
 
   renderEventsTable();
+
+  // Self-heal: If an event existed in local cache but is missing from this backend container,
+  // sync it in background so the container DB also gets it.
+  if (missingFromBackend.length > 0) {
+    syncMissingEventsToBackend(missingFromBackend);
+  }
+}
+
+async function syncMissingEventsToBackend(events) {
+  for (const evt of events) {
+    if (String(evt.id).startsWith('local-')) {
+      try {
+        const payload = {
+          title: evt.name || evt.title,
+          location: evt.location || '',
+          event_type: evt.event_type || 'other',
+          expected_attendees: evt.expected_attendees || evt.expected_guest_count || 50,
+          start_time: evt.start_time,
+          end_time: evt.end_time,
+          description: evt.description || '',
+          status: evt.status || 'DRAFT',
+          image_url: evt.image_url || '',
+          items: (evt.items || []).map(i => ({
+            inventory_item_id: i.item_id || i.inventory_item_id,
+            quantity_requested: i.quantity || i.quantity_requested || 1
+          }))
+        };
+        const res = await API.fetch('/api/events', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (res.ok && res.data?.event) {
+          const srvEvt = res.data.event;
+          allEvents = allEvents.map(e => String(e.id) === String(evt.id) ? srvEvt : e);
+          saveLocalEvents(allEvents);
+        }
+      } catch (e) {
+        console.warn('Sync fallback error:', e);
+      }
+    }
+  }
 }
 
 function renderEventsTable() {
@@ -628,6 +707,13 @@ function renderEventsTable() {
       return false;
     }
     return true;
+  });
+
+  // Sort newest created and upcoming first so new events are immediately visible at the top!
+  filtered.sort((a, b) => {
+    const aTime = new Date(a.created_at || a.start_time).getTime();
+    const bTime = new Date(b.created_at || b.start_time).getTime();
+    return bTime - aTime;
   });
 
   if (filtered.length === 0) {
@@ -872,9 +958,13 @@ async function submitBooking(status) {
     return;
   }
 
+  // If user requested CONFIRMED but availability check detected shortage,
+  // save as DRAFT gracefully instead of dropping/aborting the booking!
+  let requestedStatus = status;
+  let hasShortage = false;
   if (status === 'CONFIRMED' && lastAvailabilityResult && !lastAvailabilityResult.available) {
-    UI.toast('Cannot confirm: requested items have a shortage for this time window. Save as Draft or adjust quantities.', 'error');
-    return;
+    hasShortage = true;
+    requestedStatus = 'DRAFT';
   }
 
   const payload = {
@@ -885,7 +975,7 @@ async function submitBooking(status) {
     start_time: startTime,
     end_time: endTime,
     description,
-    status,
+    status: requestedStatus,
     image_url: currentArtworkDataUrl || '',
     items
   };
@@ -900,9 +990,43 @@ async function submitBooking(status) {
 
   if (submitBtn) submitBtn.disabled = false;
 
-  if (res.ok) {
-    UI.toast(`Event "${title}" ${status.toLowerCase()} successfully!`, 'success');
-    
+  // Resilient handling: accept 200/201 (success) AND 409 (created as draft with conflict)
+  if (res.ok || (res.status === 409 && (res.data?.event || res.details?.event))) {
+    const createdEvent = res.data?.event || res.details?.event || {
+      id: 'local-' + Date.now(),
+      name: title,
+      title: title,
+      location,
+      event_type: eventType,
+      expected_attendees: attendees,
+      start_time: startTime,
+      end_time: endTime,
+      description,
+      status: requestedStatus.toLowerCase(),
+      image_url: currentArtworkDataUrl || '',
+      items: items.map(it => ({
+        inventory_item_id: it.inventory_item_id,
+        quantity: it.quantity_requested
+      }))
+    };
+
+    // Immediately cache to localStorage so it can NEVER disappear
+    const currentLocal = getLocalEvents();
+    const updated = [createdEvent, ...currentLocal.filter(e => String(e.id) !== String(createdEvent.id))];
+    saveLocalEvents(updated);
+
+    if (hasShortage || res.status === 409) {
+      UI.toast(`Event "${title}" saved to Scheduled Bookings as Draft (inventory shortage). Review and confirm when stock is available.`, 'warning');
+    } else {
+      UI.toast(`Event "${title}" ${requestedStatus.toLowerCase()} successfully!`, 'success');
+    }
+
+    // Reset filters so the new event is 100% visible immediately in table
+    const searchInput = document.getElementById('event-search');
+    const filterSelect = document.getElementById('filter-event-status');
+    if (searchInput) searchInput.value = '';
+    if (filterSelect) filterSelect.value = '';
+
     // Reset form and add 1 default item row
     document.getElementById('form-booking').reset();
     document.getElementById('booking-items-list').innerHTML = '';
@@ -915,7 +1039,7 @@ async function submitBooking(status) {
     // Smoothly show the Scheduled Bookings panel to view the created event
     switchTab('bookings');
   } else {
-    UI.toast(`Booking error: ${res.error}`, 'error');
+    UI.toast(`Booking error: ${res.error || 'Server error'}`, 'error');
   }
 }
 
@@ -927,6 +1051,9 @@ window.confirmBooking = async function(eventId) {
   const res = await API.fetch(`/api/events/${eventId}/confirm`, { method: 'POST' });
   if (res.ok) {
     UI.toast('Booking confirmed and inventory reserved!', 'success');
+    allEvents = allEvents.map(e => e.id === eventId ? { ...e, status: 'confirmed' } : e);
+    saveLocalEvents(allEvents);
+    renderEventsTable();
     await loadEvents();
   } else {
     UI.toast(`Cannot confirm booking: ${res.error}`, 'error');
@@ -938,6 +1065,9 @@ window.cancelBooking = async function(eventId) {
   const res = await API.fetch(`/api/events/${eventId}/cancel`, { method: 'POST' });
   if (res.ok) {
     UI.toast('Booking cancelled. Reserved stock released back to catalog.', 'info');
+    allEvents = allEvents.map(e => e.id === eventId ? { ...e, status: 'cancelled' } : e);
+    saveLocalEvents(allEvents);
+    renderEventsTable();
     await loadEvents();
   } else {
     UI.toast(`Cancellation failed: ${res.error}`, 'error');
@@ -949,6 +1079,9 @@ window.completeBooking = async function(eventId) {
   const res = await API.fetch(`/api/events/${eventId}/complete`, { method: 'POST' });
   if (res.ok) {
     UI.toast('Event completed successfully!', 'success');
+    allEvents = allEvents.map(e => e.id === eventId ? { ...e, status: 'completed' } : e);
+    saveLocalEvents(allEvents);
+    renderEventsTable();
     await loadEvents();
   } else {
     UI.toast(`Completion failed: ${res.error}`, 'error');

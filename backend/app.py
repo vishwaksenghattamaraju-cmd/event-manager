@@ -133,38 +133,53 @@ def create_app(config_class=Config) -> Flask:
         # Self-healing: auto-seed demo events if events table is empty
         try:
             from backend.models.event import Event, EventType
+            from backend.models.inventory import InventoryItem
+            from backend.services.event_service import create_event
             from backend.services.booking_service import confirm_event_booking
             from datetime import datetime, timezone, timedelta
             if db_session.query(Event).count() == 0:
                 admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
                 organizer = db_session.query(User).filter(User.role == UserRole.ORGANIZER).first() or admin
+                first_item = db_session.query(InventoryItem).first()
+                item_spec = [{"item_id": first_item.id, "quantity": 2}] if first_item else []
                 now_utc = datetime.now(timezone.utc)
-                confirm_event_booking(
+
+                evt1, _ = create_event(
                     db_session,
-                    name="Global Tech Summit 2026",
-                    event_type=EventType.CONFERENCE,
-                    start_time=now_utc + timedelta(days=2),
-                    end_time=now_utc + timedelta(days=2, hours=8),
-                    items=[],
-                    location="Main Auditorium & Hall A",
-                    expected_attendees=250,
-                    description="Keynote technology summit featuring AI, cloud infrastructure, and autonomous agent tracks.",
-                    user_id=organizer.id if organizer else None,
-                    image_url="/images/events/conference.jpg",
+                    organizer_id=organizer.id if organizer else 1,
+                    data={
+                        "title": "Global Tech Summit 2026",
+                        "event_type": EventType.CONFERENCE,
+                        "start_time": (now_utc + timedelta(days=2)).isoformat(),
+                        "end_time": (now_utc + timedelta(days=2, hours=8)).isoformat(),
+                        "items": item_spec,
+                        "location": "Main Auditorium & Hall A",
+                        "expected_attendees": 250,
+                        "description": "Keynote technology summit featuring AI, cloud infrastructure, and autonomous agent tracks.",
+                        "image_url": "/images/events/conference.jpg",
+                    }
                 )
-                confirm_event_booking(
+                if evt1 and item_spec:
+                    confirm_event_booking(db_session, evt1.id, user_id=organizer.id if organizer else 1)
+
+                evt2, _ = create_event(
                     db_session,
-                    name="Acoustic Sunset Concert",
-                    event_type=EventType.CONCERT,
-                    start_time=now_utc + timedelta(days=5, hours=18),
-                    end_time=now_utc + timedelta(days=5, hours=22),
-                    items=[],
-                    location="Riverside Open Amphitheater",
-                    expected_attendees=180,
-                    description="Live acoustic performances and outdoor twilight musical celebration.",
-                    user_id=organizer.id if organizer else None,
-                    image_url="/images/events/concert.jpg",
+                    organizer_id=admin.id if admin else 1,
+                    data={
+                        "title": "Acoustic Sunset Concert",
+                        "event_type": EventType.CONCERT,
+                        "start_time": (now_utc + timedelta(days=5, hours=18)).isoformat(),
+                        "end_time": (now_utc + timedelta(days=5, hours=22)).isoformat(),
+                        "items": item_spec,
+                        "location": "Riverside Open Amphitheater",
+                        "expected_attendees": 180,
+                        "description": "Live acoustic performances and outdoor twilight musical celebration.",
+                        "image_url": "/images/events/concert.jpg",
+                    }
                 )
+                if evt2 and item_spec:
+                    confirm_event_booking(db_session, evt2.id, user_id=admin.id if admin else 1)
+
                 logger.info("Auto-seeded demo events for initial deployment.")
         except Exception as evt_seed_err:
             logger.warning(f"Demo event auto-seed skipped: {evt_seed_err}")
