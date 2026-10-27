@@ -134,7 +134,7 @@ def create_app(config_class=Config) -> Flask:
         try:
             from backend.models.event import Event, EventType
             from backend.services.booking_service import confirm_event_booking
-            from datetime import timedelta
+            from datetime import datetime, timezone, timedelta
             if db_session.query(Event).count() == 0:
                 admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
                 organizer = db_session.query(User).filter(User.role == UserRole.ORGANIZER).first() or admin

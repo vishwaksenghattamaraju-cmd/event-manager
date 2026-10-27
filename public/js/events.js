@@ -160,6 +160,41 @@ function initDateTimePickers() {
 }
 
 /* ==========================================================================
+   Metadata Pill Synchronisation & Quick Toggles
+   ========================================================================== */
+function initMetaPills() {
+  const pillCalendar = document.getElementById('pill-calendar-select');
+  const labelCalendar = document.getElementById('calendar-name-label');
+  const pillVisibility = document.getElementById('pill-visibility-select');
+  const labelVisibility = document.getElementById('visibility-label');
+
+  const calendars = ['Personal Calendar', 'Company Events', 'Community Hub', 'Private Workspace'];
+  let calIdx = 0;
+
+  pillCalendar?.addEventListener('click', () => {
+    calIdx = (calIdx + 1) % calendars.length;
+    if (labelCalendar) labelCalendar.textContent = calendars[calIdx];
+    if (window.UI?.toast) UI.toast(`Switched calendar to ${calendars[calIdx]}`, 'info');
+  });
+
+  const visibilities = [
+    { label: 'Public', icon: '🌐' },
+    { label: 'Private', icon: '🔒' },
+    { label: 'Unlisted', icon: '🔗' }
+  ];
+  let visIdx = 0;
+
+  pillVisibility?.addEventListener('click', () => {
+    visIdx = (visIdx + 1) % visibilities.length;
+    const v = visibilities[visIdx];
+    if (labelVisibility) labelVisibility.textContent = v.label;
+    const iconSpan = pillVisibility.querySelector('span:first-child');
+    if (iconSpan) iconSpan.textContent = v.icon;
+    if (window.UI?.toast) UI.toast(`Event visibility set to ${v.label}`, 'info');
+  });
+}
+
+/* ==========================================================================
    AI-Generated Artwork Preset Engine & Semantic Matcher
    ========================================================================== */
 const AI_ARTWORK_PRESETS = [
