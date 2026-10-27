@@ -1141,15 +1141,42 @@ body[data-bg-video="dashboard"] {
 }
 
 /* Bottom CTA Button in Light Mode */
-:root[data-theme="light"] .luma-create-event-btn {
-  background: #0f172a;
-  color: #ffffff;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.2);
+:root[data-theme="light"] .luma-create-event-btn,
+:root[data-theme="light"] #btn-submit-confirm,
+:root[data-theme="light"] #btn-submit-add-item {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 4px 22px rgba(15, 23, 42, 0.22) !important;
 }
 
-:root[data-theme="light"] .luma-create-event-btn:hover {
-  background: #1e293b;
-  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.28);
+:root[data-theme="light"] .luma-create-event-btn:hover,
+:root[data-theme="light"] #btn-submit-confirm:hover,
+:root[data-theme="light"] #btn-submit-add-item:hover {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.32) !important;
+  transform: translateY(-2px) scale(1.01);
+}
+
+:root[data-theme="light"] .luma-create-event-btn:focus,
+:root[data-theme="light"] .luma-create-event-btn:focus-visible,
+:root[data-theme="light"] #btn-submit-confirm:focus,
+:root[data-theme="light"] #btn-submit-confirm:focus-visible,
+:root[data-theme="light"] #btn-submit-add-item:focus,
+:root[data-theme="light"] #btn-submit-add-item:focus-visible {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  outline: 2px solid #2563eb !important;
+  outline-offset: 3px !important;
+}
+
+:root[data-theme="light"] .luma-create-event-btn:active,
+:root[data-theme="light"] #btn-submit-confirm:active,
+:root[data-theme="light"] #btn-submit-add-item:active {
+  background: #020617 !important;
+  color: #ffffff !important;
+  transform: translateY(0) scale(0.98);
 }
 
 :root[data-theme="light"] .luma-draft-link {

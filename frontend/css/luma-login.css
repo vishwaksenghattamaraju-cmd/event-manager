@@ -137,11 +137,26 @@ body.luma-page {
 :root[data-theme="light"] .luma-nav-btn {
   background: rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #0f172a;
 }
 
 :root[data-theme="light"] .luma-nav-btn:hover {
   background: rgba(0, 0, 0, 0.10);
   border-color: rgba(0, 0, 0, 0.20);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-nav-btn-highlight {
+  background: var(--luma-gradient) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 14px rgba(217, 70, 239, 0.35) !important;
+}
+
+:root[data-theme="light"] .luma-nav-btn-highlight:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 20px rgba(217, 70, 239, 0.5) !important;
+  color: #ffffff !important;
 }
 
 .luma-theme-btn {
@@ -260,10 +275,40 @@ body.luma-page {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 8px 35px rgba(255, 255, 255, 0.35);
   background: #ffffff;
+  color: #0b0c10;
 }
 
-:root[data-theme="light"] .luma-btn-create {
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.20);
+:root[data-theme="light"] .luma-btn-create,
+:root[data-theme="light"] #btn-hero-create {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 4px 22px rgba(15, 23, 42, 0.22) !important;
+}
+
+:root[data-theme="light"] .luma-btn-create:hover,
+:root[data-theme="light"] #btn-hero-create:hover {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.32) !important;
+  transform: translateY(-2px) scale(1.02);
+}
+
+:root[data-theme="light"] .luma-btn-create:focus,
+:root[data-theme="light"] .luma-btn-create:focus-visible,
+:root[data-theme="light"] #btn-hero-create:focus,
+:root[data-theme="light"] #btn-hero-create:focus-visible {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  outline: 2px solid #2563eb !important;
+  outline-offset: 3px !important;
+}
+
+:root[data-theme="light"] .luma-btn-create:active,
+:root[data-theme="light"] #btn-hero-create:active {
+  background: #020617 !important;
+  color: #ffffff !important;
+  transform: translateY(0) scale(0.98);
 }
 
 .luma-link-subtle {
