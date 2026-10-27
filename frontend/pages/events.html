@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css?v=15">
   <link rel="stylesheet" href="/css/bg-video.css?v=7">
+  <link rel="stylesheet" href="/css/luma-events.css?v=2">
   <script>
     (function() {
       const saved = localStorage.getItem('theme') || 'dark';
@@ -17,7 +18,7 @@
     })();
   </script>
 </head>
-<body data-bg-video="events">
+<body data-luma-events="true" data-bg-video="events">
   <!-- Navigation Bar -->
   <nav class="navbar">
     <a href="/dashboard" class="nav-brand">
@@ -27,148 +28,337 @@
     <ul class="nav-links">
       <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
       <li><a href="/inventory" class="nav-link">Inventory</a></li>
-      <li><a href="/events" class="nav-link active">Events & Bookings</a></li>
+      <li><a href="/events" class="nav-link active">Events &amp; Bookings</a></li>
     </ul>
     <div id="nav-user-display" class="nav-user"></div>
   </nav>
 
-  <main class="container">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Event Bookings</h1>
-        <p class="page-subtitle">Schedule events, reserve warehouse inventory, and prevent double-booking</p>
-      </div>
-      <div class="page-header-actions">
-        <a href="/api/reports/event-summary-csv" class="btn btn-secondary" id="btn-export-events-csv" download>
-          📥 Export Events CSV
-        </a>
-        <button id="btn-open-booking-modal" class="btn btn-primary">+ New Booking</button>
-      </div>
+  <!-- Top Studio View Switcher Bar -->
+  <header class="luma-studio-topbar">
+    <div class="luma-view-pills" role="tablist">
+      <button type="button" class="luma-view-pill active" id="tab-btn-create" role="tab" aria-selected="true">
+        <span>✦</span> Create Event
+      </button>
+      <button type="button" class="luma-view-pill" id="tab-btn-bookings" role="tab" aria-selected="false">
+        <span>📋</span> Scheduled Bookings <span class="luma-view-badge" id="bookings-count-badge">0</span>
+      </button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="/api/reports/event-summary-csv" class="luma-btn-add-item" id="btn-export-events-csv" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem;">
+        📥 Export Events CSV
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ======================================================================
+         Lu.ma Create Event Studio (Two-Column Layout matching Screenshot 2)
+         ====================================================================== -->
+    <div id="panel-create-event" class="luma-create-studio">
+      <!-- Left Column: Dynamic AI Event Artwork Box -->
+      <aside class="luma-left-column">
+        <div class="luma-artwork-card has-image" id="artwork-dropzone" tabindex="0" role="button" aria-label="Event Artwork">
+          <!-- Hidden file input for uploading from device -->
+          <input type="file" id="artwork-file-input" accept="image/*" style="display: none;">
+
+          <!-- AI Category Match Pill Badge at Top-Left -->
+          <div class="luma-artwork-ai-badge" id="artwork-ai-badge">
+            <span class="ai-badge-sparkle">✨</span>
+            <span id="artwork-ai-label">AI Matched: Keynote Conference</span>
+          </div>
+
+          <!-- Active image preview element (displays AI artwork by default according to category) -->
+          <img id="artwork-preview-img" class="luma-artwork-preview" src="/images/events/conference.jpg" alt="Event Artwork">
+
+          <!-- Fallback placeholder view (hidden while image is active) -->
+          <div class="luma-artwork-placeholder" id="artwork-placeholder" style="display: none;">
+            <div class="luma-artwork-icon-wrap">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="4" ry="4"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            </div>
+            <div class="luma-artwork-label">Add Event Artwork</div>
+            <div class="luma-artwork-hint">AI automatically adapts to your event category &amp; description</div>
+          </div>
+
+          <!-- Reset / Clear artwork button (top-right) -->
+          <button type="button" class="luma-artwork-remove-btn" id="btn-artwork-remove" title="Reset to AI Match" aria-label="Reset to AI Match">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          <!-- Action Buttons (Bottom-Right): AI Cycle + Upload Custom -->
+          <div class="luma-artwork-actions">
+            <button type="button" class="luma-artwork-btn luma-btn-magic" id="btn-artwork-magic" title="Cycle AI Artwork Variations" aria-label="Cycle AI Artwork Variations">
+              <span class="magic-icon">✨</span>
+            </button>
+            <button type="button" class="luma-artwork-btn luma-camera-badge" id="btn-artwork-upload" title="Upload Custom Photo" aria-label="Upload Custom Photo">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#090a0f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Column: Event Details Form -->
+      <section class="luma-right-column">
+        <form id="form-booking" autocomplete="off">
+          <!-- Calendar & Visibility Pills -->
+          <div class="luma-meta-tags">
+            <div class="luma-tag-pill" id="pill-calendar-select">
+              <span class="luma-dot-purple"></span>
+              <span id="calendar-name-label">Personal Calendar</span>
+              <span style="font-size: 0.7rem; color: var(--luma-text-muted);">▼</span>
+            </div>
+            <div class="luma-tag-pill" id="pill-visibility-select">
+              <span>🌐</span>
+              <span id="visibility-label">Public</span>
+              <span style="font-size: 0.7rem; color: var(--luma-text-muted);">▼</span>
+            </div>
+          </div>
+
+          <!-- Big Bold Event Title Input -->
+          <input 
+            type="text" 
+            id="booking-title" 
+            class="luma-title-input" 
+            placeholder="Event Name" 
+            required 
+            aria-label="Event Name"
+          >
+
+          <!-- Date & Time Timeline Card -->
+          <div class="luma-datetime-card">
+            <div class="luma-timeline-rows">
+              <div class="luma-timeline-connector"></div>
+
+              <!-- Start Time Row -->
+              <div class="luma-timeline-row">
+                <span class="luma-timeline-dot filled"></span>
+                <span class="luma-timeline-label">Start</span>
+                <div class="luma-date-picker-wrap">
+                  <input type="date" id="picker-start-date" class="luma-dt-pill" title="Start Date" aria-label="Start Date">
+                  <input type="time" id="picker-start-time" class="luma-dt-pill" title="Start Time" aria-label="Start Time">
+                </div>
+              </div>
+
+              <!-- End Time Row -->
+              <div class="luma-timeline-row">
+                <span class="luma-timeline-dot hollow"></span>
+                <span class="luma-timeline-label">End</span>
+                <div class="luma-date-picker-wrap">
+                  <input type="date" id="picker-end-date" class="luma-dt-pill" title="End Date" aria-label="End Date">
+                  <input type="time" id="picker-end-time" class="luma-dt-pill" title="End Time" aria-label="End Time">
+                </div>
+              </div>
+            </div>
+
+            <!-- Timezone Badge matching Screenshot 2 (e.g. GMT+05:30 Kolkata) -->
+            <div class="luma-timezone-badge" title="Local Event Timezone">
+              <span class="luma-tz-globe">🌐</span>
+              <div class="luma-tz-info">
+                <span class="luma-tz-gmt" id="tz-gmt-label">GMT+05:30</span>
+                <span class="luma-tz-city" id="tz-city-label">Kolkata</span>
+              </div>
+            </div>
+
+            <!-- Hidden native datetime-local inputs for API compatibility -->
+            <input type="datetime-local" id="booking-start" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" tabindex="-1">
+            <input type="datetime-local" id="booking-end" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" tabindex="-1">
+          </div>
+
+          <!-- Location Card -->
+          <div class="luma-block-card" id="card-location">
+            <div class="luma-block-icon">📍</div>
+            <div class="luma-block-content">
+              <input 
+                type="text" 
+                id="booking-location" 
+                class="luma-clean-input" 
+                placeholder="Add Event Location" 
+                aria-label="Add Event Location"
+              >
+              <div class="luma-block-subtext">Offline location or virtual link</div>
+            </div>
+          </div>
+
+          <!-- Description Card -->
+          <div class="luma-block-card" id="card-description">
+            <div class="luma-block-icon">📝</div>
+            <div class="luma-block-content">
+              <textarea 
+                id="booking-description" 
+                class="luma-clean-textarea" 
+                placeholder="Add Description" 
+                rows="2" 
+                aria-label="Add Description"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Event Options Section -->
+          <div class="luma-options-section">
+            <div class="luma-options-heading">Event Options</div>
+            <div class="luma-options-card">
+              <!-- Ticket Price & Type -->
+              <div class="luma-option-row">
+                <div class="luma-option-left">
+                  <span class="luma-option-icon">🎟️</span>
+                  <span>Ticket Price &amp; Type</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                  <select id="booking-type" class="luma-option-select" required aria-label="Event Type">
+                    <option value="Conference">Conference</option>
+                    <option value="Workshop">Workshop</option>
+                    <option value="Wedding">Wedding</option>
+                    <option value="Concert">Concert</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Meetup">Meetup</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <span style="font-size: 0.88rem; color: #38bdf8; font-weight: 600; cursor: pointer;" title="Ticket is Free">Free 🔗</span>
+                </div>
+              </div>
+
+              <!-- Require Approval Toggle -->
+              <div class="luma-option-row">
+                <div class="luma-option-left">
+                  <span class="luma-option-icon">🔒</span>
+                  <span>Require Approval</span>
+                </div>
+                <div>
+                  <label class="luma-switch" aria-label="Require Approval">
+                    <input type="checkbox" id="booking-require-approval">
+                    <span class="luma-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Capacity -->
+              <div class="luma-option-row">
+                <div class="luma-option-left">
+                  <span class="luma-option-icon">👥</span>
+                  <span>Capacity</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.45rem;">
+                  <input 
+                    type="number" 
+                    id="booking-attendees" 
+                    class="luma-option-input" 
+                    min="1" 
+                    value="50" 
+                    placeholder="Guests" 
+                    required 
+                    aria-label="Capacity / Expected Attendees"
+                  >
+                  <span style="font-size: 0.82rem; color: var(--luma-text-dim);">guests</span>
+                </div>
+              </div>
+
+              <!-- Warehouse Equipment & Inventory Reservation -->
+              <div class="luma-inventory-block">
+                <div class="luma-inventory-header">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.1rem;">📦</span>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: #ffffff;">Warehouse Inventory &amp; Equipment</span>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" id="btn-ai-recommend" class="luma-btn-ai">⚡ AI Auto-Recommend</button>
+                    <button type="button" id="btn-add-item-row" class="luma-btn-add-item">+ Add Item</button>
+                  </div>
+                </div>
+
+                <!-- Dynamic Item Picker List -->
+                <div id="booking-items-list" class="item-picker-list">
+                  <!-- Injected dynamically by events.js -->
+                </div>
+
+                <!-- Live Availability Preview & Shortage Alert -->
+                <div id="availability-preview" class="availability-box checking" style="display: none; margin-top: 0.85rem;">
+                  <div id="availability-message">Select dates and items to check live availability...</div>
+                  <ul id="availability-shortages" class="shortage-list" style="display: none;"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons: Lu.ma White Pill CTA -->
+          <button type="submit" id="btn-submit-confirm" class="luma-create-event-btn">
+            Create Event
+          </button>
+
+          <div class="luma-actions-footer">
+            <button type="button" id="btn-submit-draft" class="luma-draft-link">
+              Save as Draft
+            </button>
+            <span style="font-size: 0.78rem; color: var(--luma-text-dim);">
+              Live stock validation &bull; Idempotent booking
+            </span>
+          </div>
+        </form>
+      </section>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="search-bar">
-      <input type="text" id="event-search" class="form-input search-input" placeholder="Search events by title or description...">
-      <select id="filter-event-status" class="form-select">
-        <option value="">All Statuses</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="draft">Draft</option>
-        <option value="completed">Completed</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
-    </div>
+    <!-- ======================================================================
+         Scheduled Bookings Ledger (Obsidian Glass Table, Viewable via Tab)
+         ====================================================================== -->
+    <div id="panel-scheduled-bookings" class="luma-bookings-panel" style="display: none;">
+      <!-- Filter Bar -->
+      <div class="luma-search-bar">
+        <input type="text" id="event-search" class="luma-search-input" placeholder="Search events by title or description...">
+        <select id="filter-event-status" class="luma-status-filter" aria-label="Filter events by status">
+          <option value="">All Statuses</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="draft">Draft</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button type="button" id="btn-table-new-event" class="luma-btn-ai" style="padding: 0.65rem 1.25rem;">
+          + New Booking
+        </button>
+      </div>
 
-    <!-- Events List Panel -->
-    <div class="panel">
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Event Title</th>
-              <th>Type</th>
-              <th>Window (Start &rarr; End)</th>
-              <th>Attendees</th>
-              <th>Items Reserved</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="events-tbody">
-            <tr>
-              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading events...</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Events List Table -->
+      <div class="luma-table-wrapper">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Event Title</th>
+                <th>Type</th>
+                <th>Window (Start &rarr; End)</th>
+                <th>Attendees</th>
+                <th>Items Reserved</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="events-tbody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--luma-text-muted); padding: 2.5rem;">Loading events...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- Modal: New Booking -->
-  <div id="modal-booking" class="modal-backdrop">
-    <div class="modal-container large">
-      <div class="modal-header">
-        <h3 class="modal-title">Schedule New Event Booking</h3>
-        <button class="modal-close" data-close="modal-booking">&times;</button>
-      </div>
-      <form id="form-booking">
-        <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group" style="grid-column: span 2;">
-              <label class="form-label" for="booking-title">Event Title *</label>
-              <input type="text" id="booking-title" class="form-input" placeholder="e.g. Annual Tech Symposium 2026" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="booking-type">Event Type *</label>
-              <select id="booking-type" class="form-select" required>
-                <option value="Conference">Conference</option>
-                <option value="Workshop">Workshop</option>
-                <option value="Wedding">Wedding</option>
-                <option value="Concert">Concert</option>
-                <option value="Meetup">Meetup</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="booking-attendees">Expected Attendees *</label>
-              <input type="number" id="booking-attendees" class="form-input" min="1" value="50" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="booking-start">Start Time *</label>
-              <input type="datetime-local" id="booking-start" class="form-input" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="booking-end">End Time *</label>
-              <input type="datetime-local" id="booking-end" class="form-input" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="booking-description">Description / Notes</label>
-            <textarea id="booking-description" class="form-textarea" rows="2" placeholder="Venue details, special requirements..."></textarea>
-          </div>
-
-          <!-- Items Selection Section -->
-          <div style="margin-top: 1.5rem;">
-            <div class="booking-items-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-              <label class="form-label" style="margin-bottom: 0;">Requested Inventory Items</label>
-              <div style="display: flex; gap: 0.5rem;">
-                <button type="button" id="btn-ai-recommend" class="btn btn-secondary btn-sm" style="color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">⚡ AI Auto-Recommend</button>
-                <button type="button" id="btn-add-item-row" class="btn btn-secondary btn-sm">+ Add Item</button>
-              </div>
-            </div>
-            <div id="booking-items-list" class="item-picker-list">
-              <!-- Dynamic item selector rows will be added here -->
-            </div>
-          </div>
-
-          <!-- Live Availability Status Box -->
-          <div id="availability-preview" class="availability-box checking" style="display: none;">
-            <div id="availability-message">Select dates and items to check live availability...</div>
-            <ul id="availability-shortages" class="shortage-list" style="display: none;"></ul>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-close="modal-booking">Cancel</button>
-          <button type="button" id="btn-submit-draft" class="btn btn-secondary">Save as Draft</button>
-          <button type="submit" id="btn-submit-confirm" class="btn btn-primary">Confirm &amp; Book</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- Dummy/Compat modal-booking backdrop for legacy close calls -->
+  <div id="modal-booking" style="display: none;"></div>
 
   <!-- Modal: Event Details -->
   <div id="modal-event-details" class="modal-backdrop">
     <div class="modal-container">
       <div class="modal-header">
         <h3 id="details-title" class="modal-title">Event Details</h3>
-        <button class="modal-close" data-close="modal-event-details">&times;</button>
+        <button class="modal-close" data-close="modal-event-details" aria-label="Close modal">&times;</button>
       </div>
       <div class="modal-body">
         <div id="details-content">

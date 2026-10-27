@@ -104,16 +104,23 @@ def create_app(config_class=Config) -> Flask:
             from backend.services.inventory_service import create_item
             if db_session.query(InventoryItem).count() == 0:
                 sample_items = [
-                    {"name": "Wireless Microphone Set", "category": "Audio", "total_stock": 25, "minimum_threshold": 5, "unit": "sets", "purchase_cost": 120.0},
-                    {"name": "Stage PAR Can LED Light", "category": "Lighting", "total_stock": 40, "minimum_threshold": 8, "unit": "pieces", "purchase_cost": 65.0},
-                    {"name": "Active PA Speaker 1000W", "category": "Audio", "total_stock": 16, "minimum_threshold": 4, "unit": "pieces", "purchase_cost": 250.0},
-                    {"name": "Round Banquet Table (60in)", "category": "Furniture", "total_stock": 30, "minimum_threshold": 6, "unit": "pieces", "purchase_cost": 85.0},
-                    {"name": "Chavari Banquet Chair", "category": "Furniture", "total_stock": 150, "minimum_threshold": 25, "unit": "pieces", "purchase_cost": 35.0},
-                    {"name": "HD Laser Projector 5000L", "category": "Visual", "total_stock": 8, "minimum_threshold": 2, "unit": "pieces", "purchase_cost": 800.0},
-                    {"name": "Motorized Projector Screen", "category": "Visual", "total_stock": 10, "minimum_threshold": 2, "unit": "pieces", "purchase_cost": 150.0},
-                    {"name": "Silk Floral Centerpiece", "category": "Decor", "total_stock": 50, "minimum_threshold": 10, "unit": "sets", "purchase_cost": 25.0},
-                    {"name": "Chafing Dish Buffet Warmer", "category": "Catering", "total_stock": 20, "minimum_threshold": 4, "unit": "pieces", "purchase_cost": 45.0},
-                    {"name": "Paper Napkins Pack (100ct)", "category": "Consumables", "total_stock": 100, "minimum_threshold": 20, "unit": "packs", "purchase_cost": 5.0, "is_consumable": True},
+                    {"name": "1000W Active PA Speaker", "category": "Audio", "total_stock": 24, "unavailable_stock": 0, "minimum_threshold": 4, "unit": "units", "purchase_cost": 350.0},
+                    {"name": "Wireless Handheld Microphone", "category": "Audio", "total_stock": 25, "unavailable_stock": 2, "minimum_threshold": 5, "unit": "mics", "purchase_cost": 120.0},
+                    {"name": "16-Channel Audio Mixer Console", "category": "Audio", "total_stock": 6, "unavailable_stock": 0, "minimum_threshold": 2, "unit": "consoles", "purchase_cost": 480.0},
+                    {"name": "4K Laser Projector 6000L", "category": "Visual", "total_stock": 8, "unavailable_stock": 1, "minimum_threshold": 2, "unit": "projectors", "purchase_cost": 1200.0},
+                    {"name": '120" Portable Motorized Screen', "category": "Visual", "total_stock": 10, "unavailable_stock": 0, "minimum_threshold": 2, "unit": "screens", "purchase_cost": 280.0},
+                    {"name": '65" 4K Commercial Display & Stand', "category": "Visual", "total_stock": 12, "unavailable_stock": 0, "minimum_threshold": 3, "unit": "displays", "purchase_cost": 650.0},
+                    {"name": "RGBW Stage Uplight Par", "category": "Lighting", "total_stock": 60, "unavailable_stock": 4, "minimum_threshold": 12, "unit": "lights", "purchase_cost": 45.0},
+                    {"name": "Moving Head Beam Spotlight", "category": "Lighting", "total_stock": 16, "unavailable_stock": 0, "minimum_threshold": 4, "unit": "fixtures", "purchase_cost": 320.0},
+                    {"name": "Deluxe Padded Banquet Chair", "category": "Furniture", "total_stock": 350, "unavailable_stock": 10, "minimum_threshold": 50, "unit": "chairs", "purchase_cost": 35.0},
+                    {"name": '60" Round Banquet Table (Seats 8)', "category": "Furniture", "total_stock": 45, "unavailable_stock": 2, "minimum_threshold": 8, "unit": "tables", "purchase_cost": 95.0},
+                    {"name": "6ft Rectangular Catering Table", "category": "Furniture", "total_stock": 30, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "tables", "purchase_cost": 75.0},
+                    {"name": "Cocktail High-Boy Bistro Table", "category": "Furniture", "total_stock": 25, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "tables", "purchase_cost": 55.0},
+                    {"name": "Pipe & Drape Velvet Backdrop (10ft)", "category": "Decor", "total_stock": 15, "unavailable_stock": 0, "minimum_threshold": 3, "unit": "sets", "purchase_cost": 180.0},
+                    {"name": "Acrylic Presidential Lectern", "category": "Decor", "total_stock": 5, "unavailable_stock": 0, "minimum_threshold": 1, "unit": "podiums", "purchase_cost": 220.0},
+                    {"name": "Premium Satin Napkins (Pack of 50)", "category": "Consumables", "total_stock": 70, "unavailable_stock": 0, "minimum_threshold": 15, "unit": "packs", "purchase_cost": 18.0, "is_consumable": True},
+                    {"name": "Biodegradable Party Confetti Cannon", "category": "Consumables", "total_stock": 35, "unavailable_stock": 0, "minimum_threshold": 10, "unit": "cannons", "purchase_cost": 8.0, "is_consumable": True},
+                    {"name": "Silicone Security Wristbands (100pk)", "category": "Consumables", "total_stock": 15, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "packs", "purchase_cost": 12.0, "is_consumable": True},
                 ]
                 admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
                 for item_data in sample_items:
@@ -121,6 +128,46 @@ def create_app(config_class=Config) -> Flask:
                 logger.info("Auto-seeded catalog items for initial deployment.")
         except Exception as cat_err:
             logger.warning(f"Catalog auto-seed skipped: {cat_err}")
+            db_session.rollback()
+
+        # Self-healing: auto-seed demo events if events table is empty
+        try:
+            from backend.models.event import Event, EventType
+            from backend.services.booking_service import confirm_event_booking
+            from datetime import timedelta
+            if db_session.query(Event).count() == 0:
+                admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
+                organizer = db_session.query(User).filter(User.role == UserRole.ORGANIZER).first() or admin
+                now_utc = datetime.now(timezone.utc)
+                confirm_event_booking(
+                    db_session,
+                    name="Global Tech Summit 2026",
+                    event_type=EventType.CONFERENCE,
+                    start_time=now_utc + timedelta(days=2),
+                    end_time=now_utc + timedelta(days=2, hours=8),
+                    items=[],
+                    location="Main Auditorium & Hall A",
+                    expected_attendees=250,
+                    description="Keynote technology summit featuring AI, cloud infrastructure, and autonomous agent tracks.",
+                    user_id=organizer.id if organizer else None,
+                    image_url="/images/events/conference.jpg",
+                )
+                confirm_event_booking(
+                    db_session,
+                    name="Acoustic Sunset Concert",
+                    event_type=EventType.CONCERT,
+                    start_time=now_utc + timedelta(days=5, hours=18),
+                    end_time=now_utc + timedelta(days=5, hours=22),
+                    items=[],
+                    location="Riverside Open Amphitheater",
+                    expected_attendees=180,
+                    description="Live acoustic performances and outdoor twilight musical celebration.",
+                    user_id=organizer.id if organizer else None,
+                    image_url="/images/events/concert.jpg",
+                )
+                logger.info("Auto-seeded demo events for initial deployment.")
+        except Exception as evt_seed_err:
+            logger.warning(f"Demo event auto-seed skipped: {evt_seed_err}")
             db_session.rollback()
 
     except Exception as db_err:

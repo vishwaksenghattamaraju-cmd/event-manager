@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login &bull; Event Inventory AI</title>
+  <title>Delightful Small Events &bull; Event Inventory AI</title>
   <link rel="icon" type="image/png" href="/images/logo.svg?v=6">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/styles.css?v=15">
-  <link rel="stylesheet" href="/css/bg-video.css?v=7">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700;1,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css?v=18">
+  <link rel="stylesheet" href="/css/luma-login.css?v=4">
   <script>
     (function() {
       const saved = localStorage.getItem('theme') || 'dark';
@@ -17,76 +17,232 @@
     })();
   </script>
 </head>
-<body data-bg-video="login">
-  <div class="theme-toggle-floating" style="position: fixed; top: 1.25rem; right: 1.25rem; z-index: 100;">
-    <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="UI.toggleTheme()">
-      🌙
-    </button>
-  </div>
-  <div class="auth-wrapper">
-    <div class="auth-card">
-      <div class="auth-header">
-        <img src="/images/logo.svg?v=6" alt="Event Inventory AI Logo" class="auth-logo-img">
-        <h1 class="auth-title">Event Inventory AI</h1>
-        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.25rem;">Smarter Inventory. Smoother Events.</p>
+<body class="luma-page">
+
+  <!-- Top Navigation (Sleek minimalist bar inspired by Lu.ma) -->
+  <header class="luma-nav">
+    <a href="/" class="luma-brand" title="Event Inventory AI">
+      <img src="/images/logo.svg?v=6" alt="Logo" style="width: 28px; height: 28px; object-fit: contain;">
+      <span>Event Inventory AI</span>
+      <span class="luma-brand-star" aria-hidden="true">✦</span>
+    </a>
+
+    <div class="luma-nav-actions">
+      <button type="button" class="luma-nav-btn luma-nav-btn-highlight" id="btn-nav-register" title="Create Organizer Account">
+        Register
+      </button>
+      <button type="button" class="luma-nav-btn" id="btn-nav-signin" title="Sign In">
+        Sign In
+      </button>
+      <button id="btn-theme-toggle" class="luma-theme-btn theme-toggle-btn" title="Toggle Light / Dark Mode" onclick="UI.toggleTheme()">
+        🌙
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Container -->
+  <main class="luma-hero-container">
+
+    <!-- Floating Small Event Cards Background (Exact layout & posters of small events) -->
+    <div class="luma-cards-canvas" aria-hidden="true">
+      <!-- Card 1: Cocktail Hour (Upper Left) -->
+      <div class="luma-event-card card-cocktail" title="Cocktail Hour: Speakeasy Gathering">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/cocktail-hour.jpg" alt="Cocktail Hour Small Event">
+          <div class="luma-card-tag">
+            <span>🍸 Cocktail Hour</span>
+            <span>18 Guests</span>
+          </div>
+        </div>
       </div>
 
-      <div class="auth-tabs">
-        <div id="tab-login" class="auth-tab active">Log In</div>
-        <div id="tab-register" class="auth-tab">Register</div>
+      <!-- Card 2: Clay & Craft Pottery Workshop (Mid Left) -->
+      <div class="luma-event-card card-clay" title="Clay & Craft: Ceramic Studio Workshop">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/clay-craft.jpg" alt="Pottery & Clay Workshop">
+          <div class="luma-card-tag">
+            <span>🏺 Clay & Craft</span>
+            <span>Workshop</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Login Form -->
+      <!-- Card 3: Poker & Board Game Night (Lower Left) -->
+      <div class="luma-event-card card-poker" title="Poker Night: Friends & Chips">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/poker-night.jpg" alt="Poker Night Small Event">
+          <div class="luma-card-tag">
+            <span>♠️ Poker Night</span>
+            <span>Game Room</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Living Room Acoustic Sessions (Bottom Left) -->
+      <div class="luma-event-card card-acoustic" title="Living Room Sessions: Acoustic House Show">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/acoustic-session.jpg" alt="Acoustic Living Room Session">
+          <div class="luma-card-tag">
+            <span>🎸 Acoustic Night</span>
+            <span>House Show</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Sunset Yoga & Sound Meditation (Top Center Peeking) -->
+      <div class="luma-event-card card-yoga" title="Sunset Rooftop Yoga & Sound Meditation">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/sunset-yoga.jpg" alt="Rooftop Yoga Session">
+          <div class="luma-card-tag">
+            <span>🧘 Sunset Yoga</span>
+            <span>Rooftop</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 6: Intimate Dinner Party (Upper Right) -->
+      <div class="luma-event-card card-dinner" title="Dinner Party: Good Friends & Good Food">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/dinner-party.jpg" alt="Intimate Dinner Party Event">
+          <div class="luma-card-tag">
+            <span>🍷 Dinner Party</span>
+            <span>12 Seats</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 7: Founders & AI Salon (Mid Right - Handshake) -->
+      <div class="luma-event-card card-ai" title="Founders & AI Salon: Human + Robot Meetup">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/ai-salon.jpg" alt="Founders & AI Salon">
+          <div class="luma-card-tag">
+            <span>🤖 Founders AI</span>
+            <span>Salon</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 8: Specialty Brew Lab (Lower Right) -->
+      <div class="luma-event-card card-coffee" title="Brew Lab: Specialty Coffee Tasting">
+        <div class="luma-event-card-inner">
+          <img src="/images/events/brew-lab.jpg" alt="Specialty Coffee Workshop">
+          <div class="luma-card-tag">
+            <span>☕ Brew Lab</span>
+            <span>Tasting</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Central Hero Text (Exact Lu.ma typography & gradient) -->
+    <div class="luma-hero-center">
+      <div class="luma-hero-badge">
+        <span class="luma-hero-badge-spark">✦</span>
+        <span>The Smart Operating System for Small Events</span>
+      </div>
+
+      <h1 class="luma-hero-title">
+        Delightful<br>
+        events<br>
+        <span class="gradient-text">start here</span>
+      </h1>
+
+      <p class="luma-hero-subtitle">
+        From intimate dinners to acoustic sessions, cocktail hours and maker workshops,
+        Event Inventory AI makes managing every small event feel effortless.
+      </p>
+
+      <div class="luma-hero-cta">
+        <button type="button" class="luma-btn-create" id="btn-hero-create">
+          Create Your First Event
+        </button>
+        <a href="#signin" class="luma-link-subtle" id="link-hero-signin">
+          Sign In to Your Workspace &rarr;
+        </a>
+
+        <!-- Fast Instant Demo Access (Admin & Organizer only) -->
+        <div class="luma-hero-demo-bar">
+          <span class="luma-demo-label">⚡ Demo Login:</span>
+          <button type="button" class="luma-demo-chip" id="btn-hero-admin">👑 Admin</button>
+          <button type="button" class="luma-demo-chip" id="btn-hero-organizer">📋 Organizer</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Compact, Non-Scrolling Auth Modal -->
+  <div id="auth-modal-backdrop" class="luma-auth-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="luma-auth-modal" id="luma-auth-modal-card">
+      <div class="luma-modal-controls">
+        <button type="button" id="btn-close-modal" class="luma-modal-action-btn" title="Close" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="luma-auth-header">
+        <h2 id="modal-title" class="luma-auth-title">Welcome Back</h2>
+        <p id="modal-subtitle" class="luma-auth-subtitle">Sign in to coordinate small events & inventory</p>
+      </div>
+
+      <div class="luma-auth-tabs">
+        <div id="tab-login" class="luma-auth-tab active">Log In</div>
+        <div id="tab-register" class="luma-auth-tab">Register</div>
+      </div>
+
+      <!-- Login Form (Ultra-compact, fits without scrolling) -->
       <form id="form-login">
         <div class="form-group">
           <label class="form-label" for="login-username">Username or Email</label>
-          <input type="text" id="login-username" class="form-input" placeholder="e.g. admin or organizer1" required autocomplete="username">
+          <input type="text" id="login-username" class="form-input" placeholder="e.g. admin or organizer" required autocomplete="username">
         </div>
         <div class="form-group">
           <label class="form-label" for="login-password">Password</label>
           <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
         </div>
-        <div id="login-error" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
-        <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
-        
-        <div style="margin-top: 1.25rem; padding: 0.75rem 0.85rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.8rem;">
-          <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
-            <span>⚡ Instant Demo Logins:</span>
+        <div id="login-error" style="color: #ef4444; font-size: 0.82rem; margin-bottom: 0.5rem; display: none;"></div>
+        <button type="submit" id="btn-login-submit" class="luma-btn-submit">Sign In</button>
+
+        <div class="luma-modal-demo-box">
+          <div style="font-weight: 600; font-size: 0.76rem; color: var(--luma-text-muted); margin-bottom: 0.35rem;">
+            ⚡ 1-Click Demo Credentials:
           </div>
-          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-admin" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">👑 Admin</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-organizer" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">📋 Organizer</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-vishwak" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">👤 Vishwak</button>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" class="luma-demo-chip" id="btn-fill-admin">👑 Admin</button>
+            <button type="button" class="luma-demo-chip" id="btn-fill-organizer">📋 Organizer</button>
           </div>
         </div>
       </form>
 
-      <!-- Register Form -->
+      <!-- Register Form (Clean 2-column layout, fits without scrolling) -->
       <form id="form-register" style="display: none;">
-        <div class="form-group">
-          <label class="form-label" for="reg-username">Username</label>
-          <input type="text" id="reg-username" class="form-input" placeholder="e.g. event_lead" required autocomplete="username">
+        <div class="luma-form-row">
+          <div class="form-group">
+            <label class="form-label" for="reg-username">Username</label>
+            <input type="text" id="reg-username" class="form-input" placeholder="e.g. event_host" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-email">Email Address</label>
+            <input type="email" id="reg-email" class="form-input" placeholder="host@example.com" required autocomplete="email">
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="reg-email">Email Address</label>
-          <input type="email" id="reg-email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+
+        <div class="luma-form-row">
+          <div class="form-group">
+            <label class="form-label" for="reg-role">Account Role</label>
+            <select id="reg-role" class="form-select">
+              <option value="organizer" selected>📋 Event Organizer</option>
+              <option value="admin">👑 Administrator</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-password">Password (min 8 chars)</label>
+            <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="reg-role">Account Role</label>
-          <select id="reg-role" class="form-select">
-            <option value="organizer" selected>📋 Event Organizer</option>
-            <option value="admin">👑 Administrator</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="reg-password">Password (min 8 chars, 1 number)</label>
-          <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
-        </div>
-        <div id="reg-error" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
-        <button type="submit" id="btn-reg-submit" class="btn btn-primary" style="width: 100%;">Create Organizer Account</button>
+
+        <div id="reg-error" style="color: #ef4444; font-size: 0.82rem; margin-bottom: 0.5rem; display: none;"></div>
+        <button type="submit" id="btn-reg-submit" class="luma-btn-submit">Create Organizer Account</button>
       </form>
 
-      <div style="margin-top: 1.5rem; text-align: center; font-size: 0.8rem; color: var(--text-dim);">
+      <div class="luma-auth-footer">
         Secure Session Authentication &bull; Role-Based Access Control
       </div>
     </div>
@@ -94,6 +250,5 @@
 
   <script src="/js/api.js"></script>
   <script src="/js/login.js"></script>
-  <script src="/js/bg-video.js?v=1"></script>
 </body>
 </html>

@@ -17,10 +17,22 @@ def get_engine(database_url: str):
     """
     Creates and configures the SQLAlchemy engine.
     Applies SQLite-specific settings (foreign keys PRAGMA and StaticPool for in-memory tests).
-    Normalizes postgres:// scheme to postgresql:// for compatibility with Neon/Supabase.
+    Normalizes postgres:// scheme to postgresql:// for compatibility with Neon/Supabase/Vercel Postgres.
+    Gracefully handles psycopg2 vs pg8000 drivers in serverless environments.
     """
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    # Driver fallback for serverless Python on PostgreSQL
+    if database_url.startswith("postgresql://"):
+        try:
+            import psycopg2  # noqa: F401
+        except ImportError:
+            try:
+                import pg8000  # noqa: F401
+                database_url = database_url.replace("postgresql://", "postgresql+pg8000://", 1)
+            except ImportError:
+                pass
 
     connect_args = {}
     engine_kwargs = {"pool_pre_ping": True}
@@ -29,6 +41,11 @@ def get_engine(database_url: str):
         connect_args["check_same_thread"] = False
         if database_url == "sqlite:///:memory:":
             engine_kwargs["poolclass"] = StaticPool
+    else:
+        # Serverless PostgreSQL settings (auto-recycle connections, handle cold starts)
+        engine_kwargs["pool_recycle"] = 300
+        engine_kwargs["pool_size"] = 5
+        engine_kwargs["max_overflow"] = 10
 
     eng = create_engine(
         database_url,
@@ -78,6 +95,12 @@ def create_all_tables():
             if "severity" not in columns:
                 with engine.begin() as conn:
                     conn.execute(text("ALTER TABLE alerts ADD COLUMN severity VARCHAR(20) DEFAULT 'WARNING' NOT NULL"))
+
+        if "events" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("events")]
+            if "image_url" not in columns:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE events ADD COLUMN image_url TEXT"))
     except Exception:
         pass
 

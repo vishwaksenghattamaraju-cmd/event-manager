@@ -1,0 +1,1315 @@
+/* ==========================================================================
+   Lu.ma Inspired Event Creation & Bookings Studio
+   Event Inventory AI
+   ========================================================================== */
+
+:root {
+  --luma-bg: #0b0d13;
+  --luma-card-bg: rgba(255, 255, 255, 0.045);
+  --luma-card-border: rgba(255, 255, 255, 0.09);
+  --luma-card-border-hover: rgba(255, 255, 255, 0.22);
+  --luma-text-main: #ffffff;
+  --luma-text-muted: rgba(255, 255, 255, 0.55);
+  --luma-text-dim: rgba(255, 255, 255, 0.35);
+  --luma-pill-white: #ffffff;
+  --luma-pill-text: #090a0f;
+  --luma-gradient: linear-gradient(135deg, #d946ef 0%, #ec4899 32%, #f97316 68%, #fbbf24 100%);
+}
+
+/* Page Background: Vertical pleated fabric / fluted curtain texture with ambient glow */
+body[data-luma-events="true"],
+body[data-luma-inventory="true"],
+body[data-luma-dashboard="true"],
+body[data-bg-video="events"],
+body[data-bg-video="inventory"],
+body[data-bg-video="dashboard"] {
+  background-color: var(--luma-bg);
+  background-image: 
+    radial-gradient(circle at 50% 15%, rgba(56, 189, 248, 0.07) 0%, transparent 60%),
+    radial-gradient(circle at 80% 60%, rgba(217, 70, 239, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.05) 0%, transparent 45%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 24px,
+      transparent 24px,
+      transparent 48px
+    );
+  color: var(--luma-text-main);
+  min-height: 100vh;
+}
+
+/* Top Studio View Switcher Bar */
+.luma-studio-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1080px;
+  margin: 1.5rem auto 1.5rem auto;
+  padding: 0 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.luma-view-pills {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 9999px;
+  padding: 0.3rem;
+  gap: 0.3rem;
+}
+
+.luma-view-pill {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--luma-text-muted);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.luma-view-pill:hover {
+  color: var(--luma-text-main);
+}
+
+.luma-view-pill.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.luma-view-badge {
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+}
+
+/* ==========================================================================
+   Two-Column Lu.ma Create Event Studio Layout
+   ========================================================================== */
+.luma-create-studio {
+  max-width: 1080px;
+  margin: 0 auto 4rem auto;
+  padding: 0 1.25rem;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2.75rem;
+  align-items: start;
+}
+
+/* Left Column: Artwork Box & Theme Bar */
+.luma-left-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Square Artwork Box: Interactive Image Upload & Preview */
+.luma-artwork-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px dashed rgba(255, 255, 255, 0.16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+  text-align: center;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+.luma-artwork-card:hover {
+  border-color: rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.luma-artwork-card:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 4px;
+}
+
+.luma-artwork-card.drag-over {
+  border-color: #818cf8;
+  border-style: solid;
+  background: rgba(129, 140, 248, 0.14);
+  box-shadow: 0 0 28px rgba(129, 140, 248, 0.35);
+  transform: scale(1.01);
+}
+
+.luma-artwork-card.has-image {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 0;
+  background: #090a0f;
+}
+
+.luma-artwork-card.has-image:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.luma-artwork-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.luma-artwork-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--luma-text-muted);
+  margin-bottom: 1rem;
+}
+
+.luma-artwork-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--luma-text-main);
+  letter-spacing: -0.01em;
+}
+
+.luma-artwork-hint {
+  font-size: 0.82rem;
+  color: var(--luma-text-dim);
+  margin-top: 0.35rem;
+  max-width: 220px;
+  line-height: 1.4;
+}
+
+/* AI Category Match Pill Badge at Top-Left */
+.luma-artwork-ai-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  z-index: 5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.ai-badge-sparkle {
+  color: #38bdf8;
+  font-size: 0.85rem;
+  display: inline-block;
+  animation: sparklePulse 2s infinite ease-in-out;
+}
+
+@keyframes sparklePulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.25); opacity: 1; }
+}
+
+/* Image preview element */
+.luma-artwork-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 25px;
+  display: block;
+  transition: transform 0.35s ease, opacity 0.25s ease;
+}
+
+.luma-artwork-card.has-image:hover .luma-artwork-preview {
+  transform: scale(1.02);
+}
+
+/* Floating Actions at bottom right */
+.luma-artwork-actions {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  z-index: 5;
+}
+
+.luma-artwork-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luma-btn-magic {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+  font-size: 1.15rem;
+}
+
+.luma-btn-magic:hover {
+  transform: scale(1.12);
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #38bdf8;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
+}
+
+.luma-camera-badge {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.luma-camera-badge:hover {
+  transform: scale(1.1);
+  background: #f1f5f9;
+}
+
+/* Remove image button at top right */
+.luma-artwork-remove-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.2s ease;
+}
+
+.luma-artwork-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.9);
+  border-color: rgba(239, 68, 68, 1);
+  transform: scale(1.1);
+}
+
+/* ==========================================================================
+   Right Column: The Form Inputs
+   ========================================================================== */
+.luma-right-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header tags (Calendar & Visibility) */
+.luma-meta-tags {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.luma-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 9999px;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--luma-text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.luma-tag-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.luma-dot-purple {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #a855f7;
+  display: inline-block;
+}
+
+/* Big Bold Event Title Input */
+.luma-title-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  padding: 0;
+  margin-bottom: 1.25rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.luma-title-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Date & Time Timeline Card */
+.luma-datetime-card {
+  background: var(--luma-card-bg);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 18px;
+  padding: 1.15rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  gap: 1.25rem;
+  box-sizing: border-box;
+}
+
+.luma-timeline-rows {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+}
+
+.luma-timeline-connector {
+  position: absolute;
+  left: 3.5px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  border-left: 2px dotted #64748b;
+  pointer-events: none;
+}
+
+.luma-timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  position: relative;
+}
+
+.luma-timeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.luma-timeline-dot.filled {
+  background: #94a3b8;
+}
+
+.luma-timeline-dot.hollow {
+  border: 2px solid #64748b;
+  background: #0b0d13;
+  box-sizing: border-box;
+}
+
+.luma-timeline-label {
+  width: 42px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--luma-text-muted);
+  flex-shrink: 0;
+}
+
+.luma-date-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.luma-dt-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.45rem 0.85rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 500;
+  color-scheme: dark;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.luma-dt-pill:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.luma-dt-pill:focus {
+  border-color: #38bdf8;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.luma-datetime-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 10px;
+  padding: 0.45rem 0.75rem;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-family: inherit;
+  font-weight: 500;
+  color-scheme: dark;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.luma-datetime-input:focus {
+  border-color: #38bdf8;
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.luma-timezone-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.95rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 14px;
+  color: var(--luma-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.luma-tz-globe {
+  font-size: 1.15rem;
+  color: var(--luma-text-muted);
+}
+
+.luma-tz-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.luma-tz-gmt {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.luma-tz-city {
+  font-size: 0.74rem;
+  color: var(--luma-text-dim);
+}
+
+.luma-block-subtext {
+  font-size: 0.82rem;
+  color: var(--luma-text-dim);
+  margin-top: 0.25rem;
+}
+
+/* Location Card */
+.luma-block-card {
+  background: var(--luma-card-bg);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 16px;
+  padding: 0.95rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+  transition: border-color 0.2s ease;
+}
+
+.luma-block-card:focus-within {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.luma-block-icon {
+  font-size: 1.15rem;
+  color: var(--luma-text-muted);
+  margin-top: 0.15rem;
+}
+
+.luma-block-content {
+  flex: 1;
+}
+
+.luma-clean-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 0.94rem;
+  font-family: inherit;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.luma-clean-input::placeholder {
+  color: var(--luma-text-muted);
+}
+
+.luma-clean-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-family: inherit;
+  padding: 0;
+  resize: vertical;
+  min-height: 52px;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.luma-clean-textarea::placeholder {
+  color: var(--luma-text-muted);
+}
+
+/* Event Options Section */
+.luma-options-section {
+  margin-top: 1.25rem;
+}
+
+.luma-options-heading {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--luma-text-muted);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
+}
+
+.luma-options-card {
+  background: var(--luma-card-bg);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.luma-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.luma-option-row:last-child {
+  border-bottom: none;
+}
+
+.luma-option-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--luma-text-main);
+}
+
+.luma-option-icon {
+  font-size: 1.1rem;
+  color: var(--luma-text-muted);
+}
+
+.luma-option-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 10px;
+  padding: 0.4rem 0.85rem;
+  color: #ffffff;
+  font-size: 0.88rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.luma-option-select option {
+  background: #11141e;
+  color: #fff;
+}
+
+.luma-option-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 10px;
+  padding: 0.4rem 0.85rem;
+  color: #ffffff;
+  font-size: 0.88rem;
+  width: 110px;
+  text-align: right;
+  outline: none;
+}
+
+/* Switch toggle */
+.luma-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.luma-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.luma-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.luma-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.luma-switch input:checked + .luma-slider {
+  background-color: #ec4899;
+}
+
+.luma-switch input:checked + .luma-slider:before {
+  transform: translateX(20px);
+}
+
+/* Inventory Reservation Section (Integrated inside studio) */
+.luma-inventory-block {
+  padding: 1.15rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.luma-inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.luma-btn-ai {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  border-radius: 9999px;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.luma-btn-ai:hover {
+  background: rgba(56, 189, 248, 0.22);
+}
+
+.luma-btn-add-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--luma-card-border);
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.luma-btn-add-item:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Bottom Create Event CTA Button (Lu.ma White Pill) */
+.luma-create-event-btn {
+  width: 100%;
+  background: var(--luma-pill-white);
+  color: var(--luma-pill-text);
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.95rem 2rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 25px rgba(255, 255, 255, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.luma-create-event-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255, 255, 255, 0.35);
+}
+
+.luma-actions-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.85rem;
+  padding: 0 0.5rem;
+}
+
+.luma-draft-link {
+  font-size: 0.88rem;
+  color: var(--luma-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.luma-draft-link:hover {
+  color: var(--luma-text-main);
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Scheduled Bookings Table Section (Obsidian Glass)
+   ========================================================================== */
+.luma-bookings-panel {
+  max-width: 1080px;
+  margin: 0 auto 4rem auto;
+  padding: 0 1.25rem;
+}
+
+.luma-search-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.luma-search-input {
+  flex: 1;
+  min-width: 250px;
+  background: var(--luma-card-bg);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 14px;
+  padding: 0.75rem 1.15rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.luma-search-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.luma-status-filter {
+  background: var(--luma-card-bg);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 14px;
+  padding: 0.75rem 1.15rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.luma-status-filter option {
+  background: #11141e;
+  color: #fff;
+}
+
+.luma-table-wrapper {
+  background: var(--luma-card-bg);
+  border: 1px solid var(--luma-card-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .luma-create-studio {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .luma-left-column {
+    max-width: 380px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Light Mode Theme - Lu.ma Studio System
+   Crisp, High-Contrast Frosted Design for Events & Studio
+   ========================================================================== */
+
+:root[data-theme="light"] {
+  --luma-bg: #f8fafc;
+  --luma-card-bg: #ffffff;
+  --luma-card-border: rgba(226, 232, 240, 0.95);
+  --luma-card-border-hover: rgba(203, 213, 225, 1);
+  --luma-text-main: #0f172a;
+  --luma-text-muted: #475569;
+  --luma-text-dim: #94a3b8;
+  --luma-pill-white: #0f172a;
+  --luma-pill-text: #ffffff;
+}
+
+:root[data-theme="light"] body[data-luma-events="true"],
+:root[data-theme="light"] body[data-luma-inventory="true"],
+:root[data-theme="light"] body[data-luma-dashboard="true"],
+:root[data-theme="light"] body[data-bg-video="events"],
+:root[data-theme="light"] body[data-bg-video="inventory"],
+:root[data-theme="light"] body[data-bg-video="dashboard"] {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(circle at 50% 12%, rgba(56, 189, 248, 0.08) 0%, transparent 55%),
+    radial-gradient(circle at 82% 60%, rgba(217, 70, 239, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 18% 75%, rgba(99, 102, 241, 0.05) 0%, transparent 45%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(15, 23, 42, 0.015) 0px,
+      rgba(15, 23, 42, 0.015) 24px,
+      transparent 24px,
+      transparent 48px
+    );
+  color: #0f172a;
+}
+
+/* Top Studio View Switcher Bar in Light Mode */
+:root[data-theme="light"] .luma-view-pills {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+:root[data-theme="light"] .luma-view-pill {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .luma-view-pill:hover {
+  color: #0f172a;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+:root[data-theme="light"] .luma-view-pill.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+:root[data-theme="light"] .luma-view-badge {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+:root[data-theme="light"] .luma-btn-add-item {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+:root[data-theme="light"] .luma-btn-add-item:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+/* Big Title Input in Light Mode */
+:root[data-theme="light"] .luma-title-input {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] .luma-title-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Metadata Tag Pills in Light Mode */
+:root[data-theme="light"] .luma-tag-pill {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+:root[data-theme="light"] .luma-tag-pill:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+/* Datetime & Stock Timeline Card in Light Mode */
+:root[data-theme="light"] .luma-datetime-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="light"] .luma-timeline-connector {
+  border-left-color: #cbd5e1;
+}
+
+:root[data-theme="light"] .luma-timeline-dot.filled {
+  background: #0f172a;
+}
+
+:root[data-theme="light"] .luma-timeline-dot.hollow {
+  border-color: #64748b;
+  background: #ffffff;
+}
+
+:root[data-theme="light"] .luma-timeline-label {
+  color: #475569;
+}
+
+:root[data-theme="light"] .luma-dt-pill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .luma-dt-pill:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+:root[data-theme="light"] .luma-dt-pill:focus {
+  border-color: #38bdf8;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+:root[data-theme="light"] .luma-timezone-badge {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+:root[data-theme="light"] .luma-tz-gmt {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-tz-city {
+  color: #64748b;
+}
+
+/* Block Cards (Location, Description) in Light Mode */
+:root[data-theme="light"] .luma-block-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="light"] .luma-block-card:focus-within {
+  border-color: #94a3b8;
+  background: #ffffff;
+}
+
+:root[data-theme="light"] .luma-block-icon {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .luma-clean-input {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-clean-input::placeholder {
+  color: #94a3b8;
+}
+
+:root[data-theme="light"] .luma-clean-textarea {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-clean-textarea::placeholder {
+  color: #94a3b8;
+}
+
+:root[data-theme="light"] .luma-block-subtext {
+  color: #64748b;
+}
+
+/* Options Section in Light Mode */
+:root[data-theme="light"] .luma-options-heading {
+  color: #475569;
+}
+
+:root[data-theme="light"] .luma-options-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="light"] .luma-option-row {
+  border-bottom-color: #f1f5f9;
+}
+
+:root[data-theme="light"] .luma-option-left {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-option-icon {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .luma-option-select {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .luma-option-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-option-input {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-slider {
+  background-color: #cbd5e1;
+}
+
+:root[data-theme="light"] .luma-slider:before {
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+}
+
+:root[data-theme="light"] .luma-switch input:checked + .luma-slider {
+  background-color: #6366f1;
+}
+
+/* Bottom CTA Button in Light Mode */
+:root[data-theme="light"] .luma-create-event-btn {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.2);
+}
+
+:root[data-theme="light"] .luma-create-event-btn:hover {
+  background: #1e293b;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.28);
+}
+
+:root[data-theme="light"] .luma-draft-link {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .luma-draft-link:hover {
+  color: #0f172a;
+}
+
+/* Artwork Card in Light Mode */
+:root[data-theme="light"] .luma-artwork-card {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 25px -4px rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .luma-artwork-card.has-image {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+:root[data-theme="light"] .luma-artwork-placeholder {
+  background: #f8fafc;
+  color: #475569;
+}
+
+:root[data-theme="light"] .luma-artwork-remove-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-btn-magic {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #38bdf8;
+  color: #0284c7;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
+}
+
+:root[data-theme="light"] .luma-camera-badge {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+:root[data-theme="light"] .luma-camera-badge svg {
+  stroke: #ffffff;
+}
+
+/* Search Bar & Table Ledger in Light Mode */
+:root[data-theme="light"] .luma-search-input {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+:root[data-theme="light"] .luma-search-input::placeholder {
+  color: #94a3b8;
+}
+
+:root[data-theme="light"] .luma-status-filter {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+:root[data-theme="light"] .luma-status-filter option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .luma-btn-ai {
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.35);
+  color: #0284c7;
+}
+
+:root[data-theme="light"] .luma-btn-ai:hover {
+  background: rgba(14, 165, 233, 0.18);
+}
+
+:root[data-theme="light"] .luma-table-wrapper {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 25px -4px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="light"] .data-table th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+:root[data-theme="light"] .data-table td {
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+:root[data-theme="light"] .data-table td strong {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] .data-table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+:root[data-theme="light"] .luma-search-bar .luma-btn-ai {
+  background: #0f172a !important;
+  border: 1px solid #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+:root[data-theme="light"] .luma-search-bar .luma-btn-ai:hover {
+  background: #1e293b !important;
+  border-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .item-picker-row {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+:root[data-theme="light"] .item-picker-row:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+:root[data-theme="light"] .item-picker-select {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .item-picker-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .item-picker-qty {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .item-picker-remove-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #ef4444;
+}
+
+:root[data-theme="light"] .item-picker-remove-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+

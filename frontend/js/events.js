@@ -1,6 +1,10 @@
 /**
- * Events and Booking Engine Controller
- * Supports live availability checking with debouncing and shortage alerts
+ * Events and Booking Engine Controller - Lu.ma Studio Edition
+ * Features:
+ * - Two-column Lu.ma event studio layout with live timeline & options
+ * - Zero images in artwork card (clean placeholder per request)
+ * - Live inventory availability checking with debouncing & shortage alerts
+ * - AI auto-recommendations and seamless tab switching to scheduled bookings
  */
 
 let allEvents = [];
@@ -8,24 +12,29 @@ let catalogItems = [];
 let checkAvailabilityTimer = null;
 let lastAvailabilityResult = null;
 let currentUser = null;
+let currentArtworkDataUrl = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   currentUser = await API.getCurrentUser();
   await UI.initNavbar();
 
-  setupModalHandlers();
+  setupStudioTabs();
   setupFilterHandlers();
+  setupModalHandlers();
+  initDateTimePickers();
+  initMetaPills();
+  initArtworkDropzone();
+
   await loadCatalogItems();
   await loadEvents();
 
-  // Setup Booking Form
-  const btnOpenBooking = document.getElementById('btn-open-booking-modal');
-  btnOpenBooking?.addEventListener('click', openNewBookingModal);
+  // Add 1 initial item picker row in the studio
+  addItemPickerRow();
 
+  // Button handlers
   document.getElementById('btn-add-item-row')?.addEventListener('click', () => addItemPickerRow());
   document.getElementById('btn-ai-recommend')?.addEventListener('click', handleAiRecommend);
-  document.getElementById('booking-start')?.addEventListener('change', triggerLiveAvailabilityCheck);
-  document.getElementById('booking-end')?.addEventListener('change', triggerLiveAvailabilityCheck);
+  document.getElementById('btn-table-new-event')?.addEventListener('click', () => switchTab('create'));
 
   // Booking submissions
   document.getElementById('form-booking')?.addEventListener('submit', (e) => {
@@ -46,6 +55,434 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+/* ==========================================================================
+   Studio Tab Switching (Create Event vs. Scheduled Bookings)
+   ========================================================================== */
+function setupStudioTabs() {
+  const tabCreate = document.getElementById('tab-btn-create');
+  const tabBookings = document.getElementById('tab-btn-bookings');
+
+  tabCreate?.addEventListener('click', () => switchTab('create'));
+  tabBookings?.addEventListener('click', () => switchTab('bookings'));
+}
+
+function switchTab(target) {
+  const tabCreate = document.getElementById('tab-btn-create');
+  const tabBookings = document.getElementById('tab-btn-bookings');
+  const panelCreate = document.getElementById('panel-create-event');
+  const panelBookings = document.getElementById('panel-scheduled-bookings');
+
+  if (target === 'create') {
+    tabCreate?.classList.add('active');
+    tabCreate?.setAttribute('aria-selected', 'true');
+    tabBookings?.classList.remove('active');
+    tabBookings?.setAttribute('aria-selected', 'false');
+
+    if (panelCreate) panelCreate.style.display = 'grid';
+    if (panelBookings) panelBookings.style.display = 'none';
+  } else {
+    tabBookings?.classList.add('active');
+    tabBookings?.setAttribute('aria-selected', 'true');
+    tabCreate?.classList.remove('active');
+    tabCreate?.setAttribute('aria-selected', 'false');
+
+    if (panelCreate) panelCreate.style.display = 'none';
+    if (panelBookings) panelBookings.style.display = 'block';
+  }
+}
+
+/* ==========================================================================
+   Date & Time Pickers + Timezone Synchronization
+   ========================================================================== */
+function initDateTimePickers() {
+  const startDateInput = document.getElementById('picker-start-date');
+  const startTimeInput = document.getElementById('picker-start-time');
+  const endDateInput = document.getElementById('picker-end-date');
+  const endTimeInput = document.getElementById('picker-end-time');
+
+  const hiddenStart = document.getElementById('booking-start');
+  const hiddenEnd = document.getElementById('booking-end');
+
+  // Default times: Tomorrow 10:00 to 18:00
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(start.getDate() + 1);
+  start.setHours(10, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setHours(18, 0, 0, 0);
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const formatDateVal = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const formatTimeVal = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+  if (startDateInput) startDateInput.value = formatDateVal(start);
+  if (startTimeInput) startTimeInput.value = formatTimeVal(start);
+  if (endDateInput) endDateInput.value = formatDateVal(end);
+  if (endTimeInput) endTimeInput.value = formatTimeVal(end);
+
+  function syncToHidden() {
+    if (startDateInput && startTimeInput && hiddenStart) {
+      hiddenStart.value = `${startDateInput.value}T${startTimeInput.value}`;
+    }
+    if (endDateInput && endTimeInput && hiddenEnd) {
+      hiddenEnd.value = `${endDateInput.value}T${endTimeInput.value}`;
+    }
+    triggerLiveAvailabilityCheck();
+  }
+
+  startDateInput?.addEventListener('change', syncToHidden);
+  startTimeInput?.addEventListener('change', syncToHidden);
+  endDateInput?.addEventListener('change', syncToHidden);
+  endTimeInput?.addEventListener('change', syncToHidden);
+
+  // Initial sync
+  syncToHidden();
+
+  // Detect and set local timezone labels
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+    const city = tz.split('/').pop().replace(/_/g, ' ') || 'Kolkata';
+    const offsetMin = -new Date().getTimezoneOffset();
+    const sign = offsetMin >= 0 ? '+' : '-';
+    const absMin = Math.abs(offsetMin);
+    const hrs = pad(Math.floor(absMin / 60));
+    const mins = pad(absMin % 60);
+    const gmtStr = `GMT${sign}${hrs}:${mins}`;
+
+    const tzGmtEl = document.getElementById('tz-gmt-label');
+    const tzCityEl = document.getElementById('tz-city-label');
+    if (tzGmtEl) tzGmtEl.textContent = gmtStr;
+    if (tzCityEl) tzCityEl.textContent = city;
+  } catch (e) {
+    console.warn('Timezone detection fallback', e);
+  }
+}
+
+/* ==========================================================================
+   AI-Generated Artwork Preset Engine & Semantic Matcher
+   ========================================================================== */
+const AI_ARTWORK_PRESETS = [
+  // Primary category presets matching select options
+  {
+    key: 'conference',
+    category: 'conference',
+    label: 'Keynote Tech Conference',
+    src: '/images/events/conference.jpg',
+    keywords: ['conference', 'keynote', 'summit', 'convention', 'expo', 'forum', 'symposium', 'speaker']
+  },
+  {
+    key: 'workshop',
+    category: 'workshop',
+    label: 'Creative Collaborative Workshop',
+    src: '/images/events/workshop.jpg',
+    keywords: ['workshop', 'training', 'masterclass', 'bootcamp', 'hands-on', 'lab', 'class', 'learn', 'hackathon']
+  },
+  {
+    key: 'wedding',
+    category: 'wedding',
+    label: 'Luxury Wedding Reception',
+    src: '/images/events/wedding.jpg',
+    keywords: ['wedding', 'reception', 'marriage', 'bridal', 'ceremony', 'bride', 'groom', 'anniversary']
+  },
+  {
+    key: 'concert',
+    category: 'concert',
+    label: 'Live Music & Laser Stage Concert',
+    src: '/images/events/concert.jpg',
+    keywords: ['concert', 'live music', 'festival', 'band', 'dj', 'rave', 'stage', 'rock', 'synth', 'show', 'edm']
+  },
+  {
+    key: 'corporate',
+    category: 'corporate',
+    label: 'Executive Skyline Gala',
+    src: '/images/events/corporate.jpg',
+    keywords: ['corporate', 'business', 'executive', 'gala', 'board', 'annual meeting', 'leadership', 'client', 'dinner']
+  },
+  {
+    key: 'meetup',
+    category: 'meetup',
+    label: 'Cocktail Networking Lounge',
+    src: '/images/events/cocktail-hour.jpg',
+    keywords: ['meetup', 'networking', 'social', 'mixer', 'drinks', 'cocktail', 'gathering', 'community']
+  },
+
+  // Description / Title semantic matches:
+  {
+    key: 'yoga',
+    category: null,
+    label: 'Sunset Yoga & Wellness',
+    src: '/images/events/sunset-yoga.jpg',
+    keywords: ['yoga', 'wellness', 'fitness', 'meditation', 'pilates', 'mindfulness', 'retreat', 'health', 'zen']
+  },
+  {
+    key: 'dinner',
+    category: null,
+    label: 'Celebration Feast & Dinner Party',
+    src: '/images/events/dinner-party.jpg',
+    keywords: ['dinner', 'party', 'birthday', 'celebration', 'feast', 'banquet', 'culinary', 'tasting menu', 'food', 'supper', 'bday']
+  },
+  {
+    key: 'acoustic',
+    category: null,
+    label: 'Acoustic & Unplugged Session',
+    src: '/images/events/acoustic-session.jpg',
+    keywords: ['acoustic', 'unplugged', 'guitar', 'indie', 'intimate', 'singer', 'songwriter', 'folk', 'jazz']
+  },
+  {
+    key: 'tech_salon',
+    category: null,
+    label: 'AI & Future Tech Salon',
+    src: '/images/events/ai-salon.jpg',
+    keywords: ['ai', 'artificial intelligence', 'machine learning', 'deep learning', 'algorithm', 'neural', 'robotics', 'software', 'cloud', 'cyber']
+  },
+  {
+    key: 'clay_craft',
+    category: null,
+    label: 'Pottery & Craft Workshop',
+    src: '/images/events/clay-craft.jpg',
+    keywords: ['pottery', 'clay', 'ceramic', 'craft', 'sculpture', 'painting', 'diy', 'art class', 'art studio', 'handicraft']
+  },
+  {
+    key: 'brew_lab',
+    category: null,
+    label: 'Craft Brewery & Hops Lab',
+    src: '/images/events/brew-lab.jpg',
+    keywords: ['beer', 'brew', 'brewery', 'cider', 'wine', 'ale', 'hops', 'pub', 'tasting']
+  },
+  {
+    key: 'gaming',
+    category: null,
+    label: 'Game Night & Poker Lounge',
+    src: '/images/events/poker-night.jpg',
+    keywords: ['poker', 'game night', 'casino', 'board games', 'cards', 'trivia', 'esports', 'tournament']
+  }
+];
+
+let isUserCustomUpload = false;
+let currentAiCycleIndex = 0;
+
+function initArtworkDropzone() {
+  const uploadBtn = document.getElementById('btn-artwork-upload');
+  const magicBtn = document.getElementById('btn-artwork-magic');
+  const dropzone = document.getElementById('artwork-dropzone');
+  const fileInput = document.getElementById('artwork-file-input');
+  const previewImg = document.getElementById('artwork-preview-img');
+  const placeholder = document.getElementById('artwork-placeholder');
+  const removeBtn = document.getElementById('btn-artwork-remove');
+  const aiBadge = document.getElementById('artwork-ai-badge');
+  const aiLabel = document.getElementById('artwork-ai-label');
+
+  const typeSelect = document.getElementById('booking-type');
+  const titleInput = document.getElementById('booking-title');
+  const descInput = document.getElementById('booking-description');
+
+  if (!dropzone || !fileInput) return;
+
+  function findMatchingPresets(categoryVal, titleVal, descVal) {
+    const text = `${titleVal || ''} ${descVal || ''}`.toLowerCase();
+    const cat = (categoryVal || '').toLowerCase();
+
+    // 1. Check for specific semantic theme matches in title & description
+    const specificMatches = AI_ARTWORK_PRESETS.filter(p => 
+      p.keywords.some(kw => text.includes(kw))
+    );
+    if (specificMatches.length > 0) {
+      return specificMatches;
+    }
+
+    // 2. Filter by category
+    const categoryMatches = AI_ARTWORK_PRESETS.filter(p => p.category === cat);
+    if (categoryMatches.length > 0) {
+      return categoryMatches;
+    }
+
+    // 3. Fallback
+    return [AI_ARTWORK_PRESETS[0]];
+  }
+
+  function autoMatchArtwork(forceCycle = false) {
+    if (isUserCustomUpload) return;
+
+    const cat = typeSelect ? typeSelect.value : 'Conference';
+    const title = titleInput ? titleInput.value : '';
+    const desc = descInput ? descInput.value : '';
+
+    const matches = findMatchingPresets(cat, title, desc);
+
+    if (forceCycle) {
+      currentAiCycleIndex = (currentAiCycleIndex + 1) % AI_ARTWORK_PRESETS.length;
+      const cycledPreset = AI_ARTWORK_PRESETS[currentAiCycleIndex];
+      applyPreset(cycledPreset);
+      UI.toast(`✨ Cycled artwork to ${cycledPreset.label}`, 'info');
+      return;
+    }
+
+    const selectedPreset = matches[0] || AI_ARTWORK_PRESETS[0];
+    applyPreset(selectedPreset);
+  }
+
+  function applyPreset(preset) {
+    currentArtworkDataUrl = preset.src;
+
+    if (previewImg) {
+      previewImg.src = preset.src;
+      previewImg.style.display = 'block';
+    }
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+    if (aiBadge) {
+      aiBadge.style.display = 'flex';
+      if (aiLabel) aiLabel.textContent = `AI Matched: ${preset.label}`;
+    }
+    if (removeBtn) {
+      removeBtn.style.display = 'flex';
+      removeBtn.title = 'Reset to AI Default';
+    }
+    dropzone.classList.add('has-image');
+  }
+
+  function setCustomArtwork(dataUrl) {
+    isUserCustomUpload = true;
+    currentArtworkDataUrl = dataUrl;
+    if (previewImg) {
+      previewImg.src = dataUrl;
+      previewImg.style.display = 'block';
+    }
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+    if (aiBadge) {
+      aiBadge.style.display = 'flex';
+      if (aiLabel) aiLabel.textContent = '📷 Custom Photo Uploaded';
+    }
+    if (removeBtn) {
+      removeBtn.style.display = 'flex';
+      removeBtn.title = 'Remove custom photo';
+    }
+    dropzone.classList.add('has-image');
+  }
+
+  function resetArtwork() {
+    isUserCustomUpload = false;
+    fileInput.value = '';
+    autoMatchArtwork();
+    UI.toast('Reset to AI category artwork', 'info');
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      UI.toast('Please select a valid image file (PNG, JPG, WebP, GIF)', 'warning');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      UI.toast('Image size is too large (max 10MB)', 'warning');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCustomArtwork(e.target.result);
+      UI.toast('Custom artwork added!', 'success');
+    };
+    reader.onerror = () => {
+      UI.toast('Failed to load image file', 'error');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Upload button
+  uploadBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  // Magic AI Cycle button
+  magicBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isUserCustomUpload = false;
+    autoMatchArtwork(true);
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  });
+
+  removeBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetArtwork();
+  });
+
+  // Drag and drop events
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave', 'dragend', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('drag-over');
+    });
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    if (dt && dt.files && dt.files.length > 0) {
+      handleFile(dt.files[0]);
+    }
+  });
+
+  // Clipboard paste
+  window.addEventListener('paste', (e) => {
+    const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          handleFile(file);
+          break;
+        }
+      }
+    }
+  });
+
+  // Real-time automatic AI artwork updates based on category & description
+  typeSelect?.addEventListener('change', () => {
+    isUserCustomUpload = false;
+    autoMatchArtwork();
+  });
+
+  let debounceTimer = null;
+  function debouncedAutoMatch() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      autoMatchArtwork();
+    }, 300);
+  }
+
+  titleInput?.addEventListener('input', debouncedAutoMatch);
+  descInput?.addEventListener('input', debouncedAutoMatch);
+
+  // Initialize immediately on page load
+  autoMatchArtwork();
+
+  window.clearArtwork = resetArtwork;
+  window.setArtwork = setCustomArtwork;
+}
+
+/* ==========================================================================
+   AI Item Recommendations
+   ========================================================================== */
 async function handleAiRecommend() {
   const btn = document.getElementById('btn-ai-recommend');
   const eventType = document.getElementById('booking-type').value;
@@ -106,10 +543,13 @@ async function handleAiRecommend() {
     }
   });
 
-  UI.toast(`⚡ Loaded AI recommendations for ${attendees} guests!`, 'success');
+  UI.toast(`⚡ Loaded AI equipment recommendations for ${attendees} guests!`, 'success');
   triggerLiveAvailabilityCheck();
 }
 
+/* ==========================================================================
+   Catalog & Events Data Loading
+   ========================================================================== */
 async function loadCatalogItems() {
   const res = await API.fetch('/api/inventory/items');
   if (res.ok) {
@@ -133,13 +573,16 @@ async function loadEvents() {
   }
 
   allEvents = res.data.events || [];
+  const badge = document.getElementById('bookings-count-badge');
+  if (badge) badge.textContent = allEvents.length;
+
   renderEventsTable();
 }
 
 function renderEventsTable() {
   const tbody = document.getElementById('events-tbody');
-  const query = document.getElementById('event-search').value.toLowerCase().trim();
-  const statusFilter = document.getElementById('filter-event-status').value.toLowerCase();
+  const query = (document.getElementById('event-search')?.value || '').toLowerCase().trim();
+  const statusFilter = (document.getElementById('filter-event-status')?.value || '').toLowerCase();
 
   const filtered = allEvents.filter(evt => {
     const title = evt.name || evt.title || '';
@@ -155,7 +598,7 @@ function renderEventsTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+        <td colspan="7" style="text-align: center; color: var(--luma-text-muted); padding: 2.5rem;">
           No events found matching your search.
         </td>
       </tr>
@@ -164,12 +607,11 @@ function renderEventsTable() {
   }
 
   tbody.innerHTML = filtered.map(evt => {
-    const windowText = `${UI.formatDate(evt.start_time)}<br><span style="color: var(--text-dim);">&darr; ${UI.formatDate(evt.end_time)}</span>`;
+    const windowText = `${UI.formatDate(evt.start_time)}<br><span style="color: var(--luma-text-dim);">&darr; ${UI.formatDate(evt.end_time)}</span>`;
     const itemCount = (evt.items || []).reduce((sum, i) => sum + (i.quantity || i.quantity_requested || 0), 0);
     const itemLabel = `${(evt.items || []).length} items (${itemCount} units)`;
     const title = evt.name || evt.title || 'Untitled Event';
 
-    // Action buttons based on status
     const status = (evt.status || '').toUpperCase();
     let actionsHtml = `<button class="btn btn-secondary btn-sm" onclick="viewEventDetails(${evt.id})">Details</button>`;
 
@@ -188,8 +630,14 @@ function renderEventsTable() {
     return `
       <tr>
         <td>
-          <strong>${escapeHtml(title)}</strong>
-          ${evt.description ? `<div style="font-size: 0.8rem; color: var(--text-dim);">${escapeHtml(evt.description)}</div>` : ''}
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            ${evt.image_url ? `<img src="${escapeHtml(evt.image_url)}" alt="Artwork" style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.12);">` : ''}
+            <div>
+              <strong style="color: var(--luma-text-main, #ffffff);">${escapeHtml(title)}</strong>
+              ${evt.location ? `<div style="font-size: 0.8rem; color: var(--luma-text-muted);">📍 ${escapeHtml(evt.location)}</div>` : ''}
+              ${evt.description ? `<div style="font-size: 0.8rem; color: var(--luma-text-dim);">${escapeHtml(evt.description)}</div>` : ''}
+            </div>
+          </div>
         </td>
         <td style="text-transform: capitalize;">${escapeHtml(evt.event_type)}</td>
         <td style="font-size: 0.85rem;">${windowText}</td>
@@ -228,44 +676,14 @@ function setupModalHandlers() {
   });
 }
 
-function openNewBookingModal() {
-  document.getElementById('form-booking').reset();
-  document.getElementById('booking-items-list').innerHTML = '';
-  document.getElementById('availability-preview').style.display = 'none';
-  lastAvailabilityResult = null;
-
-  // Set default start/end times (tomorrow 10:00 to 18:00)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(10, 0, 0, 0);
-
-  const endTomorrow = new Date(tomorrow);
-  endTomorrow.setHours(18, 0, 0, 0);
-
-  document.getElementById('booking-start').value = formatDateTimeInput(tomorrow);
-  document.getElementById('booking-end').value = formatDateTimeInput(endTomorrow);
-
-  // Add 1 default item row
-  addItemPickerRow();
-
-  document.getElementById('modal-booking').classList.add('open');
-  triggerLiveAvailabilityCheck();
-}
-
-function formatDateTimeInput(date) {
-  const pad = (num) => String(num).padStart(2, '0');
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
+/* ==========================================================================
+   Item Picker Rows & Dynamic Catalog
+   ========================================================================== */
 function addItemPickerRow(selectedItemId = '', quantity = 1) {
   const list = document.getElementById('booking-items-list');
-  const rowId = 'picker-row-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+  if (!list) return;
 
+  const rowId = 'picker-row-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
   const row = document.createElement('div');
   row.className = 'item-picker-row';
   row.id = rowId;
@@ -280,8 +698,8 @@ function addItemPickerRow(selectedItemId = '', quantity = 1) {
       <option value="">-- Choose item from catalog --</option>
       ${optionsHtml}
     </select>
-    <input type="number" class="form-input item-picker-qty" min="1" value="${quantity}" placeholder="Qty" oninput="triggerLiveAvailabilityCheck()">
-    <button type="button" class="btn btn-secondary btn-sm" style="color: var(--danger);" onclick="removeItemPickerRow('${rowId}')">&times;</button>
+    <input type="number" class="form-input item-picker-qty" min="1" value="${quantity}" placeholder="Qty" oninput="triggerLiveAvailabilityCheck()" style="width: 85px;">
+    <button type="button" class="btn btn-secondary btn-sm item-picker-remove-btn" style="color: var(--danger); border-radius: 8px;" onclick="removeItemPickerRow('${rowId}')">&times;</button>
   `;
 
   list.appendChild(row);
@@ -300,8 +718,8 @@ function getSelectedBookingItems() {
   rows.forEach(row => {
     const select = row.querySelector('.item-picker-select');
     const qtyInput = row.querySelector('.item-picker-qty');
-    const itemId = parseInt(select.value, 10);
-    const qty = parseInt(qtyInput.value, 10);
+    const itemId = parseInt(select?.value, 10);
+    const qty = parseInt(qtyInput?.value, 10);
 
     if (itemId && qty > 0) {
       items.push({ inventory_item_id: itemId, quantity_requested: qty });
@@ -311,6 +729,9 @@ function getSelectedBookingItems() {
   return items;
 }
 
+/* ==========================================================================
+   Live Availability Checking
+   ========================================================================== */
 window.triggerLiveAvailabilityCheck = function() {
   clearTimeout(checkAvailabilityTimer);
   checkAvailabilityTimer = setTimeout(checkLiveAvailability, 300);
@@ -322,8 +743,10 @@ async function checkLiveAvailability() {
   const shortagesList = document.getElementById('availability-shortages');
   const submitConfirmBtn = document.getElementById('btn-submit-confirm');
 
-  const startTime = document.getElementById('booking-start').value;
-  const endTime = document.getElementById('booking-end').value;
+  if (!previewBox || !msgEl || !shortagesList) return;
+
+  const startTime = document.getElementById('booking-start')?.value;
+  const endTime = document.getElementById('booking-end')?.value;
   const items = getSelectedBookingItems();
 
   if (!startTime || !endTime || items.length === 0) {
@@ -331,7 +754,6 @@ async function checkLiveAvailability() {
     return;
   }
 
-  // Visual state: checking
   previewBox.style.display = 'block';
   previewBox.className = 'availability-box checking';
   msgEl.innerHTML = '⚡ Checking warehouse &amp; reservation calendar...';
@@ -381,17 +803,27 @@ async function checkLiveAvailability() {
   }
 }
 
+/* ==========================================================================
+   Submit Booking (Create Event / Save as Draft)
+   ========================================================================== */
 async function submitBooking(status) {
-  const title = document.getElementById('booking-title').value.trim();
-  const eventType = document.getElementById('booking-type').value;
-  const attendees = parseInt(document.getElementById('booking-attendees').value, 10);
-  const startTime = document.getElementById('booking-start').value;
-  const endTime = document.getElementById('booking-end').value;
-  const description = document.getElementById('booking-description').value.trim();
+  const title = document.getElementById('booking-title')?.value.trim();
+  const location = document.getElementById('booking-location')?.value.trim();
+  const eventType = document.getElementById('booking-type')?.value;
+  const attendees = parseInt(document.getElementById('booking-attendees')?.value, 10);
+  const startTime = document.getElementById('booking-start')?.value;
+  const endTime = document.getElementById('booking-end')?.value;
+  const description = document.getElementById('booking-description')?.value.trim();
   const items = getSelectedBookingItems();
 
-  if (!title || !startTime || !endTime) {
-    UI.toast('Please fill in event title and schedule dates.', 'error');
+  if (!title) {
+    UI.toast('Please enter an event name.', 'error');
+    document.getElementById('booking-title')?.focus();
+    return;
+  }
+
+  if (!startTime || !endTime) {
+    UI.toast('Please select event start and end times.', 'error');
     return;
   }
 
@@ -401,24 +833,25 @@ async function submitBooking(status) {
   }
 
   if (items.length === 0) {
-    UI.toast('Please select at least one item from the inventory catalog.', 'error');
+    UI.toast('Please select at least one item from the warehouse catalog.', 'error');
     return;
   }
 
-  // If submitting as confirmed and availability was not checked or failed
   if (status === 'CONFIRMED' && lastAvailabilityResult && !lastAvailabilityResult.available) {
-    UI.toast('Cannot confirm: requested items have a shortage for this time window. Save as Draft or adjust items.', 'error');
+    UI.toast('Cannot confirm: requested items have a shortage for this time window. Save as Draft or adjust quantities.', 'error');
     return;
   }
 
   const payload = {
     title,
+    location,
     event_type: eventType,
     expected_attendees: attendees,
     start_time: startTime,
     end_time: endTime,
     description,
     status,
+    image_url: currentArtworkDataUrl || '',
     items
   };
 
@@ -433,14 +866,27 @@ async function submitBooking(status) {
   if (submitBtn) submitBtn.disabled = false;
 
   if (res.ok) {
-    UI.toast(`Event booking ${status.toLowerCase()} successfully!`, 'success');
-    document.getElementById('modal-booking').classList.remove('open');
+    UI.toast(`Event "${title}" ${status.toLowerCase()} successfully!`, 'success');
+    
+    // Reset form and add 1 default item row
+    document.getElementById('form-booking').reset();
+    document.getElementById('booking-items-list').innerHTML = '';
+    window.clearArtwork?.();
+    addItemPickerRow();
+    initDateTimePickers();
+
     await loadEvents();
+
+    // Smoothly show the Scheduled Bookings panel to view the created event
+    switchTab('bookings');
   } else {
     UI.toast(`Booking error: ${res.error}`, 'error');
   }
 }
 
+/* ==========================================================================
+   Booking Actions (Confirm, Complete, Cancel, View Details)
+   ========================================================================== */
 window.confirmBooking = async function(eventId) {
   if (!confirm('Are you sure you want to confirm this booking and reserve inventory?')) return;
   const res = await API.fetch(`/api/events/${eventId}/confirm`, { method: 'POST' });
@@ -478,47 +924,58 @@ window.viewEventDetails = function(eventId) {
   const evt = allEvents.find(e => e.id === eventId);
   if (!evt) return;
 
-  document.getElementById('details-title').textContent = evt.title;
+  document.getElementById('details-title').textContent = evt.name || evt.title || 'Event Details';
   const content = document.getElementById('details-content');
 
   const itemsList = (evt.items || []).map(i => `
     <li style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
       <span>${escapeHtml(i.item ? i.item.name : 'Item #' + i.inventory_item_id)}</span>
-      <strong>${i.quantity_requested} units</strong>
+      <strong>${i.quantity_requested || i.quantity || 0} units</strong>
     </li>
-  `).join('') || '<p style="color: var(--text-muted);">No items reserved.</p>';
+  `).join('') || '<p style="color: var(--luma-text-muted);">No items reserved.</p>';
 
   content.innerHTML = `
+    ${evt.image_url ? `
+      <div style="margin-bottom: 1.25rem; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); aspect-ratio: 16/9; max-height: 220px; background: #000;">
+        <img src="${escapeHtml(evt.image_url)}" alt="${escapeHtml(evt.name || 'Event Artwork')}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+      </div>
+    ` : ''}
     <div style="margin-bottom: 1rem;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: var(--text-muted); font-size: 0.9rem;">Status:</span>
+        <span style="color: var(--luma-text-muted); font-size: 0.9rem;">Status:</span>
         <span>${UI.statusBadge(evt.status)}</span>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-        <span style="color: var(--text-muted); font-size: 0.9rem;">Event Type:</span>
-        <strong>${escapeHtml(evt.event_type)}</strong>
+        <span style="color: var(--luma-text-muted); font-size: 0.9rem;">Event Type:</span>
+        <strong style="text-transform: capitalize;">${escapeHtml(evt.event_type)}</strong>
       </div>
+      ${evt.location ? `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+          <span style="color: var(--luma-text-muted); font-size: 0.9rem;">Location:</span>
+          <strong>${escapeHtml(evt.location)}</strong>
+        </div>
+      ` : ''}
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-        <span style="color: var(--text-muted); font-size: 0.9rem;">Attendees:</span>
-        <strong>${evt.expected_attendees || '—'}</strong>
+        <span style="color: var(--luma-text-muted); font-size: 0.9rem;">Attendees:</span>
+        <strong>${evt.expected_attendees || evt.expected_guest_count || '—'}</strong>
       </div>
     </div>
 
     <div style="background: rgba(255,255,255,0.03); padding: 0.85rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
-      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">SCHEDULE WINDOW</div>
+      <div style="font-size: 0.8rem; color: var(--luma-text-muted); margin-bottom: 0.25rem;">SCHEDULE WINDOW</div>
       <div style="font-size: 0.9rem;"><strong>From:</strong> ${UI.formatDate(evt.start_time)}</div>
       <div style="font-size: 0.9rem; margin-top: 0.25rem;"><strong>To:</strong> ${UI.formatDate(evt.end_time)}</div>
     </div>
 
     ${evt.description ? `
       <div style="margin-bottom: 1rem;">
-        <div style="font-size: 0.8rem; color: var(--text-muted);">NOTES</div>
+        <div style="font-size: 0.8rem; color: var(--luma-text-muted);">NOTES</div>
         <p style="font-size: 0.9rem;">${escapeHtml(evt.description)}</p>
       </div>
     ` : ''}
 
     <div>
-      <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Reserved Inventory Items</div>
+      <div style="font-size: 0.85rem; color: var(--luma-text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Reserved Inventory Items</div>
       <ul style="list-style: none;">
         ${itemsList}
       </ul>

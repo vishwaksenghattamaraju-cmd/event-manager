@@ -425,6 +425,8 @@ def reschedule_or_edit_event(
                 event.location = data["location"].strip() if data["location"] else None
             if "expected_guest_count" in data:
                 event.expected_guest_count = int(data["expected_guest_count"])
+            if "image_url" in data:
+                event.image_url = data["image_url"].strip() if data["image_url"] else None
 
             if new_items_spec is not None:
                 # Update item requirements
@@ -454,6 +456,8 @@ def reschedule_or_edit_event(
                 event.location = data["location"].strip() if data["location"] else None
             if "expected_guest_count" in data:
                 event.expected_guest_count = int(data["expected_guest_count"])
+            if "image_url" in data:
+                event.image_url = data["image_url"].strip() if data["image_url"] else None
 
             if new_items_spec is not None:
                 event.items.clear()

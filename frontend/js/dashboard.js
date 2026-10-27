@@ -141,7 +141,7 @@ function renderCategoryChart(distribution) {
       datasets: [{
         data: data,
         backgroundColor: colors.slice(0, labels.length),
-        borderColor: isLight ? '#ffffff' : '#080d1a',
+        borderColor: isLight ? '#ffffff' : '#0b0d13',
         borderWidth: 2,
         hoverOffset: 6
       }]

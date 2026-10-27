@@ -1,0 +1,440 @@
+/* ==========================================================================
+   Dashboard Color Palette - Aligned with Lu.ma Obsidian Theme (Screenshot 2)
+   Event Inventory AI
+   ========================================================================== */
+
+:root,
+body[data-luma-dashboard="true"] {
+  --dash-bg: #0b0d13;
+  --dash-card-bg: rgba(255, 255, 255, 0.045);
+  --dash-card-border: rgba(255, 255, 255, 0.09);
+  --dash-card-hover: rgba(255, 255, 255, 0.07);
+  --dash-card-border-hover: rgba(255, 255, 255, 0.22);
+  --dash-pill-bg: rgba(255, 255, 255, 0.06);
+  --dash-pill-border: rgba(255, 255, 255, 0.09);
+  --dash-text-main: #ffffff;
+  --dash-text-muted: rgba(255, 255, 255, 0.55);
+  --dash-text-dim: rgba(255, 255, 255, 0.35);
+}
+
+/* Background Canvas & subtle depth layer */
+body[data-luma-dashboard="true"] .bg-video {
+  background-color: #0b0d13 !important;
+}
+body[data-luma-dashboard="true"] .bg-video__media {
+  opacity: 0.10 !important;
+}
+body[data-luma-dashboard="true"] .bg-video__overlay {
+  background:
+    linear-gradient(180deg, rgba(11, 13, 19, 0.88) 0%, rgba(11, 13, 19, 0.72) 40%, rgba(11, 13, 19, 0.92) 100%),
+    radial-gradient(ellipse at center, transparent 30%, rgba(11, 13, 19, 0.75) 100%) !important;
+}
+
+/* Page Header Typography */
+body[data-luma-dashboard="true"] .page-title {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+}
+body[data-luma-dashboard="true"] .page-subtitle {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Header Buttons matching Screenshot 2 Pills */
+body[data-luma-dashboard="true"] .page-header-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  padding: 0.45rem 1.15rem !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+body[data-luma-dashboard="true"] .page-header-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  transform: translateY(-1px) !important;
+}
+
+body[data-luma-dashboard="true"] .page-header-actions .btn-primary {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  color: #38bdf8 !important;
+  border-radius: 9999px !important;
+  padding: 0.45rem 1.15rem !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+body[data-luma-dashboard="true"] .page-header-actions .btn-primary:hover {
+  background: rgba(56, 189, 248, 0.22) !important;
+  border-color: #38bdf8 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Bento Telemetry Cards (Obsidian Glass matching Screenshot 2) */
+body[data-luma-dashboard="true"] .bento-card {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 18px !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+body[data-luma-dashboard="true"] .bento-card:hover {
+  background: rgba(255, 255, 255, 0.065) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Unify Bento Hero Tile with clean glass borders (no neon blue left line) */
+body[data-luma-dashboard="true"] .bento-card--hero {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.09) !important;
+}
+body[data-luma-dashboard="true"] .bento-card--hero:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Bento Card Text & Labels */
+body[data-luma-dashboard="true"] .bento-hero-value,
+body[data-luma-dashboard="true"] .bento-card__value {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+body[data-luma-dashboard="true"] .bento-hero-label,
+body[data-luma-dashboard="true"] .bento-card__title {
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-weight: 600 !important;
+}
+body[data-luma-dashboard="true"] .bento-hero-unit {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+body[data-luma-dashboard="true"] .bento-card__footnote {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+body[data-luma-dashboard="true"] .bento-micro-kpi {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Bento Pills & Badges */
+body[data-luma-dashboard="true"] .bento-pill--primary {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+body[data-luma-dashboard="true"] .bento-pill--safe {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(16, 185, 129, 0.28) !important;
+  color: #10b981 !important;
+}
+body[data-luma-dashboard="true"] .bento-pill--neutral {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+body[data-luma-dashboard="true"] .bento-card__sub-badge {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Bento Icon Badges matching Screenshot 2 */
+body[data-luma-dashboard="true"] .bento-hero-icon-wrap {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: #a78bfa !important;
+  border-radius: 12px !important;
+}
+body[data-luma-dashboard="true"] .bento-icon-badge {
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 10px !important;
+}
+
+/* Progress Bar */
+body[data-luma-dashboard="true"] .bento-fleet-meter {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+body[data-luma-dashboard="true"] .bento-progress-track {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Panels (Executive Workspaces) */
+body[data-luma-dashboard="true"] .panel {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 18px !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+  transition: border-color 0.2s ease !important;
+}
+body[data-luma-dashboard="true"] .panel:hover {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+body[data-luma-dashboard="true"] .panel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+body[data-luma-dashboard="true"] .panel-title {
+  color: #ffffff !important;
+}
+body[data-luma-dashboard="true"] .panel-caption {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Secondary Buttons inside panel headers */
+body[data-luma-dashboard="true"] .panel-header .btn-secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  padding: 0.35rem 0.95rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+body[data-luma-dashboard="true"] .panel-header .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Tables in Dashboard */
+body[data-luma-dashboard="true"] .data-table th {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+}
+body[data-luma-dashboard="true"] .data-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+body[data-luma-dashboard="true"] .data-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+/* ==========================================================================
+   Light Mode Theme - Lu.ma Dashboard Bento System
+   Crisp, High-Contrast Frosted Design for Dashboard
+   ========================================================================== */
+
+:root[data-theme="light"],
+:root[data-theme="light"] body[data-luma-dashboard="true"] {
+  --dash-bg: #f8fafc;
+  --dash-card-bg: #ffffff;
+  --dash-card-border: rgba(226, 232, 240, 0.95);
+  --dash-card-hover: #ffffff;
+  --dash-card-border-hover: rgba(203, 213, 225, 1);
+  --dash-pill-bg: #f1f5f9;
+  --dash-pill-border: #e2e8f0;
+  --dash-text-main: #0f172a;
+  --dash-text-muted: #475569;
+  --dash-text-dim: #94a3b8;
+}
+
+/* Background Canvas */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bg-video {
+  background-color: #f8fafc !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bg-video__media {
+  opacity: 0.04 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bg-video__overlay {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(56, 189, 248, 0.07) 0%, transparent 55%),
+    radial-gradient(circle at 82% 60%, rgba(217, 70, 239, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 18% 75%, rgba(99, 102, 241, 0.05) 0%, transparent 45%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.85) 0%, rgba(248, 250, 252, 0.95) 100%) !important;
+}
+
+/* Page Header */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .page-title {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .page-subtitle {
+  color: #64748b !important;
+}
+
+/* Header Buttons */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .page-header-actions .btn-secondary {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .page-header-actions .btn-secondary:hover {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .page-header-actions .btn-primary {
+  background: #0f172a !important;
+  border: 1px solid #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .page-header-actions .btn-primary:hover {
+  background: #1e293b !important;
+  border-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+/* Bento Telemetry Cards in Light Mode */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card:hover {
+  background: #ffffff !important;
+  border-color: rgba(203, 213, 225, 1) !important;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.1) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card--hero {
+  background: #ffffff !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  border-left: 1px solid rgba(226, 232, 240, 0.95) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card--hero:hover {
+  border-color: rgba(203, 213, 225, 1) !important;
+}
+
+/* Bento Card Text & Labels */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-hero-value,
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card__value {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-hero-label,
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card__title {
+  color: #475569 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-hero-unit {
+  color: #94a3b8 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card__footnote {
+  color: #64748b !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-micro-kpi {
+  color: #475569 !important;
+}
+
+/* Bento Pills & Badges */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-pill--primary {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-pill--safe {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  color: #059669 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-pill--neutral {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-card__sub-badge {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+/* Bento Icon Badges */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-hero-icon-wrap {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #7c3aed !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-icon-badge {
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+}
+
+/* Progress Bar */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-fleet-meter {
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bento-progress-track {
+  background: #e2e8f0 !important;
+}
+
+/* Panels (Executive Workspaces) */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .panel {
+  background: #ffffff !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .panel:hover {
+  border-color: rgba(203, 213, 225, 1) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .panel-header {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .panel-title {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .panel-caption {
+  color: #64748b !important;
+}
+
+/* Secondary Buttons inside panel headers */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .panel-header .btn-secondary {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .panel-header .btn-secondary:hover {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Tables in Dashboard */
+:root[data-theme="light"] body[data-luma-dashboard="true"] .data-table th {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .data-table td {
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+:root[data-theme="light"] body[data-luma-dashboard="true"] .data-table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+

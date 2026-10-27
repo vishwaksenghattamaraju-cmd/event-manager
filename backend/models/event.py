@@ -1,7 +1,7 @@
 """Event and EventItem models for event bookings and stock allocations."""
 
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Index, Text
 from sqlalchemy.orm import relationship
 from backend.models.base import Base
 
@@ -31,6 +31,7 @@ class Event(Base):
     name = Column(String(150), nullable=False)
     event_type = Column(String(50), nullable=False, default=EventType.OTHER)
     location = Column(String(200), nullable=True)
+    image_url = Column(Text, nullable=True)
 
     # All datetimes stored in UTC
     start_time = Column(DateTime, nullable=False, index=True)
@@ -70,6 +71,7 @@ class Event(Base):
             "name": self.name,
             "event_type": self.event_type,
             "location": self.location,
+            "image_url": self.image_url,
             "start_time": self.start_time.isoformat() if self.start_time else None,
             "end_time": self.end_time.isoformat() if self.end_time else None,
             "setup_buffer_minutes": self.setup_buffer_minutes,

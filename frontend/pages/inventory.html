@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Catalog &bull; Event Inventory AI</title>
+  <title>Inventory Management Studio &bull; Event Inventory AI</title>
   <link rel="icon" type="image/png" href="/images/logo.svg?v=6">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css?v=15">
   <link rel="stylesheet" href="/css/bg-video.css?v=7">
+  <link rel="stylesheet" href="/css/luma-events.css?v=3">
+  <link rel="stylesheet" href="/css/luma-inventory.css?v=1">
   <script>
     (function() {
       const saved = localStorage.getItem('theme') || 'dark';
@@ -17,7 +19,7 @@
     })();
   </script>
 </head>
-<body data-bg-video="inventory">
+<body data-luma-inventory="true" data-bg-video="inventory">
   <!-- Navigation Bar -->
   <nav class="navbar">
     <a href="/dashboard" class="nav-brand">
@@ -27,173 +29,317 @@
     <ul class="nav-links">
       <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
       <li><a href="/inventory" class="nav-link active">Inventory</a></li>
-      <li><a href="/events" class="nav-link">Events & Bookings</a></li>
+      <li><a href="/events" class="nav-link">Events &amp; Bookings</a></li>
     </ul>
     <div id="nav-user-display" class="nav-user"></div>
   </nav>
 
-  <main class="container">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Inventory Catalog</h1>
-        <p class="page-subtitle">Track physical stock, safety thresholds, and warehouse availability</p>
-      </div>
-      <div class="page-header-actions">
-        <a href="/api/reports/inventory-csv" class="btn btn-secondary" id="btn-export-inventory-csv" download>
-          📥 Export Catalog CSV
-        </a>
-        <button id="btn-open-add-item" class="btn btn-primary">+ Add New Item</button>
-      </div>
+  <!-- Top Studio View Switcher Bar (Matches Events Studio) -->
+  <header class="luma-studio-topbar">
+    <div class="luma-view-pills" role="tablist">
+      <button type="button" class="luma-view-pill active" id="tab-btn-create-item" role="tab" aria-selected="true">
+        <span>✦</span> Add New Item
+      </button>
+      <button type="button" class="luma-view-pill" id="tab-btn-catalog" role="tab" aria-selected="false">
+        <span>📦</span> Warehouse Catalog <span class="luma-view-badge" id="inventory-count-badge">0</span>
+      </button>
     </div>
-
-    <!-- Search & Filters -->
-    <div class="search-bar">
-      <input type="text" id="inventory-search" class="form-input search-input" placeholder="Search by item name or SKU...">
-      <select id="filter-category" class="form-select">
-        <option value="">All Categories</option>
-        <option value="Audio">Audio</option>
-        <option value="Visual">Visual</option>
-        <option value="Lighting">Lighting</option>
-        <option value="Furniture">Furniture</option>
-        <option value="Decor">Decor</option>
-        <option value="Catering">Catering</option>
-        <option value="Consumables">Consumables</option>
-        <option value="Other">Other</option>
-      </select>
-      <select id="filter-status" class="form-select">
-        <option value="">All Statuses</option>
-        <option value="in_stock">In Stock</option>
-        <option value="low_stock">Low Stock</option>
-        <option value="out_of_stock">Out of Stock</option>
-      </select>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="/api/reports/inventory-csv" class="luma-btn-add-item" id="btn-export-inventory-csv" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem;">
+        📥 Export Catalog CSV
+      </a>
     </div>
+  </header>
 
-    <!-- Inventory Table Panel -->
-    <div class="panel">
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>SKU</th>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Total Physical</th>
-              <th>Unavailable</th>
-              <th>Net Available</th>
-              <th>Min Threshold</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="inventory-tbody">
-            <tr>
-              <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading inventory items...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
-
-  <!-- Modal: Add Item (Admin Only) -->
-  <div id="modal-add-item" class="modal-backdrop">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3 class="modal-title">Create New Inventory Item</h3>
-        <button class="modal-close" data-close="modal-add-item">&times;</button>
-      </div>
-      <form id="form-add-item">
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label" for="add-name">Item Name *</label>
-            <input type="text" id="add-name" class="form-input" placeholder="e.g. Wireless Handheld Microphone" required>
+  <main>
+    <!-- ======================================================================
+         Lu.ma Add Inventory Item Studio (Clean Single-Column, No Picture Box)
+         ====================================================================== -->
+    <div id="panel-create-item" class="luma-inventory-studio">
+      <form id="form-add-item" autocomplete="off">
+        <!-- Classification Pills / Meta Tags -->
+        <div class="luma-meta-tags">
+          <div class="luma-tag-pill" id="pill-category-select" title="Item Category">
+            <span class="luma-dot-purple"></span>
+            <span id="category-pill-label">Category: Audio</span>
+            <span style="font-size: 0.7rem; color: var(--luma-text-muted);">▼</span>
           </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="add-category">Category *</label>
-              <select id="add-category" class="form-select" required>
-                <option value="Audio">Audio</option>
-                <option value="Visual">Visual</option>
-                <option value="Lighting">Lighting</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Decor">Decor</option>
-                <option value="Catering">Catering</option>
-                <option value="Consumables">Consumables</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="add-unit">Unit of Measure</label>
-              <input type="text" id="add-unit" class="form-input" placeholder="e.g. pieces, sets, pairs" value="pieces">
-            </div>
+          <div class="luma-tag-pill" id="pill-unit-select" title="Measurement Unit">
+            <span>📦</span>
+            <span id="unit-pill-label">Unit: pieces</span>
+            <span style="font-size: 0.7rem; color: var(--luma-text-muted);">▼</span>
           </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="add-total-stock">Initial Stock *</label>
-              <input type="number" id="add-total-stock" class="form-input" min="0" value="10" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="add-threshold">Safety Min Threshold *</label>
-              <input type="number" id="add-threshold" class="form-input" min="0" value="2" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="add-cost">Purchase Cost ($)</label>
-              <input type="number" id="add-cost" class="form-input" min="0" step="0.01" value="0.00">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="add-description">Description</label>
-            <textarea id="add-description" class="form-textarea" rows="2" placeholder="Brief technical or usage details..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-muted); font-size: 0.9rem;">
-              <input type="checkbox" id="add-is-consumable">
-              <span>Mark as Consumable (Stock permanently deducted upon event completion)</span>
-            </label>
+          <div class="luma-tag-pill" id="pill-type-select" title="Stock Behavior">
+            <span>🏷️</span>
+            <span id="type-pill-label">Reusable Equipment</span>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-close="modal-add-item">Cancel</button>
-          <button type="submit" id="btn-submit-add-item" class="btn btn-primary">Save Item</button>
+
+        <!-- Big Bold Item Title Input (Matching Event Name) -->
+        <input 
+          type="text" 
+          id="add-name" 
+          class="luma-title-input" 
+          placeholder="Item Name" 
+          required 
+          aria-label="Item Name"
+          autocomplete="off"
+        >
+
+        <!-- Stock & Safety Threshold Timeline Card (Matching Datetime Timeline Card) -->
+        <div class="luma-datetime-card">
+          <div class="luma-timeline-rows">
+            <div class="luma-timeline-connector"></div>
+
+            <!-- Initial Physical Stock Row -->
+            <div class="luma-timeline-row">
+              <span class="luma-timeline-dot filled"></span>
+              <span class="luma-timeline-label" style="width: 85px;">Initial Stock</span>
+              <div class="luma-date-picker-wrap">
+                <input 
+                  type="number" 
+                  id="add-total-stock" 
+                  class="luma-dt-pill" 
+                  min="0" 
+                  value="10" 
+                  required 
+                  title="Initial Physical Stock"
+                  aria-label="Initial Physical Stock"
+                  style="width: 95px; text-align: right;"
+                >
+                <span style="font-size: 0.82rem; color: var(--luma-text-dim);">units available</span>
+              </div>
+            </div>
+
+            <!-- Safety Min Threshold Row -->
+            <div class="luma-timeline-row">
+              <span class="luma-timeline-dot hollow"></span>
+              <span class="luma-timeline-label" style="width: 85px;">Safety Min</span>
+              <div class="luma-date-picker-wrap">
+                <input 
+                  type="number" 
+                  id="add-threshold" 
+                  class="luma-dt-pill" 
+                  min="0" 
+                  value="2" 
+                  required 
+                  title="Safety Minimum Threshold"
+                  aria-label="Safety Minimum Threshold"
+                  style="width: 95px; text-align: right;"
+                >
+                <span style="font-size: 0.82rem; color: var(--luma-text-dim);">low stock trigger</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warehouse Logistics Badge (Matching Timezone Badge) -->
+          <div class="luma-timezone-badge" title="Warehouse Staging & Hub">
+            <span class="luma-tz-globe">🏢</span>
+            <div class="luma-tz-info">
+              <span class="luma-tz-gmt">Warehouse Hub</span>
+              <span class="luma-tz-city">Central Depot</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Storage Location Card (Matching Location Card) -->
+        <div class="luma-block-card" id="card-item-location">
+          <div class="luma-block-icon">📍</div>
+          <div class="luma-block-content">
+            <input 
+              type="text" 
+              id="add-location" 
+              class="luma-clean-input" 
+              placeholder="Add Storage Location" 
+              aria-label="Storage Location"
+              value="Main Warehouse — Staging Bay A"
+            >
+            <div class="luma-block-subtext">Storage rack, bay, shelf, or bin number</div>
+          </div>
+        </div>
+
+        <!-- Description Card (Matching Description Card) -->
+        <div class="luma-block-card" id="card-item-description">
+          <div class="luma-block-icon">📝</div>
+          <div class="luma-block-content">
+            <textarea 
+              id="add-description" 
+              class="luma-clean-textarea" 
+              placeholder="Add Item Description" 
+              rows="2" 
+              aria-label="Add Item Description"
+            ></textarea>
+            <div class="luma-block-subtext">Brief technical specs, brand/model, or handling instructions</div>
+          </div>
+        </div>
+
+        <!-- Item Options Section (Matching Event Options Section) -->
+        <div class="luma-options-section">
+          <div class="luma-options-heading">Item Options &amp; Classification</div>
+          <div class="luma-options-card">
+            <!-- Equipment Category Row -->
+            <div class="luma-option-row">
+              <div class="luma-option-left">
+                <span class="luma-option-icon">🏷️</span>
+                <span>Category</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <select id="add-category" class="luma-option-select" required aria-label="Item Category">
+                  <option value="Audio">Audio</option>
+                  <option value="Visual">Visual</option>
+                  <option value="Lighting">Lighting</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Decor">Decor</option>
+                  <option value="Catering">Catering</option>
+                  <option value="Consumables">Consumables</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Purchase Cost Row -->
+            <div class="luma-option-row">
+              <div class="luma-option-left">
+                <span class="luma-option-icon">💵</span>
+                <span>Purchase Cost ($)</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.45rem;">
+                <input 
+                  type="number" 
+                  id="add-cost" 
+                  class="luma-option-input" 
+                  min="0" 
+                  step="0.01" 
+                  value="0.00" 
+                  placeholder="0.00" 
+                  aria-label="Purchase Cost in USD"
+                >
+                <span style="font-size: 0.82rem; color: var(--luma-text-dim);">USD</span>
+              </div>
+            </div>
+
+            <!-- Unit of Measure Row -->
+            <div class="luma-option-row">
+              <div class="luma-option-left">
+                <span class="luma-option-icon">📏</span>
+                <span>Unit of Measure</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.45rem;">
+                <input 
+                  type="text" 
+                  id="add-unit" 
+                  class="luma-option-input" 
+                  value="pieces" 
+                  placeholder="e.g. pieces, sets" 
+                  aria-label="Unit of measure"
+                  style="width: 120px; text-align: left;"
+                >
+              </div>
+            </div>
+
+            <!-- Consumable Toggle Row (Matching Require Approval Toggle) -->
+            <div class="luma-option-row">
+              <div class="luma-option-left">
+                <span class="luma-option-icon">📦</span>
+                <div>
+                  <div>Mark as Consumable</div>
+                  <div style="font-size: 0.78rem; font-weight: 400; color: var(--luma-text-dim);">
+                    Permanently deducted upon event completion (non-returnable)
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="luma-switch" aria-label="Mark as Consumable">
+                  <input type="checkbox" id="add-is-consumable">
+                  <span class="luma-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Action Button: Lu.ma White Pill CTA (Matches Create Event Button) -->
+        <button type="submit" id="btn-submit-add-item" class="luma-create-event-btn">
+          Save Item to Catalog
+        </button>
+
+        <!-- Actions Footer -->
+        <div class="luma-actions-footer">
+          <button type="button" id="btn-cancel-add-item" class="luma-draft-link">
+            Cancel &amp; Return to Catalog
+          </button>
+          <span style="font-size: 0.78rem; color: var(--luma-text-dim);">
+            Automated SKU assignment &bull; Real-time threshold monitoring
+          </span>
         </div>
       </form>
     </div>
-  </div>
 
-  <!-- Modal: Delete Item Confirmation -->
-  <div id="modal-delete-item" class="modal-backdrop">
-    <div class="modal-container" style="max-width: 480px;">
-      <div class="modal-header">
-        <h3 class="modal-title" style="color: var(--danger);">🗑️ Delete Inventory Item</h3>
-        <button class="modal-close" data-close="modal-delete-item">&times;</button>
+    <!-- ======================================================================
+         Warehouse Catalog Ledger (Obsidian Glass Table, Matching Scheduled Bookings)
+         ====================================================================== -->
+    <div id="panel-warehouse-catalog" class="luma-bookings-panel" style="display: none;">
+      <!-- Single Horizontal Row Search & Filter Bar -->
+      <div class="luma-search-bar">
+        <input 
+          type="text" 
+          id="inventory-search" 
+          class="luma-search-input" 
+          placeholder="Search by item name or SKU..." 
+          aria-label="Search by item name or SKU"
+        >
+        <select id="filter-category" class="luma-status-filter" aria-label="Filter by category">
+          <option value="">All Categories</option>
+          <option value="Audio">Audio</option>
+          <option value="Visual">Visual</option>
+          <option value="Lighting">Lighting</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Decor">Decor</option>
+          <option value="Catering">Catering</option>
+          <option value="Consumables">Consumables</option>
+          <option value="Other">Other</option>
+        </select>
+        <select id="filter-status" class="luma-status-filter" aria-label="Filter by status">
+          <option value="">All Statuses</option>
+          <option value="in_stock">In Stock</option>
+          <option value="low_stock">Low Stock</option>
+          <option value="out_of_stock">Out of Stock</option>
+        </select>
+        <button type="button" id="btn-open-add-item" class="luma-btn-ai" style="padding: 0.65rem 1.25rem;">
+          + Add New Item
+        </button>
       </div>
-      <div class="modal-body">
-        <input type="hidden" id="delete-item-id">
-        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
-          <p style="font-weight: 600; font-size: 0.95rem; color: #f87171; margin-bottom: 0.35rem;">
-            Are you sure you want to delete this item?
-          </p>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">
-            This will remove the item from active catalog visibility and prevent new event bookings.
-          </p>
+
+      <!-- Obsidian Glass Table Wrapper -->
+      <div class="luma-table-wrapper">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Total Physical</th>
+                <th>Unavailable</th>
+                <th>Net Available</th>
+                <th>Min Threshold</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-tbody">
+              <tr>
+                <td colspan="10" style="text-align: center; color: var(--luma-text-muted); padding: 2.5rem;">
+                  Loading inventory items...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
-          <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Target Item</div>
-          <div id="delete-item-name" style="font-size: 1.1rem; font-weight: 600; color: var(--text-main); margin-top: 0.25rem;">—</div>
-          <div id="delete-item-info" style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.2rem;">—</div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-close="modal-delete-item">Cancel</button>
-        <button type="button" id="btn-confirm-delete-item" class="btn btn-danger">Confirm Delete</button>
       </div>
     </div>
-  </div>
+  </main>
 
   <!-- Modal: Adjust Stock (Admin Only) -->
   <div id="modal-adjust-stock" class="modal-backdrop">
@@ -205,9 +351,9 @@
       <form id="form-adjust-stock">
         <input type="hidden" id="adjust-item-id">
         <div class="modal-body">
-          <div style="background: rgba(255, 255, 255, 0.04); padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
-            <div id="adjust-item-title" style="font-weight: 600; font-size: 1.05rem;">—</div>
-            <div id="adjust-item-details" style="font-size: 0.85rem; color: var(--text-muted);">—</div>
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+            <div id="adjust-item-title" style="font-weight: 700; font-size: 1.05rem; color: #ffffff;">—</div>
+            <div id="adjust-item-details" style="font-size: 0.85rem; color: var(--luma-text-muted); margin-top: 0.25rem;">—</div>
           </div>
 
           <div class="form-group">
@@ -221,13 +367,13 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="adjust-quantity">Quantity *</label>
+            <label class="form-label" for="adjust-quantity">Quantity Change *</label>
             <input type="number" id="adjust-quantity" class="form-input" min="1" value="1" required>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="adjust-reason">Audit Reason / Notes *</label>
-            <input type="text" id="adjust-reason" class="form-input" placeholder="e.g. Periodic stock audit, shipment received, damaged during setup" required>
+            <label class="form-label" for="adjust-reason">Reason / Audit Memo</label>
+            <input type="text" id="adjust-reason" class="form-input" placeholder="e.g. PO #8821 restocking, broken on site">
           </div>
         </div>
         <div class="modal-footer">
@@ -238,31 +384,59 @@
     </div>
   </div>
 
-  <!-- Modal: Transaction History -->
-  <div id="modal-history" class="modal-backdrop">
-    <div class="modal-container large">
+  <!-- Modal: Delete Item Confirmation -->
+  <div id="modal-delete-item" class="modal-backdrop">
+    <div class="modal-container" style="max-width: 480px;">
       <div class="modal-header">
-        <h3 id="history-modal-title" class="modal-title">Stock Transaction History</h3>
-        <button class="modal-close" data-close="modal-history">&times;</button>
+        <h3 class="modal-title" style="color: #f87171;">🗑️ Delete Inventory Item</h3>
+        <button class="modal-close" data-close="modal-delete-item">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>Type</th>
-                <th>Quantity Delta</th>
-                <th>Reason / Reference</th>
-              </tr>
-            </thead>
-            <tbody id="history-tbody">
-              <tr>
-                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading history...</td>
-              </tr>
-            </tbody>
-          </table>
+        <input type="hidden" id="delete-item-id">
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.22); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+          <p style="font-weight: 600; font-size: 0.95rem; color: #f87171; margin-bottom: 0.35rem;">
+            Are you sure you want to delete this item?
+          </p>
+          <p style="font-size: 0.85rem; color: var(--luma-text-muted);">
+            This will remove the item from active catalog visibility and prevent new event bookings.
+          </p>
         </div>
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
+          <div style="font-size: 0.76rem; color: var(--luma-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">Target Item</div>
+          <div id="delete-item-name" style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-top: 0.25rem;">—</div>
+          <div id="delete-item-info" style="font-size: 0.85rem; color: var(--luma-text-muted); margin-top: 0.2rem;">—</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modal-delete-item">Cancel</button>
+        <button type="button" id="btn-confirm-delete-item" class="btn btn-danger">Confirm Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Item Transaction History -->
+  <div id="modal-history" class="modal-backdrop">
+    <div class="modal-container" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 id="history-modal-title" class="modal-title">Transaction History</h3>
+        <button class="modal-close" data-close="modal-history">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+        <table class="data-table" style="font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Delta</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <tr>
+              <td colspan="4" style="text-align: center; color: var(--luma-text-muted); padding: 2rem;">Loading history...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-close="modal-history">Close</button>
@@ -270,8 +444,9 @@
     </div>
   </div>
 
+  <!-- Core Scripts -->
   <script src="/js/api.js"></script>
-  <script src="/js/inventory.js"></script>
-  <script src="/js/bg-video.js?v=1"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/inventory.js?v=2"></script>
 </body>
 </html>

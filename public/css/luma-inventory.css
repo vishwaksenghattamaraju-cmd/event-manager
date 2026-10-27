@@ -1,0 +1,309 @@
+/* ==========================================================================
+   Lu.ma Inspired Inventory Management Studio
+   Event Inventory AI
+   ========================================================================== */
+
+/* Single-Column Studio Layout (without picture column) */
+.luma-inventory-studio {
+  max-width: 780px;
+  margin: 0 auto 4rem auto;
+  padding: 0 1.25rem;
+  box-sizing: border-box;
+}
+
+/* SKU monospace pill */
+.sku-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Modal Obsidian Glass Theme Overrides */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 17, 0.84);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal-container {
+  background: #0d101a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  overflow: hidden;
+  max-width: 580px;
+  width: 100%;
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #ffffff;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modal-container .form-input,
+.modal-container .form-select,
+.modal-container .form-textarea {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #ffffff;
+  padding: 0.65rem 0.95rem;
+  font-size: 0.92rem;
+}
+
+.modal-container .form-input:focus,
+.modal-container .form-select:focus,
+.modal-container .form-textarea:focus {
+  border-color: #38bdf8;
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.modal-container .form-select option {
+  background: #0f131f;
+  color: #ffffff;
+}
+
+.modal-container .form-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+}
+
+/* History table in modal */
+#modal-history .data-table th {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.76rem;
+}
+
+#modal-history .data-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   Light Mode Theme - Lu.ma Inventory System
+   High-Contrast, Crisp Frosted Look for Warehouse Catalog & Modals
+   ========================================================================== */
+
+:root[data-theme="light"] {
+  --luma-warn: #d97706;
+  --luma-net-avail: #0284c7;
+}
+
+/* Monospace SKU Badge */
+:root[data-theme="light"] .sku-badge {
+  background: rgba(2, 132, 199, 0.08);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  font-weight: 600;
+}
+
+/* Type Pills (Reusable vs Consumable) */
+.inventory-type-badge {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 9999px;
+  display: inline-block;
+  font-weight: 500;
+}
+
+:root[data-theme="light"] .inventory-type-badge {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+:root[data-theme="light"] .inventory-type-badge.badge-info {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0369a1;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+.inventory-history-badge {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-transform: capitalize;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+:root[data-theme="light"] .inventory-history-badge {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+/* Modals in Light Mode */
+:root[data-theme="light"] .modal-backdrop {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+:root[data-theme="light"] .modal-container {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.16);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .modal-header {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+:root[data-theme="light"] .modal-title {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .modal-close {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .modal-close:hover {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .modal-footer {
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+:root[data-theme="light"] .modal-container .form-input,
+:root[data-theme="light"] .modal-container .form-select,
+:root[data-theme="light"] .modal-container .form-textarea {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .modal-container .form-input:focus,
+:root[data-theme="light"] .modal-container .form-select:focus,
+:root[data-theme="light"] .modal-container .form-textarea:focus {
+  border-color: #0284c7;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+:root[data-theme="light"] .modal-container .form-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .modal-container .form-label {
+  color: #334155;
+}
+
+:root[data-theme="light"] #modal-adjust-stock [style*="background: rgba(255, 255, 255, 0.04)"] {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+:root[data-theme="light"] #adjust-item-title {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] #modal-history .data-table th {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+:root[data-theme="light"] #modal-history .data-table td {
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Table Ledger Contrast & Elegance in Light Mode */
+:root[data-theme="light"] .data-table strong {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] .data-table td {
+  color: #334155 !important;
+}
+
+/* Primary Action in Light Mode Search Bar */
+:root[data-theme="light"] .luma-btn-ai {
+  background: #0f172a !important;
+  border: 1px solid #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+:root[data-theme="light"] .luma-btn-ai:hover {
+  background: #1e293b !important;
+  border-color: #1e293b !important;
+  color: #ffffff !important;
+}
+

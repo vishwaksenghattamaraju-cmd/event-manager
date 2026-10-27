@@ -66,6 +66,7 @@ def create_event(
             name=name,
             event_type=event_type,
             location=(data.get("location") or "").strip() or None,
+            image_url=(data.get("image_url") or data.get("image") or "").strip() or None,
             start_time=start_time,
             end_time=end_time,
             setup_buffer_minutes=setup_buffer,
