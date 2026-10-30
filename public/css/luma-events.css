@@ -1301,6 +1301,147 @@ body[data-bg-video="dashboard"] {
   color: #ffffff !important;
 }
 
+@media (max-width: 600px) {
+  .luma-studio-topbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem auto;
+    padding: 0 1rem;
+  }
+
+  .luma-view-pills {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 16px;
+  }
+
+  .luma-view-pill {
+    min-width: 0;
+    justify-content: center;
+    padding: 0.55rem 0.4rem;
+    text-align: center;
+    line-height: 1.25;
+  }
+
+  .luma-studio-actions,
+  .luma-studio-actions .luma-btn-add-item {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .luma-create-studio,
+  .luma-bookings-panel {
+    padding: 0 1rem;
+  }
+
+  .luma-create-studio {
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .luma-artwork-card {
+    border-radius: 20px;
+  }
+
+  .luma-artwork-ai-badge {
+    max-width: calc(100% - 5.5rem);
+    font-size: 0.72rem;
+  }
+
+  .luma-title-input {
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+  }
+
+  .luma-datetime-card {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1rem;
+  }
+
+  .luma-timeline-row {
+    display: grid;
+    grid-template-columns: 8px 42px minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .luma-date-picker-wrap {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .luma-dt-pill {
+    width: 100%;
+    min-width: 0;
+    padding: 0.45rem 0.35rem;
+    font-size: 0.78rem;
+  }
+
+  .luma-timezone-badge {
+    align-self: flex-start;
+  }
+
+  .luma-option-row {
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .luma-option-row > div:last-child {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .luma-option-left {
+    font-size: 0.84rem;
+  }
+
+  .luma-inventory-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .luma-inventory-header > div:last-child {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .luma-inventory-header .luma-btn-ai,
+  .luma-inventory-header .luma-btn-add-item {
+    flex: 1 1 9rem;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .luma-actions-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .luma-view-pill {
+    font-size: 0.76rem;
+  }
+
+  .luma-timeline-row {
+    grid-template-columns: 8px 36px minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+
+  .luma-datetime-card {
+    padding: 0.8rem;
+  }
+}
+
 :root[data-theme="light"] .item-picker-row {
   background: #F7F7F5;
   border: 1px solid #E7E5E4;

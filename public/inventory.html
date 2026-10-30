@@ -10,8 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css?v=19">
   <link rel="stylesheet" href="/css/bg-video.css?v=7">
-  <link rel="stylesheet" href="/css/luma-events.css?v=7">
-  <link rel="stylesheet" href="/css/luma-inventory.css?v=1">
+  <link rel="stylesheet" href="/css/luma-events.css?v=8">
+  <link rel="stylesheet" href="/css/luma-inventory.css?v=2">
   <script>
     (function() {
       const saved = localStorage.getItem('theme') || 'dark';
@@ -44,7 +44,7 @@
         <span>📦</span> Warehouse Catalog <span class="luma-view-badge" id="inventory-count-badge">0</span>
       </button>
     </div>
-    <div style="display: flex; align-items: center; gap: 0.75rem;">
+    <div class="luma-studio-actions" style="display: flex; align-items: center; gap: 0.75rem;">
       <a href="/api/reports/inventory-csv" class="luma-btn-add-item" id="btn-export-inventory-csv" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem;">
         📥 Export Catalog CSV
       </a>

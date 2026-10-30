@@ -307,3 +307,23 @@
   color: #ffffff !important;
 }
 
+@media (max-width: 600px) {
+  .luma-inventory-studio {
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+  }
+
+  .modal-backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal-container {
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+
+  .modal-body {
+    overflow-x: auto;
+  }
+}
