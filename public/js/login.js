@@ -1,13 +1,18 @@
 /**
- * Login & Registration Controller (Lu.ma Small Events Landing Edition)
+ * Login & Registration Controller
+ * Simple, Minimal, Fast & Reliable
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
   // If already logged in, redirect directly to dashboard
-  const user = await API.getCurrentUser();
-  if (user) {
-    window.location.href = '/dashboard';
-    return;
+  try {
+    const user = await API.getCurrentUser();
+    if (user) {
+      window.location.href = '/dashboard';
+      return;
+    }
+  } catch (err) {
+    console.warn('Session check skipped:', err);
   }
 
   const tabLogin = document.getElementById('tab-login');
@@ -16,102 +21,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   const formRegister = document.getElementById('form-register');
   const loginError = document.getElementById('login-error');
   const regError = document.getElementById('reg-error');
-  const modalBackdrop = document.getElementById('auth-modal-backdrop');
-  const btnCloseModal = document.getElementById('btn-close-modal');
-  const modalTitle = document.getElementById('modal-title');
-  const modalSubtitle = document.getElementById('modal-subtitle');
 
-  // Modal Open/Close Controls
-  function openAuthModal(tab = 'login') {
-    if (!modalBackdrop) return;
-    modalBackdrop.classList.add('is-active');
-    if (tab === 'register') {
-      tabRegister?.click();
-    } else {
-      tabLogin?.click();
-    }
-    setTimeout(() => {
-      const activeInput = tab === 'register'
-        ? document.getElementById('reg-username')
-        : document.getElementById('login-username');
-      activeInput?.focus();
-    }, 120);
-  }
-
-  function closeAuthModal() {
-    if (!modalBackdrop) return;
-    modalBackdrop.classList.remove('is-active');
-  }
-
-  // Bind Open Triggers
-  document.getElementById('btn-nav-signin')?.addEventListener('click', () => openAuthModal('login'));
-  document.getElementById('btn-nav-register')?.addEventListener('click', () => openAuthModal('register'));
-  document.getElementById('btn-hero-create')?.addEventListener('click', () => openAuthModal('register'));
-  document.getElementById('link-hero-signin')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    openAuthModal('login');
-  });
-
-  // Clicking any small event card prompts to host or manage
-  document.querySelectorAll('.luma-event-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const title = card.getAttribute('title') || 'small event';
-      if (window.UI?.toast) {
-        UI.toast(`Host or coordinate: ${title}`, 'info');
-      }
-      openAuthModal('login');
-    });
-  });
-
-  // Bind Close Triggers
-  btnCloseModal?.addEventListener('click', closeAuthModal);
-  modalBackdrop?.addEventListener('click', (e) => {
-    if (e.target === modalBackdrop) closeAuthModal();
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAuthModal();
-  });
-
-  // Check URL Hash for automatic opening
-  if (['#signin', '#login', '#auth'].includes(window.location.hash)) {
-    openAuthModal('login');
-  } else if (window.location.hash === '#register') {
-    openAuthModal('register');
-  }
-
-  // Hero Quick Demo Chips (Admin & Organizer only)
-  document.getElementById('btn-hero-admin')?.addEventListener('click', () => {
-    openAuthModal('login');
-    document.getElementById('btn-fill-admin')?.click();
-  });
-
-  document.getElementById('btn-hero-organizer')?.addEventListener('click', () => {
-    openAuthModal('login');
-    document.getElementById('btn-fill-organizer')?.click();
-  });
-
-  // Tab switching with dynamic titles
+  // Tab switching
   tabLogin?.addEventListener('click', () => {
     tabLogin.classList.add('active');
     tabRegister?.classList.remove('active');
+    tabLogin.setAttribute('aria-selected', 'true');
+    tabRegister?.setAttribute('aria-selected', 'false');
     if (formLogin) formLogin.style.display = 'block';
     if (formRegister) formRegister.style.display = 'none';
     if (loginError) loginError.style.display = 'none';
-    if (modalTitle) modalTitle.textContent = 'Welcome Back';
-    if (modalSubtitle) modalSubtitle.textContent = 'Sign in to coordinate small events & inventory';
+    document.getElementById('login-username')?.focus();
   });
 
   tabRegister?.addEventListener('click', () => {
     tabRegister.classList.add('active');
     tabLogin?.classList.remove('active');
+    tabRegister.setAttribute('aria-selected', 'true');
+    tabLogin?.setAttribute('aria-selected', 'false');
     if (formRegister) formRegister.style.display = 'block';
     if (formLogin) formLogin.style.display = 'none';
     if (regError) regError.style.display = 'none';
-    if (modalTitle) modalTitle.textContent = 'Create Organizer Account';
-    if (modalSubtitle) modalSubtitle.textContent = 'Host and manage small events with smart inventory';
+    document.getElementById('reg-username')?.focus();
   });
 
-  // Instant Demo login button helpers inside modal (Admin & Organizer only)
+  // Check URL Hash for tab selection
+  if (window.location.hash === '#register') {
+    tabRegister?.click();
+  }
+
+  // 1-Click Demo Login Helpers
   document.getElementById('btn-fill-admin')?.addEventListener('click', () => {
     tabLogin?.click();
     const u = document.getElementById('login-username');
@@ -146,14 +85,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const result = await API.login(usernameOrEmail, password);
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Sign In';
+      submitBtn.textContent = 'Login';
     }
 
     if (result.success) {
-      UI.toast(`Welcome back, ${result.user.username}!`, 'success');
+      if (window.UI?.toast) {
+        UI.toast(`Welcome back, ${result.user.username}!`, 'success');
+      }
       setTimeout(() => {
         window.location.href = '/dashboard';
-      }, 500);
+      }, 350);
     } else {
       if (loginError) {
         loginError.textContent = result.error || 'Invalid credentials';
@@ -162,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Update register button text on role change
   const roleSelect = document.getElementById('reg-role');
   const regSubmitBtn = document.getElementById('btn-reg-submit');
   if (roleSelect && regSubmitBtn) {
@@ -195,10 +137,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (result.success) {
       const roleName = role === 'admin' ? 'Administrator' : 'Organizer';
-      UI.toast(`${roleName} account created successfully! Redirecting...`, 'success');
+      if (window.UI?.toast) {
+        UI.toast(`${roleName} account created! Redirecting...`, 'success');
+      }
       setTimeout(() => {
         window.location.href = '/dashboard';
-      }, 500);
+      }, 350);
     } else {
       if (regError) {
         regError.textContent = result.error || 'Registration failed';

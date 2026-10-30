@@ -19,7 +19,7 @@
   padding: 0.22rem 0.55rem;
   border-radius: 6px;
   background: rgba(56, 189, 248, 0.1);
-  color: #38bdf8;
+  color: var(--brand-orange, #F97316);
   border: 1px solid rgba(56, 189, 248, 0.25);
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -112,7 +112,7 @@
 .modal-container .form-input:focus,
 .modal-container .form-select:focus,
 .modal-container .form-textarea:focus {
-  border-color: #38bdf8;
+  border-color: var(--brand-orange, #F97316);
   background: rgba(255, 255, 255, 0.08);
   outline: none;
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
@@ -151,13 +151,13 @@
 
 :root[data-theme="light"] {
   --luma-warn: #d97706;
-  --luma-net-avail: #0284c7;
+  --luma-net-avail: var(--brand-orange-hover, #EA580C);
 }
 
 /* Monospace SKU Badge */
 :root[data-theme="light"] .sku-badge {
   background: rgba(2, 132, 199, 0.08);
-  color: #0284c7;
+  color: var(--brand-orange-hover, #EA580C);
   border: 1px solid rgba(2, 132, 199, 0.25);
   font-weight: 600;
 }
@@ -175,9 +175,9 @@
 }
 
 :root[data-theme="light"] .inventory-type-badge {
-  background: #f1f5f9;
+  background: #F7F7F5;
   color: #334155;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E7E5E4;
 }
 
 :root[data-theme="light"] .inventory-type-badge.badge-info {
@@ -198,9 +198,9 @@
 }
 
 :root[data-theme="light"] .inventory-history-badge {
-  background: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
+  background: #F7F7F5;
+  color: #202020;
+  border: 1px solid #E7E5E4;
 }
 
 /* Modals in Light Mode */
@@ -214,50 +214,50 @@
   background: #ffffff;
   border: 1px solid rgba(226, 232, 240, 0.95);
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.16);
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .modal-header {
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #F7F7F5;
 }
 
 :root[data-theme="light"] .modal-title {
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .modal-close {
-  color: #64748b;
+  color: #666666;
 }
 
 :root[data-theme="light"] .modal-close:hover {
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .modal-footer {
-  border-top: 1px solid #f1f5f9;
-  background: #f8fafc;
+  border-top: 1px solid #F7F7F5;
+  background: #F7F7F5;
 }
 
 :root[data-theme="light"] .modal-container .form-input,
 :root[data-theme="light"] .modal-container .form-select,
 :root[data-theme="light"] .modal-container .form-textarea {
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
+  color: #202020;
   color-scheme: light;
 }
 
 :root[data-theme="light"] .modal-container .form-input:focus,
 :root[data-theme="light"] .modal-container .form-select:focus,
 :root[data-theme="light"] .modal-container .form-textarea:focus {
-  border-color: #0284c7;
+  border-color: var(--brand-orange-hover, #EA580C);
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
 }
 
 :root[data-theme="light"] .modal-container .form-select option {
   background: #ffffff;
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .modal-container .form-label {
@@ -265,28 +265,28 @@
 }
 
 :root[data-theme="light"] #modal-adjust-stock [style*="background: rgba(255, 255, 255, 0.04)"] {
-  background: #f8fafc !important;
-  border-color: #e2e8f0 !important;
+  background: #F7F7F5 !important;
+  border-color: #E7E5E4 !important;
 }
 
 :root[data-theme="light"] #adjust-item-title {
-  color: #0f172a !important;
+  color: #202020 !important;
 }
 
 :root[data-theme="light"] #modal-history .data-table th {
-  background: #f8fafc !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-  color: #475569 !important;
+  background: #F7F7F5 !important;
+  border-bottom: 1px solid #E7E5E4 !important;
+  color: #666666 !important;
 }
 
 :root[data-theme="light"] #modal-history .data-table td {
-  border-bottom: 1px solid #f1f5f9 !important;
-  color: #0f172a !important;
+  border-bottom: 1px solid #F7F7F5 !important;
+  color: #202020 !important;
 }
 
 /* Table Ledger Contrast & Elegance in Light Mode */
 :root[data-theme="light"] .data-table strong {
-  color: #0f172a !important;
+  color: #202020 !important;
 }
 
 :root[data-theme="light"] .data-table td {
@@ -295,15 +295,15 @@
 
 /* Primary Action in Light Mode Search Bar */
 :root[data-theme="light"] .luma-btn-ai {
-  background: #0f172a !important;
-  border: 1px solid #0f172a !important;
+  background: #202020 !important;
+  border: 1px solid #202020 !important;
   color: #ffffff !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
 }
 
 :root[data-theme="light"] .luma-btn-ai:hover {
-  background: #1e293b !important;
-  border-color: #1e293b !important;
+  background: #202020 !important;
+  border-color: #202020 !important;
   color: #ffffff !important;
 }
 

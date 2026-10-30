@@ -3,17 +3,37 @@
    Event Inventory AI
    ========================================================================== */
 
-:root {
-  --luma-bg: #0b0d13;
-  --luma-card-bg: rgba(255, 255, 255, 0.045);
-  --luma-card-border: rgba(255, 255, 255, 0.09);
-  --luma-card-border-hover: rgba(255, 255, 255, 0.22);
-  --luma-text-main: #ffffff;
-  --luma-text-muted: rgba(255, 255, 255, 0.55);
-  --luma-text-dim: rgba(255, 255, 255, 0.35);
-  --luma-pill-white: #ffffff;
-  --luma-pill-text: #090a0f;
-  --luma-gradient: linear-gradient(135deg, #d946ef 0%, #ec4899 32%, #f97316 68%, #fbbf24 100%);
+:root,
+:root[data-theme="dark"] {
+  --luma-bg: #111111;
+  --luma-surface: #181818;
+  --luma-card-bg: #1E1E1E;
+  --luma-card-border: #333333;
+  --luma-card-border-hover: #444444;
+  --luma-text-main: #F5F5F5;
+  --luma-text-muted: #A3A3A3;
+  --luma-text-dim: #737373;
+  --luma-pill-white: #FB923C;
+  --luma-pill-text: #111111;
+  --brand-orange: #FB923C;
+  --brand-orange-hover: #FDBA74;
+  --brand-subtle: #2A1B12;
+}
+
+:root[data-theme="light"] {
+  --luma-bg: #FFFFFF;
+  --luma-surface: #F7F7F5;
+  --luma-card-bg: #FFFFFF;
+  --luma-card-border: #E7E5E4;
+  --luma-card-border-hover: #D6D3D1;
+  --luma-text-main: #202020;
+  --luma-text-muted: #666666;
+  --luma-text-dim: #888888;
+  --luma-pill-white: #F97316;
+  --luma-pill-text: #FFFFFF;
+  --brand-orange: #F97316;
+  --brand-orange-hover: #EA580C;
+  --brand-subtle: #FFF7ED;
 }
 
 /* Page Background: Vertical pleated fabric / fluted curtain texture with ambient glow */
@@ -24,19 +44,10 @@ body[data-bg-video="events"],
 body[data-bg-video="inventory"],
 body[data-bg-video="dashboard"] {
   background-color: var(--luma-bg);
-  background-image: 
-    radial-gradient(circle at 50% 15%, rgba(56, 189, 248, 0.07) 0%, transparent 60%),
-    radial-gradient(circle at 80% 60%, rgba(217, 70, 239, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.05) 0%, transparent 45%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.012) 0px,
-      rgba(255, 255, 255, 0.012) 24px,
-      transparent 24px,
-      transparent 48px
-    );
+  background-image: radial-gradient(circle at 50% 15%, rgba(249, 115, 22, 0.03) 0%, transparent 60%);
   color: var(--luma-text-main);
   min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Top Studio View Switcher Bar */
@@ -138,12 +149,12 @@ body[data-bg-video="dashboard"] {
 }
 
 .luma-artwork-card:focus-visible {
-  outline: 2px solid #818cf8;
+  outline: 2px solid var(--brand-orange);
   outline-offset: 4px;
 }
 
 .luma-artwork-card.drag-over {
-  border-color: #818cf8;
+  border-color: var(--brand-orange);
   border-style: solid;
   background: rgba(129, 140, 248, 0.14);
   box-shadow: 0 0 28px rgba(129, 140, 248, 0.35);
@@ -211,7 +222,7 @@ body[data-bg-video="dashboard"] {
   padding: 0.35rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #F7F7F5;
   display: flex;
   align-items: center;
   gap: 0.45rem;
@@ -222,7 +233,7 @@ body[data-bg-video="dashboard"] {
 }
 
 .ai-badge-sparkle {
-  color: #38bdf8;
+  color: var(--brand-orange);
   font-size: 0.85rem;
   display: inline-block;
   animation: sparklePulse 2s infinite ease-in-out;
@@ -278,25 +289,25 @@ body[data-bg-video="dashboard"] {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(56, 189, 248, 0.45);
-  color: #38bdf8;
+  color: var(--brand-orange);
   font-size: 1.15rem;
 }
 
 .luma-btn-magic:hover {
   transform: scale(1.12);
   background: rgba(30, 41, 59, 0.95);
-  border-color: #38bdf8;
+  border-color: var(--brand-orange);
   box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
 }
 
 .luma-camera-badge {
   background: #ffffff;
-  color: #0f172a;
+  color: #202020;
 }
 
 .luma-camera-badge:hover {
   transform: scale(1.1);
-  background: #f1f5f9;
+  background: #F7F7F5;
 }
 
 /* Remove image button at top right */
@@ -365,7 +376,7 @@ body[data-bg-video="dashboard"] {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #a855f7;
+  background: var(--brand-orange);
   display: inline-block;
 }
 
@@ -417,7 +428,7 @@ body[data-bg-video="dashboard"] {
   top: 14px;
   bottom: 14px;
   width: 1px;
-  border-left: 2px dotted #64748b;
+  border-left: 2px dotted #666666;
   pointer-events: none;
 }
 
@@ -438,11 +449,11 @@ body[data-bg-video="dashboard"] {
 }
 
 .luma-timeline-dot.filled {
-  background: #94a3b8;
+  background: #888888;
 }
 
 .luma-timeline-dot.hollow {
-  border: 2px solid #64748b;
+  border: 2px solid #666666;
   background: #0b0d13;
   box-sizing: border-box;
 }
@@ -483,7 +494,7 @@ body[data-bg-video="dashboard"] {
 }
 
 .luma-dt-pill:focus {
-  border-color: #38bdf8;
+  border-color: var(--brand-orange);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -502,7 +513,7 @@ body[data-bg-video="dashboard"] {
 }
 
 .luma-datetime-input:focus {
-  border-color: #38bdf8;
+  border-color: var(--brand-orange);
   background: rgba(255, 255, 255, 0.10);
 }
 
@@ -721,7 +732,7 @@ body[data-bg-video="dashboard"] {
 }
 
 .luma-switch input:checked + .luma-slider {
-  background-color: #ec4899;
+  background-color: var(--brand-orange);
 }
 
 .luma-switch input:checked + .luma-slider:before {
@@ -747,7 +758,7 @@ body[data-bg-video="dashboard"] {
 .luma-btn-ai {
   background: rgba(56, 189, 248, 0.12);
   border: 1px solid rgba(56, 189, 248, 0.35);
-  color: #38bdf8;
+  color: var(--brand-orange);
   border-radius: 9999px;
   padding: 0.4rem 0.95rem;
   font-size: 0.82rem;
@@ -898,237 +909,229 @@ body[data-bg-video="dashboard"] {
    ========================================================================== */
 
 :root[data-theme="light"] {
-  --luma-bg: #f8fafc;
+  --luma-bg: #F7F7F5;
   --luma-card-bg: #ffffff;
   --luma-card-border: rgba(226, 232, 240, 0.95);
   --luma-card-border-hover: rgba(203, 213, 225, 1);
-  --luma-text-main: #0f172a;
-  --luma-text-muted: #475569;
-  --luma-text-dim: #94a3b8;
-  --luma-pill-white: #0f172a;
+  --luma-text-main: #202020;
+  --luma-text-muted: #666666;
+  --luma-text-dim: #888888;
+  --luma-pill-white: #202020;
   --luma-pill-text: #ffffff;
 }
 
 :root[data-theme="light"] body[data-luma-events="true"],
-:root[data-theme="light"] body[data-luma-inventory="true"],
-:root[data-theme="light"] body[data-luma-dashboard="true"],
-:root[data-theme="light"] body[data-bg-video="events"],
-:root[data-theme="light"] body[data-bg-video="inventory"],
-:root[data-theme="light"] body[data-bg-video="dashboard"] {
-  background-color: #f8fafc;
-  background-image:
-    radial-gradient(circle at 50% 12%, rgba(56, 189, 248, 0.08) 0%, transparent 55%),
-    radial-gradient(circle at 82% 60%, rgba(217, 70, 239, 0.04) 0%, transparent 45%),
-    radial-gradient(circle at 18% 75%, rgba(99, 102, 241, 0.05) 0%, transparent 45%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(15, 23, 42, 0.015) 0px,
-      rgba(15, 23, 42, 0.015) 24px,
-      transparent 24px,
-      transparent 48px
-    );
-  color: #0f172a;
+body[data-luma-inventory="true"],
+body[data-luma-dashboard="true"],
+body[data-bg-video="events"],
+body[data-bg-video="inventory"],
+body[data-bg-video="dashboard"] {
+  background-color: var(--luma-bg);
+  background-image: radial-gradient(circle at 50% 15%, rgba(249, 115, 22, 0.03) 0%, transparent 60%);
+  color: var(--luma-text-main);
+  min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Top Studio View Switcher Bar in Light Mode */
 :root[data-theme="light"] .luma-view-pills {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
 }
 
 :root[data-theme="light"] .luma-view-pill {
-  color: #64748b;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-view-pill:hover {
-  color: #0f172a;
+  color: #202020;
   background: rgba(15, 23, 42, 0.04);
 }
 
 :root[data-theme="light"] .luma-view-pill.active {
   background: #ffffff;
-  color: #0f172a;
+  color: #202020;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
   border: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 :root[data-theme="light"] .luma-view-badge {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  background: #F7F7F5;
+  color: #666666;
+  border: 1px solid #E7E5E4;
 }
 
 :root[data-theme="light"] .luma-btn-add-item {
   background: #ffffff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #E7E5E4;
   color: #334155;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 :root[data-theme="light"] .luma-btn-add-item:hover {
-  background: #f8fafc;
-  color: #0f172a;
-  border-color: #94a3b8;
+  background: #F7F7F5;
+  color: #202020;
+  border-color: #888888;
 }
 
 /* Big Title Input in Light Mode */
 :root[data-theme="light"] .luma-title-input {
-  color: #0f172a !important;
+  color: #202020 !important;
 }
 
 :root[data-theme="light"] .luma-title-input::placeholder {
-  color: #94a3b8 !important;
+  color: #888888 !important;
 }
 
 /* Metadata Tag Pills in Light Mode */
 :root[data-theme="light"] .luma-tag-pill {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E7E5E4;
   color: #334155;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 :root[data-theme="light"] .luma-tag-pill:hover {
-  background: #f8fafc;
-  color: #0f172a;
-  border-color: #cbd5e1;
+  background: #F7F7F5;
+  color: #202020;
+  border-color: #E7E5E4;
 }
 
 /* Datetime & Stock Timeline Card in Light Mode */
 :root[data-theme="light"] .luma-datetime-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E7E5E4;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
 }
 
 :root[data-theme="light"] .luma-timeline-connector {
-  border-left-color: #cbd5e1;
+  border-left-color: #E7E5E4;
 }
 
 :root[data-theme="light"] .luma-timeline-dot.filled {
-  background: #0f172a;
+  background: #202020;
 }
 
 :root[data-theme="light"] .luma-timeline-dot.hollow {
-  border-color: #64748b;
+  border-color: #666666;
   background: #ffffff;
 }
 
 :root[data-theme="light"] .luma-timeline-label {
-  color: #475569;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-dt-pill {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #0f172a;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
+  color: #202020;
   color-scheme: light;
 }
 
 :root[data-theme="light"] .luma-dt-pill:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  background: #F7F7F5;
+  border-color: #E7E5E4;
 }
 
 :root[data-theme="light"] .luma-dt-pill:focus {
-  border-color: #38bdf8;
+  border-color: var(--brand-orange);
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
 
 :root[data-theme="light"] .luma-timezone-badge {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #475569;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-tz-gmt {
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-tz-city {
-  color: #64748b;
+  color: #666666;
 }
 
 /* Block Cards (Location, Description) in Light Mode */
 :root[data-theme="light"] .luma-block-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E7E5E4;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
 }
 
 :root[data-theme="light"] .luma-block-card:focus-within {
-  border-color: #94a3b8;
+  border-color: #888888;
   background: #ffffff;
 }
 
 :root[data-theme="light"] .luma-block-icon {
-  color: #64748b;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-clean-input {
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-clean-input::placeholder {
-  color: #94a3b8;
+  color: #888888;
 }
 
 :root[data-theme="light"] .luma-clean-textarea {
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-clean-textarea::placeholder {
-  color: #94a3b8;
+  color: #888888;
 }
 
 :root[data-theme="light"] .luma-block-subtext {
-  color: #64748b;
+  color: #666666;
 }
 
 /* Options Section in Light Mode */
 :root[data-theme="light"] .luma-options-heading {
-  color: #475569;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-options-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E7E5E4;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
 }
 
 :root[data-theme="light"] .luma-option-row {
-  border-bottom-color: #f1f5f9;
+  border-bottom-color: #F7F7F5;
 }
 
 :root[data-theme="light"] .luma-option-left {
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-option-icon {
-  color: #64748b;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-option-select {
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
+  color: #202020;
   color-scheme: light;
 }
 
 :root[data-theme="light"] .luma-option-select option {
   background: #ffffff;
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-option-input {
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-slider {
-  background-color: #cbd5e1;
+  background-color: #E7E5E4;
 }
 
 :root[data-theme="light"] .luma-slider:before {
@@ -1137,23 +1140,23 @@ body[data-bg-video="dashboard"] {
 }
 
 :root[data-theme="light"] .luma-switch input:checked + .luma-slider {
-  background-color: #6366f1;
+  background-color: var(--brand-orange);
 }
 
 /* Bottom CTA Button in Light Mode */
 :root[data-theme="light"] .luma-create-event-btn,
 :root[data-theme="light"] #btn-submit-confirm,
 :root[data-theme="light"] #btn-submit-add-item {
-  background: #0f172a !important;
+  background: var(--brand-orange) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  border: 1px solid var(--brand-orange) !important;
   box-shadow: 0 4px 22px rgba(15, 23, 42, 0.22) !important;
 }
 
 :root[data-theme="light"] .luma-create-event-btn:hover,
 :root[data-theme="light"] #btn-submit-confirm:hover,
 :root[data-theme="light"] #btn-submit-add-item:hover {
-  background: #1e293b !important;
+  background: var(--brand-orange-hover) !important;
   color: #ffffff !important;
   box-shadow: 0 8px 30px rgba(15, 23, 42, 0.32) !important;
   transform: translateY(-2px) scale(1.01);
@@ -1165,60 +1168,60 @@ body[data-bg-video="dashboard"] {
 :root[data-theme="light"] #btn-submit-confirm:focus-visible,
 :root[data-theme="light"] #btn-submit-add-item:focus,
 :root[data-theme="light"] #btn-submit-add-item:focus-visible {
-  background: #1e293b !important;
+  background: var(--brand-orange-hover) !important;
   color: #ffffff !important;
-  outline: 2px solid #2563eb !important;
+  outline: 2px solid var(--brand-orange) !important;
   outline-offset: 3px !important;
 }
 
 :root[data-theme="light"] .luma-create-event-btn:active,
 :root[data-theme="light"] #btn-submit-confirm:active,
 :root[data-theme="light"] #btn-submit-add-item:active {
-  background: #020617 !important;
+  background: var(--brand-orange-hover) !important;
   color: #ffffff !important;
   transform: translateY(0) scale(0.98);
 }
 
 :root[data-theme="light"] .luma-draft-link {
-  color: #64748b;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-draft-link:hover {
-  color: #0f172a;
+  color: #202020;
 }
 
 /* Artwork Card in Light Mode */
 :root[data-theme="light"] .luma-artwork-card {
   background: #ffffff;
-  border-color: #cbd5e1;
+  border-color: #E7E5E4;
   box-shadow: 0 4px 25px -4px rgba(15, 23, 42, 0.08);
 }
 
 :root[data-theme="light"] .luma-artwork-card.has-image {
   background: #ffffff;
-  border-color: #e2e8f0;
+  border-color: #E7E5E4;
 }
 
 :root[data-theme="light"] .luma-artwork-placeholder {
-  background: #f8fafc;
-  color: #475569;
+  background: #F7F7F5;
+  color: #666666;
 }
 
 :root[data-theme="light"] .luma-artwork-remove-btn {
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  border: 1px solid #E7E5E4;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-btn-magic {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #38bdf8;
-  color: #0284c7;
+  border: 1px solid var(--brand-orange);
+  color: var(--brand-orange-hover);
   box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
 }
 
 :root[data-theme="light"] .luma-camera-badge {
-  background: #0f172a;
+  background: #202020;
   color: #ffffff;
 }
 
@@ -1229,31 +1232,31 @@ body[data-bg-video="dashboard"] {
 /* Search Bar & Table Ledger in Light Mode */
 :root[data-theme="light"] .luma-search-input {
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  border: 1px solid #E7E5E4;
+  color: #202020;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 :root[data-theme="light"] .luma-search-input::placeholder {
-  color: #94a3b8;
+  color: #888888;
 }
 
 :root[data-theme="light"] .luma-status-filter {
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  border: 1px solid #E7E5E4;
+  color: #202020;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 :root[data-theme="light"] .luma-status-filter option {
   background: #ffffff;
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .luma-btn-ai {
   background: rgba(14, 165, 233, 0.1);
   border: 1px solid rgba(14, 165, 233, 0.35);
-  color: #0284c7;
+  color: var(--brand-orange-hover);
 }
 
 :root[data-theme="light"] .luma-btn-ai:hover {
@@ -1262,74 +1265,74 @@ body[data-bg-video="dashboard"] {
 
 :root[data-theme="light"] .luma-table-wrapper {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E7E5E4;
   box-shadow: 0 4px 25px -4px rgba(15, 23, 42, 0.06);
 }
 
 :root[data-theme="light"] .data-table th {
-  background: #f8fafc !important;
-  color: #475569 !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  background: #F7F7F5 !important;
+  color: #666666 !important;
+  border-bottom: 1px solid #E7E5E4 !important;
 }
 
 :root[data-theme="light"] .data-table td {
-  border-bottom: 1px solid #f1f5f9 !important;
-  color: #1e293b !important;
+  border-bottom: 1px solid #F7F7F5 !important;
+  color: #202020 !important;
 }
 
 :root[data-theme="light"] .data-table td strong {
-  color: #0f172a !important;
+  color: #202020 !important;
 }
 
 :root[data-theme="light"] .data-table tbody tr:hover td {
-  background: #f8fafc !important;
+  background: #F7F7F5 !important;
 }
 
 :root[data-theme="light"] .luma-search-bar .luma-btn-ai {
-  background: #0f172a !important;
-  border: 1px solid #0f172a !important;
+  background: var(--brand-orange) !important;
+  border: 1px solid var(--brand-orange) !important;
   color: #ffffff !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
 }
 
 :root[data-theme="light"] .luma-search-bar .luma-btn-ai:hover {
-  background: #1e293b !important;
-  border-color: #1e293b !important;
+  background: var(--brand-orange-hover) !important;
+  border-color: var(--brand-orange-hover) !important;
   color: #ffffff !important;
 }
 
 :root[data-theme="light"] .item-picker-row {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
 }
 
 :root[data-theme="light"] .item-picker-row:hover {
   background: #ffffff;
-  border-color: #cbd5e1;
+  border-color: #E7E5E4;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 :root[data-theme="light"] .item-picker-select {
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  border: 1px solid #E7E5E4;
+  color: #202020;
   color-scheme: light;
 }
 
 :root[data-theme="light"] .item-picker-select option {
   background: #ffffff;
-  color: #0f172a;
+  color: #202020;
 }
 
 :root[data-theme="light"] .item-picker-qty {
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  border: 1px solid #E7E5E4;
+  color: #202020;
 }
 
 :root[data-theme="light"] .item-picker-remove-btn {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: #F7F7F5;
+  border: 1px solid #E7E5E4;
   color: #ef4444;
 }
 

@@ -349,12 +349,12 @@ const UI = {
    * Initialize theme from localStorage.
    */
   initTheme() {
-    const theme = localStorage.getItem('theme') || 'dark';
+    const theme = localStorage.getItem('theme') || document.documentElement.getAttribute('data-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     const btns = document.querySelectorAll('.theme-toggle-btn');
     btns.forEach(btn => {
-      btn.textContent = theme === 'light' ? '☀️' : '🌙';
-      btn.title = theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+      btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      btn.title = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     });
   },
 
@@ -369,8 +369,8 @@ const UI = {
 
     const btns = document.querySelectorAll('.theme-toggle-btn');
     btns.forEach(btn => {
-      btn.textContent = next === 'light' ? '☀️' : '🌙';
-      btn.title = next === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+      btn.textContent = next === 'dark' ? '☀️' : '🌙';
+      btn.title = next === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     });
 
     window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: next } }));
