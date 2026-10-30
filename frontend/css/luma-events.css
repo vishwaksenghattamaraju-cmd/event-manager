@@ -1342,4 +1342,41 @@ body[data-bg-video="dashboard"] {
   color: #dc2626;
 }
 
+:root[data-theme="light"] body[data-luma-events="true"],
+:root[data-theme="light"] body[data-luma-inventory="true"],
+:root[data-theme="light"] body[data-luma-dashboard="true"] {
+  background-color: var(--luma-bg);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.28)),
+    url("/images/inner-light-background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
 
+:root[data-theme="light"] body[data-luma-events="true"] .bg-video__overlay,
+:root[data-theme="light"] body[data-luma-dashboard="true"] .bg-video__overlay {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.28)),
+    url("/images/inner-light-background.png") center / cover no-repeat;
+}
+
+:root[data-theme="dark"] body[data-luma-events="true"],
+:root[data-theme="dark"] body[data-luma-inventory="true"],
+:root[data-theme="dark"] body[data-luma-dashboard="true"] {
+  background-image:
+    radial-gradient(circle at 50% 15%, rgba(249, 115, 22, 0.03) 0%, transparent 60%),
+    url("/images/inner-dark-background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+:root[data-theme="dark"] body[data-luma-events="true"] .bg-video__overlay,
+:root[data-theme="dark"] body[data-luma-inventory="true"] .bg-video__overlay {
+  background:
+    linear-gradient(rgba(17, 17, 17, 0.36), rgba(17, 17, 17, 0.5)),
+    url("/images/inner-dark-background.png") center / cover no-repeat;
+}
