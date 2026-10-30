@@ -2719,6 +2719,14 @@ h1, h2, h3, h4, h5, h6,
   color-scheme: dark;
 }
 
+:root[data-theme="dark"] .auth-wrapper.auth-scene {
+  background-color: var(--bg-primary);
+  background-image: url("/images/login-dark-background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 :root[data-theme="light"] .auth-scene {
   color-scheme: light;
 }
