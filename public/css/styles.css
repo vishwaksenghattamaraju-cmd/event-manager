@@ -2723,6 +2723,14 @@ h1, h2, h3, h4, h5, h6,
   color-scheme: light;
 }
 
+:root[data-theme="light"] .auth-wrapper.auth-scene {
+  background-color: var(--bg-secondary);
+  background-image: url("/images/login-light-background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .auth-scene .auth-card {
   max-width: 420px;
   padding: 1.5rem 1.75rem;
