@@ -111,7 +111,7 @@ def export_inventory_csv():
         "Net Available Stock",
         "Minimum Safety Threshold",
         "Unit",
-        "Unit Cost ($)",
+        "Unit Cost (INR)",
         "Stock Status",
     ])
 

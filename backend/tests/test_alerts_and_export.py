@@ -153,7 +153,7 @@ def test_test23_csv_export_inventory_and_events(admin_client, organizer_user):
         "Net Available Stock",
         "Minimum Safety Threshold",
         "Unit",
-        "Unit Cost ($)",
+        "Unit Cost (INR)",
         "Stock Status",
     ]
     assert headers == expected_headers
