@@ -25,8 +25,10 @@ class Config:
         or os.getenv("POSTGRES_URL")
         or os.getenv("POSTGRES_PRISMA_URL")
         or os.getenv("POSTGRES_URL_NON_POOLING")
-        or os.getenv("NEON_DATABASE_URL")
+        or os.getenv("SUPABASE_DATABASE_URL")
         or os.getenv("SUPABASE_DB_URL")
+        or os.getenv("NEON_DATABASE_URL")
+        or os.getenv("VERCEL_POSTGRES_URL")
         or _default_db
     ).strip()
 
@@ -36,9 +38,6 @@ class Config:
 
     # Safety checks for Vercel
     if _is_vercel and _db_url.startswith("sqlite:///") and not _db_url.startswith("sqlite:////tmp/"):
-        _db_url = "sqlite:////tmp/event_inventory.db"
-    elif "user:password@ep-host.neon.tech" in _db_url:
-        # Fallback to local /tmp sqlite if placeholder connection string was pasted without real credentials
         _db_url = "sqlite:////tmp/event_inventory.db"
 
     DATABASE_URL = _db_url

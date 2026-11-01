@@ -260,4 +260,129 @@ def test_cannot_delete_primary_admin(admin_client):
     assert "primary administrator account cannot be deleted" in resp.get_json()["error"]
 
 
+def test_full_registration_logout_and_subsequent_login_cycle(client):
+    """
+    TEST 1, 2, 3: Full end-to-end lifecycle:
+    1. Register new user
+    2. Verify user is in database and response is 201
+    3. Verify authenticated immediately
+    4. Log out (session terminated)
+    5. Log back in with exact credentials
+    6. Verify login succeeds and session is restored
+    """
+    username = "event_planner_pro"
+    email = "planner.pro@example.com"
+    password = "MySecurePassword2026!"
 
+    # 1. Register
+    reg_resp = client.post(
+        "/api/auth/register",
+        json={"username": username, "email": email, "password": password, "role": "organizer"},
+    )
+    assert reg_resp.status_code == 201
+    reg_data = reg_resp.get_json()
+    assert reg_data["user"]["username"] == username
+    assert reg_data["user"]["email"] == email
+    assert "password_hash" not in reg_data["user"]
+
+    # 2. Verify immediate authentication (Test 2)
+    me_resp = client.get("/api/auth/me")
+    assert me_resp.status_code == 200
+    assert me_resp.get_json()["authenticated"] is True
+    assert me_resp.get_json()["user"]["username"] == username
+
+    # 3. Log out (Test 3)
+    logout_resp = client.post("/api/auth/logout")
+    assert logout_resp.status_code == 200
+
+    # Verify session is cleared
+    me_logged_out = client.get("/api/auth/me")
+    assert me_logged_out.status_code == 200
+    assert me_logged_out.get_json()["authenticated"] is False
+
+    # 4. Subsequent login with exact same credentials
+    login_resp = client.post(
+        "/api/auth/login",
+        json={"username_or_email": username, "password": password},
+    )
+    assert login_resp.status_code == 200
+    login_data = login_resp.get_json()
+    assert login_data["user"]["username"] == username
+    assert login_data["user"]["email"] == email
+
+    # 5. Subsequent login using email instead of username
+    client.post("/api/auth/logout")
+    login_email_resp = client.post(
+        "/api/auth/login",
+        json={"username_or_email": email, "password": password},
+    )
+    assert login_email_resp.status_code == 200
+    assert login_email_resp.get_json()["user"]["username"] == username
+
+
+def test_registration_and_login_case_insensitivity_and_whitespace(client):
+    """
+    Ensure registration handles mixed case and whitespace, and login works
+    case-insensitively with leading/trailing whitespace.
+    """
+    raw_username = "  Vishwaksen Ghattamaraju  "
+    raw_email = "  Vishwaksen.Ghattamaraju@Example.Com  "
+    password = "VishwaksenPass2026!"
+
+    # Register with whitespace and mixed-case
+    reg_resp = client.post(
+        "/api/auth/register",
+        json={"username": raw_username, "email": raw_email, "password": password, "role": "organizer"},
+    )
+    assert reg_resp.status_code == 201
+    norm_username = "Vishwaksen Ghattamaraju"
+    norm_email = "vishwaksen.ghattamaraju@example.com"
+    assert reg_resp.get_json()["user"]["username"] == norm_username
+    assert reg_resp.get_json()["user"]["email"] == norm_email
+
+    # Logout
+    client.post("/api/auth/logout")
+
+    # Login using all lowercase username with extra spaces
+    login_lower = client.post(
+        "/api/auth/login",
+        json={"username_or_email": "  vishwaksen ghattamaraju  ", "password": password},
+    )
+    assert login_lower.status_code == 200
+    assert login_lower.get_json()["user"]["username"] == norm_username
+
+    client.post("/api/auth/logout")
+
+    # Login using uppercase email
+    login_email = client.post(
+        "/api/auth/login",
+        json={"username_or_email": "VISHWAKSEN.GHATTAMARAJU@EXAMPLE.COM", "password": password},
+    )
+    assert login_email.status_code == 200
+    assert login_email.get_json()["user"]["username"] == norm_username
+
+
+def test_duplicate_registration_prevented_case_insensitively(client):
+    """TEST 6: Attempting to register existing username or email is rejected."""
+    # Register initial user
+    client.post(
+        "/api/auth/register",
+        json={"username": "OriginalUser", "email": "original@example.com", "password": "Password123!"},
+    )
+    client.post("/api/auth/logout")
+
+    # Attempt duplicate username with different casing
+    dup_user_resp = client.post(
+        "/api/auth/register",
+        json={"username": "originaluser", "email": "different@example.com", "password": "Password123!"},
+    )
+    assert dup_user_resp.status_code == 400
+    assert "already taken" in dup_user_resp.get_json()["error"]
+
+    # Attempt duplicate email with different casing
+    dup_email_resp = client.post(
+        "/api/auth/register",
+        json={"username": "DifferentUser", "email": "ORIGINAL@EXAMPLE.COM", "password": "Password123!"},
+    )
+    assert dup_email_resp.status_code == 400
+    assert "already registered" in dup_email_resp.get_json()["error"]

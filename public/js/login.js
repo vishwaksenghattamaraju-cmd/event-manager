@@ -3,57 +3,47 @@
  * Simple, Minimal, Fast & Reliable
  */
 
-// Active password timeout tracker
-const passwordPeekTimeouts = {};
-
-// Global Password Visibility Toggle (visible for 1 second)
+// Global Password Visibility Toggle (persistent show/hide on click)
 window.togglePasswordVisibility = function(inputId, btn) {
   const input = document.getElementById(inputId);
   if (!input) return;
 
-  const eyeIcon = btn ? btn.querySelector('.eye-icon') : null;
-  const eyeOffIcon = btn ? btn.querySelector('.eye-off-icon') : null;
+  const currentVal = input.value;
+  const isCurrentlyVisible = input.type === 'text';
+  const shouldShow = !isCurrentlyVisible;
 
-  // Clear any existing 1-second timeout for this input
-  if (passwordPeekTimeouts[inputId]) {
-    clearTimeout(passwordPeekTimeouts[inputId]);
-    delete passwordPeekTimeouts[inputId];
+  // Toggle type
+  input.type = shouldShow ? 'text' : 'password';
+  input.value = currentVal; // preserve value exactly
+
+  const targetBtn = btn || document.getElementById(`btn-toggle-${inputId}`);
+  if (targetBtn) {
+    const eyeIcon = targetBtn.querySelector('.eye-icon');
+    const eyeOffIcon = targetBtn.querySelector('.eye-off-icon');
+
+    if (shouldShow) {
+      if (eyeIcon) eyeIcon.style.display = 'none';
+      if (eyeOffIcon) eyeOffIcon.style.display = 'block';
+      targetBtn.setAttribute('aria-label', 'Hide password');
+      targetBtn.setAttribute('title', 'Hide password');
+      targetBtn.setAttribute('aria-pressed', 'true');
+    } else {
+      if (eyeIcon) eyeIcon.style.display = 'block';
+      if (eyeOffIcon) eyeOffIcon.style.display = 'none';
+      targetBtn.setAttribute('aria-label', 'Show password');
+      targetBtn.setAttribute('title', 'Show password');
+      targetBtn.setAttribute('aria-pressed', 'false');
+    }
   }
 
-  // If already text, user clicked to hide early: revert immediately
-  if (input.type === 'text') {
-    input.type = 'password';
-    if (eyeIcon) eyeIcon.style.display = 'block';
-    if (eyeOffIcon) eyeOffIcon.style.display = 'none';
-    if (btn) {
-      btn.setAttribute('aria-label', 'View password for 1 second');
-      btn.setAttribute('title', 'View password for 1 second');
-    }
+  // Restore cursor position to end of input without clearing
+  try {
     input.focus();
-    return;
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
+  } catch (e) {
+    // Ignore on unsupported browsers
   }
-
-  // Make password visible in text form
-  input.type = 'text';
-  if (eyeIcon) eyeIcon.style.display = 'none';
-  if (eyeOffIcon) eyeOffIcon.style.display = 'block';
-  if (btn) {
-    btn.setAttribute('aria-label', 'Password visible (1s)');
-    btn.setAttribute('title', 'Password visible (1s)');
-  }
-  input.focus();
-
-  // Automatically revert back to hidden password after exactly 1 second (1000ms)
-  passwordPeekTimeouts[inputId] = setTimeout(() => {
-    input.type = 'password';
-    if (eyeIcon) eyeIcon.style.display = 'block';
-    if (eyeOffIcon) eyeOffIcon.style.display = 'none';
-    if (btn) {
-      btn.setAttribute('aria-label', 'View password for 1 second');
-      btn.setAttribute('title', 'View password for 1 second');
-    }
-    delete passwordPeekTimeouts[inputId];
-  }, 1000);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -75,12 +65,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   const loginError = document.getElementById('login-error');
   const regError = document.getElementById('reg-error');
 
-  // Password Visibility Toggle Helpers
+  // Password Visibility Toggle Handlers
   const bindToggle = (btnId, inputId) => {
     const btn = document.getElementById(btnId);
-    btn?.addEventListener('click', (e) => {
+    if (!btn) return;
+    btn.type = 'button';
+    btn.addEventListener('click', (e) => {
       e.preventDefault();
+      e.stopPropagation();
       window.togglePasswordVisibility(inputId, btn);
+    });
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        window.togglePasswordVisibility(inputId, btn);
+      }
     });
   };
 
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 350);
     } else {
       if (loginError) {
-        loginError.textContent = result.error || 'Invalid credentials';
+        loginError.textContent = result.error || 'Invalid username or password.';
         loginError.style.display = 'block';
       }
     }

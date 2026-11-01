@@ -3,6 +3,7 @@
 import secrets
 from functools import wraps
 from flask import Blueprint, request, jsonify, session, g
+from sqlalchemy import func
 from backend.models.base import db_session
 from backend.models.user import User, UserRole
 from backend.models.event import Event
@@ -25,55 +26,21 @@ def get_current_user() -> User | None:
         return None
 
     if hasattr(g, "current_user") and g.current_user:
-        if (user_id and g.current_user.id == user_id) or (username and g.current_user.username == username):
+        if (user_id and g.current_user.id == user_id) or (username and g.current_user.username.lower() == username.lower()):
             return g.current_user
 
     user = None
     if user_id:
         user = db_session.query(User).filter(User.id == user_id, User.is_active.is_(True)).first()
 
-    # Fallback to username lookup if user_id was from another container or reset
+    # Fallback to username lookup if user_id was changed or session reconnected
     if not user and username:
-        user = db_session.query(User).filter(User.username == username, User.is_active.is_(True)).first()
+        user = db_session.query(User).filter(
+            func.lower(User.username) == username.lower(), User.is_active.is_(True)
+        ).first()
         if user:
             session["user_id"] = user.id
             session.modified = True
-
-    # Fallback for known seeded users if user_id points to standard slot
-    if not user and not username and user_id:
-        id_to_user = {1: "admin", 2: "organizer", 3: "vishwaksen", 4: "vishwaksen ghattamaraju"}
-        fallback_name = id_to_user.get(user_id)
-        if fallback_name:
-            user = db_session.query(User).filter(User.username == fallback_name, User.is_active.is_(True)).first()
-            if user:
-                session["user_id"] = user.id
-                session["username"] = user.username
-                session.modified = True
-
-    # Self-healing in serverless environment:
-    # If the user was authenticated with a valid signed session cookie, but this container
-    # has a clean /tmp database without this user, restore/seed the user!
-    if not user and username:
-        try:
-            role = session.get("role", UserRole.ORGANIZER)
-            email = session.get("email", f"{username}@eventinventory.com")
-            user = User(
-                username=username,
-                email=email,
-                role=role,
-                is_active=True
-            )
-            user.set_password("Organizer@123")
-            db_session.add(user)
-            db_session.commit()
-            db_session.refresh(user)
-            session["user_id"] = user.id
-            session.modified = True
-        except Exception:
-            db_session.rollback()
-            user = db_session.query(User).filter(User.username == username).first()
-            if user:
-                session["user_id"] = user.id
 
     g.current_user = user
     return user
@@ -138,7 +105,8 @@ def register():
 
     user, error = register_user(db_session, username, email, password, role=role)
     if error:
-        return jsonify({"error": error}), 400
+        status_code = 500 if "database" in error.lower() else 400
+        return jsonify({"error": error}), status_code
 
     # Auto-login after registration
     session.clear()
@@ -175,7 +143,16 @@ def login():
         client_ip=client_ip
     )
     if error:
-        status_code = 429 if "Too many" in error else 401
+        if "Too many" in error:
+            status_code = 429
+        elif "Database" in error:
+            status_code = 500
+        elif "deactivated" in error:
+            status_code = 403
+        elif "required" in error:
+            status_code = 400
+        else:
+            status_code = 401
         return jsonify({"error": error}), status_code
 
     # Establish session
@@ -195,7 +172,6 @@ def login():
 
 
 @auth_bp.route("/logout", methods=["POST"])
-@login_required
 def logout():
     """Endpoint to terminate user session."""
     session.clear()
@@ -316,4 +292,3 @@ def toggle_role():
         "user": user_dict,
         "csrf_token": csrf_token
     }), 200
-

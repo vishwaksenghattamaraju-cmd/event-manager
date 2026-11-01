@@ -43,9 +43,13 @@ def get_engine(database_url: str):
             engine_kwargs["poolclass"] = StaticPool
     else:
         # Serverless PostgreSQL settings (auto-recycle connections, handle cold starts)
-        engine_kwargs["pool_recycle"] = 300
+        engine_kwargs["pool_recycle"] = 180
         engine_kwargs["pool_size"] = 5
         engine_kwargs["max_overflow"] = 10
+        if "pg8000" in database_url:
+            import ssl
+            if "localhost" not in database_url and "127.0.0.1" not in database_url:
+                connect_args["ssl_context"] = ssl.create_default_context()
 
     eng = create_engine(
         database_url,
