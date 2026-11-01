@@ -1301,9 +1301,10 @@ function escapeHtml(str) {
 let selectedCsvFile = null;
 let parsedCsvRows = [];
 
-// Trigger file input dialog (available immediately on window)
+// Trigger file input dialog (safeguarded against duplicate events)
 window.triggerCsvFileInput = function(e) {
   if (e) {
+    if (e.target && (e.target.id === 'csv-file-input' || (e.target.closest && e.target.closest('label[for="csv-file-input"]')))) return;
     if (e.preventDefault) e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
   }
@@ -1577,18 +1578,15 @@ function setupCsvImportHandlers() {
   const btnRemove = document.getElementById('btn-remove-selected-csv');
   const btnSubmit = document.getElementById('btn-submit-csv-import');
   const btnTemplate = document.getElementById('btn-download-csv-template');
-  const btnBrowseFile = document.getElementById('btn-browse-file');
-  const browseTrigger = document.getElementById('browse-csv-trigger');
 
-  btnBrowseFile?.addEventListener('click', window.triggerCsvFileInput);
-  browseTrigger?.addEventListener('click', window.triggerCsvFileInput);
   btnTemplate?.addEventListener('click', window.downloadCsvTemplate);
 
-  // Click dropzone to browse
+  // Click anywhere in dropzone to browse, unless clicking on native label activator
   dropzone?.addEventListener('click', (e) => {
-    if (e.target !== fileInput && e.target !== btnBrowseFile) {
-      window.triggerCsvFileInput(e);
+    if (e.target.closest && (e.target.closest('label[for="csv-file-input"]') || e.target.closest('button') || e.target.id === 'csv-file-input')) {
+      return;
     }
+    fileInput?.click();
   });
 
   // Drag and drop events
