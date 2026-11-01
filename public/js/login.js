@@ -3,22 +3,57 @@
  * Simple, Minimal, Fast & Reliable
  */
 
-// Global Password Visibility Toggle
+// Active password timeout tracker
+const passwordPeekTimeouts = {};
+
+// Global Password Visibility Toggle (visible for 1 second)
 window.togglePasswordVisibility = function(inputId, btn) {
   const input = document.getElementById(inputId);
   if (!input) return;
-  const isPassword = input.type === 'password';
-  input.type = isPassword ? 'text' : 'password';
 
+  const eyeIcon = btn ? btn.querySelector('.eye-icon') : null;
+  const eyeOffIcon = btn ? btn.querySelector('.eye-off-icon') : null;
+
+  // Clear any existing 1-second timeout for this input
+  if (passwordPeekTimeouts[inputId]) {
+    clearTimeout(passwordPeekTimeouts[inputId]);
+    delete passwordPeekTimeouts[inputId];
+  }
+
+  // If already text, user clicked to hide early: revert immediately
+  if (input.type === 'text') {
+    input.type = 'password';
+    if (eyeIcon) eyeIcon.style.display = 'block';
+    if (eyeOffIcon) eyeOffIcon.style.display = 'none';
+    if (btn) {
+      btn.setAttribute('aria-label', 'View password for 1 second');
+      btn.setAttribute('title', 'View password for 1 second');
+    }
+    input.focus();
+    return;
+  }
+
+  // Make password visible in text form
+  input.type = 'text';
+  if (eyeIcon) eyeIcon.style.display = 'none';
+  if (eyeOffIcon) eyeOffIcon.style.display = 'block';
   if (btn) {
-    const eyeIcon = btn.querySelector('.eye-icon');
-    const eyeOffIcon = btn.querySelector('.eye-off-icon');
-    if (eyeIcon) eyeIcon.style.display = isPassword ? 'none' : 'block';
-    if (eyeOffIcon) eyeOffIcon.style.display = isPassword ? 'block' : 'none';
-    btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-    btn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+    btn.setAttribute('aria-label', 'Password visible (1s)');
+    btn.setAttribute('title', 'Password visible (1s)');
   }
   input.focus();
+
+  // Automatically revert back to hidden password after exactly 1 second (1000ms)
+  passwordPeekTimeouts[inputId] = setTimeout(() => {
+    input.type = 'password';
+    if (eyeIcon) eyeIcon.style.display = 'block';
+    if (eyeOffIcon) eyeOffIcon.style.display = 'none';
+    if (btn) {
+      btn.setAttribute('aria-label', 'View password for 1 second');
+      btn.setAttribute('title', 'View password for 1 second');
+    }
+    delete passwordPeekTimeouts[inputId];
+  }, 1000);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
