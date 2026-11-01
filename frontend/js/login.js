@@ -3,6 +3,24 @@
  * Simple, Minimal, Fast & Reliable
  */
 
+// Global Password Visibility Toggle
+window.togglePasswordVisibility = function(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+
+  if (btn) {
+    const eyeIcon = btn.querySelector('.eye-icon');
+    const eyeOffIcon = btn.querySelector('.eye-off-icon');
+    if (eyeIcon) eyeIcon.style.display = isPassword ? 'none' : 'block';
+    if (eyeOffIcon) eyeOffIcon.style.display = isPassword ? 'block' : 'none';
+    btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+    btn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+  }
+  input.focus();
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   // If already logged in, redirect directly to dashboard
   try {
@@ -21,6 +39,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const formRegister = document.getElementById('form-register');
   const loginError = document.getElementById('login-error');
   const regError = document.getElementById('reg-error');
+
+  // Password Visibility Toggle Helpers
+  const bindToggle = (btnId, inputId) => {
+    const btn = document.getElementById(btnId);
+    btn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.togglePasswordVisibility(inputId, btn);
+    });
+  };
+
+  bindToggle('btn-toggle-login-password', 'login-password');
+  bindToggle('btn-toggle-reg-password', 'reg-password');
 
   // Tab switching
   tabLogin?.addEventListener('click', () => {
