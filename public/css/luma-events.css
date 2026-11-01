@@ -127,25 +127,25 @@ body[data-bg-video="dashboard"] {
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
+  background: var(--luma-card-bg, #1E1E1E);
+  border: 2px dashed var(--luma-card-border, #333333);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.5rem;
   box-sizing: border-box;
   text-align: center;
-  transition: all 0.25s ease;
+  transition: all 0.22s ease;
   overflow: hidden;
   cursor: pointer;
   user-select: none;
 }
 
 .luma-artwork-card:hover {
-  border-color: rgba(255, 255, 255, 0.36);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--brand-orange);
+  background: rgba(251, 146, 60, 0.05);
 }
 
 .luma-artwork-card:focus-visible {
@@ -154,21 +154,22 @@ body[data-bg-video="dashboard"] {
 }
 
 .luma-artwork-card.drag-over {
-  border-color: var(--brand-orange);
-  border-style: solid;
-  background: rgba(129, 140, 248, 0.14);
-  box-shadow: 0 0 28px rgba(129, 140, 248, 0.35);
+  border-color: var(--brand-orange) !important;
+  border-style: solid !important;
+  background: rgba(249, 115, 22, 0.12) !important;
+  box-shadow: 0 0 24px rgba(249, 115, 22, 0.25);
   transform: scale(1.01);
 }
 
 .luma-artwork-card.has-image {
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--luma-card-border, #333333);
+  border-style: solid;
   padding: 0;
-  background: #090a0f;
+  background: #000000;
 }
 
 .luma-artwork-card.has-image:hover {
-  border-color: rgba(255, 255, 255, 0.35);
+  border-color: var(--brand-orange);
 }
 
 .luma-artwork-placeholder {
@@ -178,70 +179,76 @@ body[data-bg-video="dashboard"] {
   justify-content: center;
   pointer-events: none;
   transition: opacity 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
 }
 
 .luma-artwork-icon-wrap {
-  width: 64px;
-  height: 64px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: var(--brand-subtle, #2A1B12);
+  border: 1px solid rgba(249, 115, 22, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  color: var(--luma-text-muted);
-  margin-bottom: 1rem;
+  font-size: 1.6rem;
+  color: var(--brand-orange);
+  margin-bottom: 0.85rem;
+  transition: transform 0.2s ease;
+}
+
+.luma-artwork-card:hover .luma-artwork-icon-wrap {
+  transform: scale(1.08);
 }
 
 .luma-artwork-label {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--luma-text-main);
   letter-spacing: -0.01em;
+  margin-bottom: 0.25rem;
+}
+
+.luma-artwork-sublabel {
+  font-size: 0.82rem;
+  color: var(--luma-text-muted);
+  margin-bottom: 0.35rem;
 }
 
 .luma-artwork-hint {
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   color: var(--luma-text-dim);
-  margin-top: 0.35rem;
-  max-width: 220px;
-  line-height: 1.4;
+  margin-bottom: 0.95rem;
 }
 
-/* AI Category Match Pill Badge at Top-Left */
-.luma-artwork-ai-badge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  background: rgba(15, 23, 42, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 20px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #F7F7F5;
-  display: flex;
+.luma-artwork-upload-btn {
+  pointer-events: auto;
+  background: var(--brand-orange);
+  color: #ffffff !important;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.45rem 1.15rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.28);
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  z-index: 5;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  gap: 0.35rem;
 }
 
-.ai-badge-sparkle {
-  color: var(--brand-orange);
-  font-size: 0.85rem;
-  display: inline-block;
-  animation: sparklePulse 2s infinite ease-in-out;
+:root[data-theme="dark"] .luma-artwork-upload-btn {
+  background: #FB923C;
+  color: #111111 !important;
 }
 
-@keyframes sparklePulse {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.25); opacity: 1; }
+.luma-artwork-upload-btn:hover {
+  background: var(--brand-orange-hover) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.38);
 }
 
 /* Image preview element */
@@ -251,9 +258,9 @@ body[data-bg-video="dashboard"] {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 25px;
-  display: block;
-  transition: transform 0.35s ease, opacity 0.25s ease;
+  border-radius: 23px;
+  display: none;
+  transition: transform 0.35s ease;
 }
 
 .luma-artwork-card.has-image:hover .luma-artwork-preview {
@@ -263,67 +270,56 @@ body[data-bg-video="dashboard"] {
 /* Floating Actions at bottom right */
 .luma-artwork-actions {
   position: absolute;
-  bottom: 16px;
-  right: 16px;
-  display: flex;
+  bottom: 12px;
+  right: 12px;
+  display: none;
   align-items: center;
   gap: 0.6rem;
   z-index: 5;
 }
 
 .luma-artwork-btn {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: none;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.luma-btn-magic {
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(56, 189, 248, 0.45);
-  color: var(--brand-orange);
-  font-size: 1.15rem;
-}
-
-.luma-btn-magic:hover {
-  transform: scale(1.12);
-  background: rgba(30, 41, 59, 0.95);
-  border-color: var(--brand-orange);
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
-}
-
 .luma-camera-badge {
-  background: #ffffff;
-  color: #202020;
+  background: rgba(17, 17, 17, 0.85);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .luma-camera-badge:hover {
-  transform: scale(1.1);
-  background: #F7F7F5;
+  background: var(--brand-orange);
+  color: #ffffff;
+  border-color: var(--brand-orange);
+  transform: scale(1.08);
 }
 
 /* Remove image button at top right */
 .luma-artwork-remove-btn {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 34px;
-  height: 34px;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(17, 17, 17, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -332,8 +328,8 @@ body[data-bg-video="dashboard"] {
 }
 
 .luma-artwork-remove-btn:hover {
-  background: rgba(239, 68, 68, 0.9);
-  border-color: rgba(239, 68, 68, 1);
+  background: #ef4444;
+  border-color: #ef4444;
   transform: scale(1.1);
 }
 
@@ -1192,41 +1188,46 @@ body[data-bg-video="dashboard"] {
 
 /* Artwork Card in Light Mode */
 :root[data-theme="light"] .luma-artwork-card {
-  background: #ffffff;
-  border-color: #E7E5E4;
-  box-shadow: 0 4px 25px -4px rgba(15, 23, 42, 0.08);
+  background: #FFFFFF;
+  border-color: #D6D3D1;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="light"] .luma-artwork-card:hover {
+  border-color: var(--brand-orange);
+  background: #FFF7ED;
 }
 
 :root[data-theme="light"] .luma-artwork-card.has-image {
-  background: #ffffff;
+  background: #000000;
   border-color: #E7E5E4;
 }
 
 :root[data-theme="light"] .luma-artwork-placeholder {
-  background: #F7F7F5;
-  color: #666666;
+  background: transparent;
+  color: inherit;
 }
 
 :root[data-theme="light"] .luma-artwork-remove-btn {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid #E7E5E4;
   color: #202020;
 }
 
-:root[data-theme="light"] .luma-btn-magic {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid var(--brand-orange);
-  color: var(--brand-orange-hover);
-  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
-}
-
-:root[data-theme="light"] .luma-camera-badge {
-  background: #202020;
+:root[data-theme="light"] .luma-artwork-remove-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
   color: #ffffff;
 }
 
+:root[data-theme="light"] .luma-camera-badge {
+  background: #FFFFFF;
+  color: #202020;
+  border: 1px solid #D6D3D1;
+}
+
 :root[data-theme="light"] .luma-camera-badge svg {
-  stroke: #ffffff;
+  stroke: #202020;
 }
 
 /* Search Bar & Table Ledger in Light Mode */

@@ -196,191 +196,22 @@ function initMetaPills() {
 }
 
 /* ==========================================================================
-   AI-Generated Artwork Preset Engine & Semantic Matcher
+   Event Photo Upload Controller (Optional Photo Upload)
    ========================================================================== */
-const AI_ARTWORK_PRESETS = [
-  // Primary category presets matching select options
-  {
-    key: 'conference',
-    category: 'conference',
-    label: 'Keynote Tech Conference',
-    src: '/images/events/conference.jpg',
-    keywords: ['conference', 'keynote', 'summit', 'convention', 'expo', 'forum', 'symposium', 'speaker']
-  },
-  {
-    key: 'workshop',
-    category: 'workshop',
-    label: 'Creative Collaborative Workshop',
-    src: '/images/events/workshop.jpg',
-    keywords: ['workshop', 'training', 'masterclass', 'bootcamp', 'hands-on', 'lab', 'class', 'learn', 'hackathon']
-  },
-  {
-    key: 'wedding',
-    category: 'wedding',
-    label: 'Luxury Wedding Reception',
-    src: '/images/events/wedding.jpg',
-    keywords: ['wedding', 'reception', 'marriage', 'bridal', 'ceremony', 'bride', 'groom', 'anniversary']
-  },
-  {
-    key: 'concert',
-    category: 'concert',
-    label: 'Live Music & Laser Stage Concert',
-    src: '/images/events/concert.jpg',
-    keywords: ['concert', 'live music', 'festival', 'band', 'dj', 'rave', 'stage', 'rock', 'synth', 'show', 'edm']
-  },
-  {
-    key: 'corporate',
-    category: 'corporate',
-    label: 'Executive Skyline Gala',
-    src: '/images/events/corporate.jpg',
-    keywords: ['corporate', 'business', 'executive', 'gala', 'board', 'annual meeting', 'leadership', 'client', 'dinner']
-  },
-  {
-    key: 'meetup',
-    category: 'meetup',
-    label: 'Cocktail Networking Lounge',
-    src: '/images/events/cocktail-hour.jpg',
-    keywords: ['meetup', 'networking', 'social', 'mixer', 'drinks', 'cocktail', 'gathering', 'community']
-  },
-
-  // Description / Title semantic matches:
-  {
-    key: 'yoga',
-    category: null,
-    label: 'Sunset Yoga & Wellness',
-    src: '/images/events/sunset-yoga.jpg',
-    keywords: ['yoga', 'wellness', 'fitness', 'meditation', 'pilates', 'mindfulness', 'retreat', 'health', 'zen']
-  },
-  {
-    key: 'dinner',
-    category: null,
-    label: 'Celebration Feast & Dinner Party',
-    src: '/images/events/dinner-party.jpg',
-    keywords: ['dinner', 'party', 'birthday', 'celebration', 'feast', 'banquet', 'culinary', 'tasting menu', 'food', 'supper', 'bday']
-  },
-  {
-    key: 'acoustic',
-    category: null,
-    label: 'Acoustic & Unplugged Session',
-    src: '/images/events/acoustic-session.jpg',
-    keywords: ['acoustic', 'unplugged', 'guitar', 'indie', 'intimate', 'singer', 'songwriter', 'folk', 'jazz']
-  },
-  {
-    key: 'tech_salon',
-    category: null,
-    label: 'AI & Future Tech Salon',
-    src: '/images/events/ai-salon.jpg',
-    keywords: ['ai', 'artificial intelligence', 'machine learning', 'deep learning', 'algorithm', 'neural', 'robotics', 'software', 'cloud', 'cyber']
-  },
-  {
-    key: 'clay_craft',
-    category: null,
-    label: 'Pottery & Craft Workshop',
-    src: '/images/events/clay-craft.jpg',
-    keywords: ['pottery', 'clay', 'ceramic', 'craft', 'sculpture', 'painting', 'diy', 'art class', 'art studio', 'handicraft']
-  },
-  {
-    key: 'brew_lab',
-    category: null,
-    label: 'Craft Brewery & Hops Lab',
-    src: '/images/events/brew-lab.jpg',
-    keywords: ['beer', 'brew', 'brewery', 'cider', 'wine', 'ale', 'hops', 'pub', 'tasting']
-  },
-  {
-    key: 'gaming',
-    category: null,
-    label: 'Game Night & Poker Lounge',
-    src: '/images/events/poker-night.jpg',
-    keywords: ['poker', 'game night', 'casino', 'board games', 'cards', 'trivia', 'esports', 'tournament']
-  }
-];
-
-let isUserCustomUpload = false;
-let currentAiCycleIndex = 0;
 
 function initArtworkDropzone() {
-  const uploadBtn = document.getElementById('btn-artwork-upload');
-  const magicBtn = document.getElementById('btn-artwork-magic');
   const dropzone = document.getElementById('artwork-dropzone');
   const fileInput = document.getElementById('artwork-file-input');
   const previewImg = document.getElementById('artwork-preview-img');
   const placeholder = document.getElementById('artwork-placeholder');
   const removeBtn = document.getElementById('btn-artwork-remove');
-  const aiBadge = document.getElementById('artwork-ai-badge');
-  const aiLabel = document.getElementById('artwork-ai-label');
-
-  const typeSelect = document.getElementById('booking-type');
-  const titleInput = document.getElementById('booking-title');
-  const descInput = document.getElementById('booking-description');
+  const actionsWrap = document.getElementById('artwork-actions');
+  const uploadBtn = document.getElementById('btn-artwork-upload');
+  const browseBtn = document.getElementById('btn-browse-photo');
 
   if (!dropzone || !fileInput) return;
 
-  function findMatchingPresets(categoryVal, titleVal, descVal) {
-    const text = `${titleVal || ''} ${descVal || ''}`.toLowerCase();
-    const cat = (categoryVal || '').toLowerCase();
-
-    // 1. Check for specific semantic theme matches in title & description
-    const specificMatches = AI_ARTWORK_PRESETS.filter(p => 
-      p.keywords.some(kw => text.includes(kw))
-    );
-    if (specificMatches.length > 0) {
-      return specificMatches;
-    }
-
-    // 2. Filter by category
-    const categoryMatches = AI_ARTWORK_PRESETS.filter(p => p.category === cat);
-    if (categoryMatches.length > 0) {
-      return categoryMatches;
-    }
-
-    // 3. Fallback
-    return [AI_ARTWORK_PRESETS[0]];
-  }
-
-  function autoMatchArtwork(forceCycle = false) {
-    if (isUserCustomUpload) return;
-
-    const cat = typeSelect ? typeSelect.value : 'Conference';
-    const title = titleInput ? titleInput.value : '';
-    const desc = descInput ? descInput.value : '';
-
-    const matches = findMatchingPresets(cat, title, desc);
-
-    if (forceCycle) {
-      currentAiCycleIndex = (currentAiCycleIndex + 1) % AI_ARTWORK_PRESETS.length;
-      const cycledPreset = AI_ARTWORK_PRESETS[currentAiCycleIndex];
-      applyPreset(cycledPreset);
-      UI.toast(`✨ Cycled artwork to ${cycledPreset.label}`, 'info');
-      return;
-    }
-
-    const selectedPreset = matches[0] || AI_ARTWORK_PRESETS[0];
-    applyPreset(selectedPreset);
-  }
-
-  function applyPreset(preset) {
-    currentArtworkDataUrl = preset.src;
-
-    if (previewImg) {
-      previewImg.src = preset.src;
-      previewImg.style.display = 'block';
-    }
-    if (placeholder) {
-      placeholder.style.display = 'none';
-    }
-    if (aiBadge) {
-      aiBadge.style.display = 'flex';
-      if (aiLabel) aiLabel.textContent = `AI Matched: ${preset.label}`;
-    }
-    if (removeBtn) {
-      removeBtn.style.display = 'flex';
-      removeBtn.title = 'Reset to AI Default';
-    }
-    dropzone.classList.add('has-image');
-  }
-
   function setCustomArtwork(dataUrl) {
-    isUserCustomUpload = true;
     currentArtworkDataUrl = dataUrl;
     if (previewImg) {
       previewImg.src = dataUrl;
@@ -389,28 +220,39 @@ function initArtworkDropzone() {
     if (placeholder) {
       placeholder.style.display = 'none';
     }
-    if (aiBadge) {
-      aiBadge.style.display = 'flex';
-      if (aiLabel) aiLabel.textContent = '📷 Custom Photo Uploaded';
-    }
     if (removeBtn) {
       removeBtn.style.display = 'flex';
-      removeBtn.title = 'Remove custom photo';
+      removeBtn.title = 'Remove Photo';
+    }
+    if (actionsWrap) {
+      actionsWrap.style.display = 'flex';
     }
     dropzone.classList.add('has-image');
   }
 
-  function resetArtwork() {
-    isUserCustomUpload = false;
+  function clearArtwork() {
+    currentArtworkDataUrl = null;
     fileInput.value = '';
-    autoMatchArtwork();
-    UI.toast('Reset to AI category artwork', 'info');
+    if (previewImg) {
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+    }
+    if (placeholder) {
+      placeholder.style.display = 'flex';
+    }
+    if (removeBtn) {
+      removeBtn.style.display = 'none';
+    }
+    if (actionsWrap) {
+      actionsWrap.style.display = 'none';
+    }
+    dropzone.classList.remove('has-image');
   }
 
   function handleFile(file) {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      UI.toast('Please select a valid image file (PNG, JPG, WebP, GIF)', 'warning');
+      UI.toast('Please select an image file (PNG, JPG, WebP, GIF)', 'warning');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -421,7 +263,7 @@ function initArtworkDropzone() {
     const reader = new FileReader();
     reader.onload = (e) => {
       setCustomArtwork(e.target.result);
-      UI.toast('Custom artwork added!', 'success');
+      UI.toast('Event photo uploaded successfully!', 'success');
     };
     reader.onerror = () => {
       UI.toast('Failed to load image file', 'error');
@@ -429,17 +271,31 @@ function initArtworkDropzone() {
     reader.readAsDataURL(file);
   }
 
-  // Upload button
+  // Browse photo button
+  browseBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  // Change photo button
   uploadBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     fileInput.click();
   });
 
-  // Magic AI Cycle button
-  magicBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    isUserCustomUpload = false;
-    autoMatchArtwork(true);
+  // Clicking the dropzone triggers file picker when empty or for changing
+  dropzone.addEventListener('click', (e) => {
+    if (e.target.closest('#btn-artwork-remove') || e.target.closest('#artwork-actions') || e.target.closest('#btn-browse-photo')) {
+      return;
+    }
+    fileInput.click();
+  });
+
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
   });
 
   fileInput.addEventListener('change', (e) => {
@@ -450,7 +306,8 @@ function initArtworkDropzone() {
 
   removeBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    resetArtwork();
+    clearArtwork();
+    UI.toast('Event photo removed', 'info');
   });
 
   // Drag and drop events
@@ -492,27 +349,10 @@ function initArtworkDropzone() {
     }
   });
 
-  // Real-time automatic AI artwork updates based on category & description
-  typeSelect?.addEventListener('change', () => {
-    isUserCustomUpload = false;
-    autoMatchArtwork();
-  });
+  // Initial state: clean and empty (photo is optional)
+  clearArtwork();
 
-  let debounceTimer = null;
-  function debouncedAutoMatch() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      autoMatchArtwork();
-    }, 300);
-  }
-
-  titleInput?.addEventListener('input', debouncedAutoMatch);
-  descInput?.addEventListener('input', debouncedAutoMatch);
-
-  // Initialize immediately on page load
-  autoMatchArtwork();
-
-  window.clearArtwork = resetArtwork;
+  window.clearArtwork = clearArtwork;
   window.setArtwork = setCustomArtwork;
 }
 
