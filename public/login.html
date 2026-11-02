@@ -34,8 +34,8 @@
         <div class="auth-logo-badge">
           <img src="/images/logo.svg?v=6" alt="The Matrix" style="width: 32px; height: 32px; object-fit: contain;">
         </div>
-        <h1 class="auth-title">Login</h1>
-        <p class="auth-subtitle">Sign in to continue to The Matrix</p>
+        <h1 class="auth-title" id="auth-title">Login</h1>
+        <p class="auth-subtitle" id="auth-subtitle">Sign in to continue to The Matrix</p>
       </div>
 
       <!-- Segmented Tabs for Log In / Register -->
@@ -69,18 +69,26 @@
         <div id="login-error" class="auth-error-banner" role="alert" aria-live="polite" style="display: none;"></div>
         <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">Login</button>
 
+        <!-- Seamless Switch to Register Prompt -->
+        <div class="auth-switch-prompt" style="text-align: center; margin-top: 0.85rem; font-size: 0.82rem; color: var(--text-muted);">
+          Don't have an account? <a href="#register" id="link-goto-register" style="color: var(--primary); font-weight: 600; text-decoration: none;">Register</a>
+        </div>
+
         <!-- Permanent Demo Login Section -->
         <div class="auth-demo-box" id="auth-demo-box" aria-label="Demo Login Credentials">
           <div class="auth-demo-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <span class="auth-demo-label" style="margin-bottom: 0;">⚡ 1-Click Demo Credentials:</span>
             <span style="font-size: 0.72rem; color: var(--text-dim);">Click to autofill</span>
           </div>
-          <div class="auth-demo-chips">
+          <div class="auth-demo-chips" id="auth-demo-chips">
             <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-admin" title="Autofill Administrator (admin / Admin@123)">
               👑 <strong>Admin</strong> <span style="opacity: 0.8; font-size: 0.7rem; margin-left: 0.2rem;">(Full Access)</span>
             </button>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-organizer" title="Autofill Event Organizer (organizer / Organizer@123)">
               📋 <strong>Organizer</strong> <span style="opacity: 0.8; font-size: 0.7rem; margin-left: 0.2rem;">(Events & Inventory)</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-registered" style="display: none; border-color: var(--primary);" title="Autofill your registered account">
+              👤 <strong id="btn-fill-reg-name">Account</strong> <span style="opacity: 0.8; font-size: 0.7rem; margin-left: 0.2rem;">(Registered)</span>
             </button>
           </div>
           <div class="auth-demo-creds-hint" style="margin-top: 0.55rem; font-size: 0.72rem; color: var(--text-muted); border-top: 1px dashed var(--border-color); padding-top: 0.45rem; display: flex; flex-direction: column; gap: 0.2rem;">
@@ -125,6 +133,11 @@
         </div>
         <div id="reg-error" class="auth-error-banner" role="alert" aria-live="polite" style="display: none;"></div>
         <button type="submit" id="btn-reg-submit" class="btn btn-primary btn-block">Create Organizer Account</button>
+
+        <!-- Seamless Switch to Sign In Prompt -->
+        <div class="auth-switch-prompt" style="text-align: center; margin-top: 0.85rem; font-size: 0.82rem; color: var(--text-muted);">
+          Already have an account? <a href="#login" id="link-goto-login" style="color: var(--primary); font-weight: 600; text-decoration: none;">Sign In</a>
+        </div>
       </form>
 
       <div class="auth-footer">

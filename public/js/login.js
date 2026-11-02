@@ -1,6 +1,6 @@
 /**
  * Login & Registration Controller
- * Simple, Minimal, Fast & Reliable
+ * Full Header & Form Synchronization • Serverless Resilience • Seamless User Experience
  */
 
 // Active password peek timeout tracker
@@ -92,6 +92,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const loginError = document.getElementById('login-error');
   const regError = document.getElementById('reg-error');
 
+  const authTitle = document.getElementById('auth-title') || document.querySelector('.auth-title');
+  const authSubtitle = document.getElementById('auth-subtitle') || document.querySelector('.auth-subtitle');
+
+  const inputLoginUser = document.getElementById('login-username');
+  const inputLoginPass = document.getElementById('login-password');
+  const inputRegUser = document.getElementById('reg-username');
+  const inputRegEmail = document.getElementById('reg-email');
+  const inputRegPass = document.getElementById('reg-password');
+  const selectRegRole = document.getElementById('reg-role');
+
   // Bind Theme Toggle Button if present
   const themeToggleBtn = document.getElementById('btn-theme-toggle');
   if (themeToggleBtn) {
@@ -131,18 +141,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const populateDemo = (username, password, roleLabel) => {
     // Ensure Sign In tab is active
     if (!tabLogin?.classList.contains('active')) {
-      tabLogin?.click();
+      activateLoginTab(false);
     }
 
-    const userInput = document.getElementById('login-username');
-    const passInput = document.getElementById('login-password');
-    if (userInput) {
-      userInput.value = username;
-      userInput.dispatchEvent(new Event('input', { bubbles: true }));
+    if (inputLoginUser) {
+      inputLoginUser.value = username;
+      inputLoginUser.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    if (passInput) {
-      passInput.value = password;
-      passInput.dispatchEvent(new Event('input', { bubbles: true }));
+    if (inputLoginPass) {
+      inputLoginPass.value = password;
+      inputLoginPass.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     if (loginError) loginError.style.display = 'none';
@@ -151,7 +159,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       UI.toast(`Autofilled ${roleLabel} demo credentials!`, 'info');
     }
 
-    // Focus submit button so user can press Enter or click Login
     document.getElementById('btn-login-submit')?.focus();
   };
 
@@ -165,45 +172,161 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateDemo('organizer', 'Organizer@123', 'Organizer');
   });
 
-  // Tab switching
-  const activateLoginTab = () => {
+  // Setup Registered User Quick-Fill Chip if present in vault
+  const setupRegisteredUserChip = () => {
+    try {
+      const vault = JSON.parse(localStorage.getItem('matrix_registered_accounts') || '[]');
+      const btnFillReg = document.getElementById('btn-fill-registered');
+      const nameSpan = document.getElementById('btn-fill-reg-name');
+      if (vault && vault.length > 0 && btnFillReg && nameSpan) {
+        const latest = vault[0];
+        nameSpan.textContent = latest.username.length > 14 ? latest.username.slice(0, 12) + '…' : latest.username;
+        btnFillReg.title = `Autofill ${latest.username} (${latest.role || 'organizer'})`;
+        btnFillReg.style.display = 'inline-flex';
+        btnFillReg.onclick = (e) => {
+          e.preventDefault();
+          populateDemo(latest.username, latest.password, latest.username);
+        };
+      }
+    } catch (e) {
+      console.warn('Registered chip setup notice:', e);
+    }
+  };
+  setupRegisteredUserChip();
+
+  // Tab switching and synchronization
+  const activateLoginTab = (shouldFocus = true) => {
     tabLogin?.classList.add('active');
     tabRegister?.classList.remove('active');
     tabLogin?.setAttribute('aria-selected', 'true');
     tabRegister?.setAttribute('aria-selected', 'false');
+
     if (formLogin) formLogin.style.display = 'block';
     if (formRegister) formRegister.style.display = 'none';
     if (loginError) loginError.style.display = 'none';
-    document.getElementById('login-username')?.focus();
+
+    // Synchronize Card Title & Subtitle
+    if (authTitle) authTitle.textContent = 'Login';
+    if (authSubtitle) authSubtitle.textContent = 'Sign in to continue to The Matrix';
+    document.title = 'Sign In • The Matrix';
+
+    // Synchronize Form Values: Transfer entered values from Register to Sign In
+    if (inputLoginUser && !inputLoginUser.value.trim()) {
+      const regUser = (inputRegUser?.value || '').trim();
+      const regEmail = (inputRegEmail?.value || '').trim();
+      if (regUser) {
+        inputLoginUser.value = regUser;
+      } else if (regEmail) {
+        inputLoginUser.value = regEmail;
+      }
+    }
+    if (inputLoginPass && !inputLoginPass.value && inputRegPass?.value) {
+      inputLoginPass.value = inputRegPass.value;
+    }
+
+    // Keep URL Hash in sync
+    if (window.location.hash === '#register') {
+      try { history.replaceState(null, '', '#login'); } catch (e) { window.location.hash = 'login'; }
+    }
+
+    if (shouldFocus) {
+      inputLoginUser?.focus();
+    }
   };
 
-  const activateRegisterTab = () => {
+  const activateRegisterTab = (shouldFocus = true) => {
     tabRegister?.classList.add('active');
     tabLogin?.classList.remove('active');
     tabRegister?.setAttribute('aria-selected', 'true');
     tabLogin?.setAttribute('aria-selected', 'false');
+
     if (formRegister) formRegister.style.display = 'block';
     if (formLogin) formLogin.style.display = 'none';
     if (regError) regError.style.display = 'none';
-    document.getElementById('reg-username')?.focus();
+
+    // Synchronize Card Title & Subtitle
+    if (authTitle) authTitle.textContent = 'Create Account';
+    if (authSubtitle) authSubtitle.textContent = 'Sign up to get started with The Matrix';
+    document.title = 'Register • The Matrix';
+
+    // Synchronize Form Values: Transfer entered values from Sign In to Register
+    const loginVal = (inputLoginUser?.value || '').trim();
+    if (loginVal) {
+      if (loginVal.includes('@')) {
+        if (inputRegEmail && !inputRegEmail.value.trim()) {
+          inputRegEmail.value = loginVal;
+        }
+        if (inputRegUser && !inputRegUser.value.trim()) {
+          inputRegUser.value = loginVal.split('@')[0];
+        }
+      } else {
+        if (inputRegUser && !inputRegUser.value.trim()) {
+          inputRegUser.value = loginVal;
+        }
+      }
+    }
+    if (inputRegPass && !inputRegPass.value && inputLoginPass?.value) {
+      inputRegPass.value = inputLoginPass.value;
+    }
+
+    // Keep URL Hash in sync
+    if (window.location.hash !== '#register') {
+      try { history.replaceState(null, '', '#register'); } catch (e) { window.location.hash = 'register'; }
+    }
+
+    if (shouldFocus) {
+      if (inputRegUser && !inputRegUser.value) {
+        inputRegUser.focus();
+      } else if (inputRegEmail && !inputRegEmail.value) {
+        inputRegEmail.focus();
+      } else {
+        inputRegPass?.focus();
+      }
+    }
   };
 
-  tabLogin?.addEventListener('click', activateLoginTab);
-  tabRegister?.addEventListener('click', activateRegisterTab);
+  tabLogin?.addEventListener('click', () => activateLoginTab(true));
+  tabRegister?.addEventListener('click', () => activateRegisterTab(true));
+
+  // Contextual Switch Links inside form bodies
+  document.getElementById('link-goto-register')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    activateRegisterTab(true);
+  });
+
+  document.getElementById('link-goto-login')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    activateLoginTab(true);
+  });
 
   // Keyboard accessibility for tabs
   const handleTabKeyDown = (activateFn) => (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      activateFn();
+      activateFn(true);
     }
   };
   tabLogin?.addEventListener('keydown', handleTabKeyDown(activateLoginTab));
   tabRegister?.addEventListener('keydown', handleTabKeyDown(activateRegisterTab));
 
-  // Check URL Hash for tab selection
+  // Hash navigation listener (supports browser back/forward buttons)
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#register') {
+      activateRegisterTab(false);
+    } else {
+      activateLoginTab(false);
+    }
+  });
+
+  // Check URL Hash for tab selection on initial page load
   if (window.location.hash === '#register') {
-    activateRegisterTab();
+    activateRegisterTab(false);
+  } else {
+    // If not on register tab, pre-fill last logged-in / registered username if available
+    const lastUser = localStorage.getItem('matrix_last_username');
+    if (lastUser && inputLoginUser && !inputLoginUser.value) {
+      inputLoginUser.value = lastUser;
+    }
   }
 
   // Handle Login submission
@@ -216,8 +339,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       submitBtn.textContent = 'Signing in...';
     }
 
-    const usernameOrEmail = document.getElementById('login-username')?.value.trim() || '';
-    const password = document.getElementById('login-password')?.value || '';
+    const usernameOrEmail = inputLoginUser?.value.trim() || '';
+    const password = inputLoginPass?.value || '';
 
     const result = await API.login(usernameOrEmail, password);
     if (submitBtn) {
@@ -241,11 +364,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Update register button text on role change
-  const roleSelect = document.getElementById('reg-role');
   const regSubmitBtn = document.getElementById('btn-reg-submit');
-  if (roleSelect && regSubmitBtn) {
-    roleSelect.addEventListener('change', () => {
-      regSubmitBtn.textContent = roleSelect.value === 'admin'
+  if (selectRegRole && regSubmitBtn) {
+    selectRegRole.addEventListener('change', () => {
+      regSubmitBtn.textContent = selectRegRole.value === 'admin'
         ? 'Create Administrator Account'
         : 'Create Organizer Account';
     });
@@ -261,10 +383,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       submitBtn.textContent = 'Registering...';
     }
 
-    const username = document.getElementById('reg-username')?.value.trim() || '';
-    const email = document.getElementById('reg-email')?.value.trim() || '';
-    const role = document.getElementById('reg-role')?.value || 'organizer';
-    const password = document.getElementById('reg-password')?.value || '';
+    const username = inputRegUser?.value.trim() || '';
+    const email = inputRegEmail?.value.trim() || '';
+    const role = selectRegRole?.value || 'organizer';
+    const password = inputRegPass?.value || '';
 
     const result = await API.register(username, email, password, role);
     if (submitBtn) {
@@ -274,8 +396,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (result.success) {
       const roleName = role === 'admin' ? 'Administrator' : 'Organizer';
+      if (inputLoginUser) inputLoginUser.value = username;
+      if (inputLoginPass) inputLoginPass.value = password;
+      setupRegisteredUserChip();
+
       if (window.UI?.toast) {
-        UI.toast(`${roleName} account created! Redirecting...`, 'success');
+        UI.toast(`${roleName} account created! Redirecting to dashboard...`, 'success');
       }
       setTimeout(() => {
         window.location.replace('/dashboard');
@@ -300,5 +426,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Not authenticated - stay on login page with demo logins active
       }
     }
+    setupRegisteredUserChip();
   });
 });

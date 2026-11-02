@@ -173,87 +173,135 @@ const API = {
    */
 
   async login(usernameOrEmail, password) {
-
+    const cleanIdentifier = (usernameOrEmail || '').trim();
     const res = await this.fetch('/api/auth/login', {
-
       method: 'POST',
-
       body: JSON.stringify({
-
-        username: usernameOrEmail,
-
-        username_or_email: usernameOrEmail,
-
+        username: cleanIdentifier,
+        username_or_email: cleanIdentifier,
         password: password
-
       })
-
     });
 
-
-
     if (res.ok) {
+      try {
+        localStorage.setItem('matrix_last_username', cleanIdentifier);
+        localStorage.setItem('matrix_last_password', password);
+      } catch (e) {}
 
       this.currentUser = res.data.user;
-
       if (res.data.csrf_token) {
-
         this.csrfToken = res.data.csrf_token;
-
         sessionStorage.setItem('csrf_token', res.data.csrf_token);
-
       }
-
       return { success: true, user: res.data.user };
+    }
 
+    // SERVERLESS RESILIENCE SYNC:
+    // If login returned 401, check if this account was registered in this browser
+    // and temporarily lost due to Vercel serverless container cold start / container recycle on ephemeral /tmp.
+    if (res.status === 401) {
+      try {
+        const vault = JSON.parse(localStorage.getItem('matrix_registered_accounts') || '[]');
+        const norm = cleanIdentifier.toLowerCase();
+        const matched = vault.find(a =>
+          (a.username.toLowerCase() === norm || a.email.toLowerCase() === norm) &&
+          a.password === password
+        );
+
+        if (matched) {
+          console.info('Serverless cold start detected. Re-syncing registered account to active container...');
+          const regRes = await this.fetch('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({
+              username: matched.username,
+              email: matched.email,
+              password: matched.password,
+              role: matched.role || 'organizer'
+            })
+          });
+
+          if (regRes.ok) {
+            const retryRes = await this.fetch('/api/auth/login', {
+              method: 'POST',
+              body: JSON.stringify({
+                username: matched.username,
+                username_or_email: matched.username,
+                password: password
+              })
+            });
+
+            if (retryRes.ok) {
+              localStorage.setItem('matrix_last_username', matched.username);
+              localStorage.setItem('matrix_last_password', password);
+              this.currentUser = retryRes.data.user;
+              if (retryRes.data.csrf_token) {
+                this.csrfToken = retryRes.data.csrf_token;
+                sessionStorage.setItem('csrf_token', retryRes.data.csrf_token);
+              }
+              return { success: true, user: retryRes.data.user };
+            }
+          }
+        }
+      } catch (syncErr) {
+        console.warn('Serverless account re-sync failed:', syncErr);
+      }
     }
 
     return { success: false, error: res.error };
-
   },
 
-
-
   /**
-
    * Register new user (organizer or admin).
-
    */
-
   async register(username, email, password, role = 'organizer') {
+    const cleanUsername = (username || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanRole = (role || 'organizer').trim().toLowerCase();
 
     const res = await this.fetch('/api/auth/register', {
-
       method: 'POST',
-
-      body: JSON.stringify({ username, email, password, role })
-
+      body: JSON.stringify({
+        username: cleanUsername,
+        email: cleanEmail,
+        password: password,
+        role: cleanRole
+      })
     });
 
-
-
     if (res.ok) {
+      // Synchronize registered account to local client vault for cross-session & serverless persistence
+      try {
+        const vault = JSON.parse(localStorage.getItem('matrix_registered_accounts') || '[]');
+        const updated = vault.filter(a =>
+          a.username.toLowerCase() !== cleanUsername.toLowerCase() &&
+          a.email.toLowerCase() !== cleanEmail.toLowerCase()
+        );
+        updated.unshift({
+          username: cleanUsername,
+          email: cleanEmail,
+          password: password,
+          role: cleanRole,
+          registered_at: Date.now()
+        });
+        localStorage.setItem('matrix_registered_accounts', JSON.stringify(updated.slice(0, 10)));
+        localStorage.setItem('matrix_last_username', cleanUsername);
+        localStorage.setItem('matrix_last_password', password);
+      } catch (vaultErr) {
+        console.warn('Could not cache registered account:', vaultErr);
+      }
 
       if (res.data && res.data.user) {
-
         this.currentUser = res.data.user;
-
       }
-
       if (res.data && res.data.csrf_token) {
-
         this.csrfToken = res.data.csrf_token;
-
         sessionStorage.setItem('csrf_token', res.data.csrf_token);
-
       }
-
       return { success: true, message: res.data ? res.data.message : 'Registration successful', user: res.data ? res.data.user : null };
-
     }
 
     return { success: false, error: res.error };
-
   },
 
 
