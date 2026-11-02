@@ -66,23 +66,6 @@ def check_item_availability_for_window(
         req_start, req_end, setup_buffer_minutes, teardown_buffer_minutes
     )
 
-    # Query all confirmed events that overlap the requested effective window
-    # Overlap condition:
-    # (event.start_time - setup_buffer) < eff_req_end AND (event.end_time + teardown_buffer) > eff_req_start
-    query = (
-        db.query(func.coalesce(func.sum(EventItem.quantity), 0))
-        .join(Event, Event.id == EventItem.event_id)
-        .filter(
-            EventItem.item_id == item_id,
-            Event.status == EventStatus.CONFIRMED,
-            # Half-open interval overlap check
-            # existing_effective_start < requested_effective_end
-            Event.start_time - func.concat(Event.setup_buffer_minutes, " minute")
-            if db.bind and db.bind.dialect.name == "mysql"
-            else Event.start_time < eff_req_end,  # Python-evaluated fallback / standard
-        )
-    )
-
     # Build dialect-safe overlap query:
     # An event overlaps when (Event.start_time < eff_req_end) AND (Event.end_time > eff_req_start)
     overlap_query = (
@@ -379,10 +362,12 @@ def reschedule_or_edit_event(
     if new_items_spec is None:
         new_requirements = [{"item_id": it.item_id, "quantity": it.quantity} for it in event.items]
     else:
-        new_requirements = [
-            {"item_id": int(i["item_id"]), "quantity": int(i["quantity"])}
-            for i in new_items_spec
-        ]
+        new_requirements = []
+        for i in new_items_spec:
+            qty = int(i["quantity"])
+            if qty <= 0:
+                return None, {"error": "Item quantity must be greater than zero."}
+            new_requirements.append({"item_id": int(i["item_id"]), "quantity": qty})
 
     # If the event is CONFIRMED, re-run full availability check inside a locked transaction
     if event.status == EventStatus.CONFIRMED:
@@ -424,7 +409,10 @@ def reschedule_or_edit_event(
             if "location" in data:
                 event.location = data["location"].strip() if data["location"] else None
             if "expected_guest_count" in data:
-                event.expected_guest_count = int(data["expected_guest_count"])
+                g_val = int(data["expected_guest_count"])
+                if g_val <= 0:
+                    return None, {"error": "Expected guest count must be greater than zero."}
+                event.expected_guest_count = g_val
             if "image_url" in data:
                 event.image_url = data["image_url"].strip() if data["image_url"] else None
 
@@ -455,7 +443,10 @@ def reschedule_or_edit_event(
             if "location" in data:
                 event.location = data["location"].strip() if data["location"] else None
             if "expected_guest_count" in data:
-                event.expected_guest_count = int(data["expected_guest_count"])
+                g_val = int(data["expected_guest_count"])
+                if g_val <= 0:
+                    return None, {"error": "Expected guest count must be greater than zero."}
+                event.expected_guest_count = g_val
             if "image_url" in data:
                 event.image_url = data["image_url"].strip() if data["image_url"] else None
 

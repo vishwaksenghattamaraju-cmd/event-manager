@@ -236,10 +236,10 @@ class MLService:
             for item in active_items:
                 cat_lower = item.category.lower()
                 name_lower = item.name.lower()
-                if "chair" in name_lower or "chair" in cat_lower or "furniture" in cat_lower:
-                    db_items_map.setdefault("chairs", []).append(item)
-                elif "table" in name_lower:
+                if "table" in name_lower or ("furniture" in cat_lower and "table" in name_lower):
                     db_items_map.setdefault("tables", []).append(item)
+                elif "chair" in name_lower or "chair" in cat_lower or ("furniture" in cat_lower and "table" not in name_lower):
+                    db_items_map.setdefault("chairs", []).append(item)
                 elif "mic" in name_lower or ("audio" in cat_lower and "mic" in name_lower):
                     db_items_map.setdefault("microphones", []).append(item)
                 elif "projector" in name_lower or "visual" in cat_lower:

@@ -52,7 +52,10 @@ def create_event(
         return None, "Event start time must precede end time."
 
     try:
-        expected_guests = int(data.get("expected_guest_count") or data.get("expected_attendees") or 50)
+        raw_guests = data.get("expected_guest_count")
+        if raw_guests is None:
+            raw_guests = data.get("expected_attendees")
+        expected_guests = int(raw_guests if raw_guests is not None else 50)
         if expected_guests <= 0:
             return None, "Expected guest count must be greater than zero."
 

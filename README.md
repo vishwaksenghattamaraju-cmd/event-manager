@@ -108,8 +108,8 @@ Open your browser to: **`http://127.0.0.1:5000`**
 
 | Role | Username | Password | Email |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin` | `AdminSecure123!` | `admin@eventinventory.local` |
-| **Event Organizer** | `organizer` | `OrganizerPass123!` | `organizer@eventinventory.local` |
+| **Administrator** | `admin` | `Admin@123` *(or `AdminSecure123!`)* | `admin@eventinventory.local` |
+| **Event Organizer** | `organizer` | `Organizer@123` *(or `OrganizerPass123!`)* | `organizer@eventinventory.local` |
 
 *Note: You can also register a new Event Organizer directly from the login page (`/login`).*
 

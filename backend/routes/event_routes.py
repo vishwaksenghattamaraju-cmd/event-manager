@@ -117,6 +117,7 @@ def check_availability_preview():
 
         return jsonify({
             "is_sufficient": is_sufficient,
+            "available": is_sufficient,
             "item_statuses": item_statuses,
             "shortages": shortages,
         }), 200

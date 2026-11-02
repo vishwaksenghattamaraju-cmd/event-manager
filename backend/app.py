@@ -194,7 +194,7 @@ def create_app(config_class=Config) -> Flask:
                     organizer_id=admin.id if admin else 1,
                     data={
                         "title": "Acoustic Sunset Concert",
-                        "event_type": EventType.CONCERT,
+                        "event_type": EventType.OTHER,
                         "start_time": (now_utc + timedelta(days=5, hours=18)).isoformat(),
                         "end_time": (now_utc + timedelta(days=5, hours=22)).isoformat(),
                         "items": item_spec,

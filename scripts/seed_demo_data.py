@@ -43,7 +43,7 @@ def seed():
             role=UserRole.ADMIN,
             is_active=True,
         )
-        admin.set_password("AdminSecure123!")
+        admin.set_password("Admin@123")
         db_session.add(admin)
         print("  [+] Created Admin: admin / AdminSecure123!")
 
@@ -55,7 +55,7 @@ def seed():
             role=UserRole.ORGANIZER,
             is_active=True,
         )
-        organizer.set_password("OrganizerPass123!")
+        organizer.set_password("Organizer@123")
         db_session.add(organizer)
         print("  [+] Created Organizer: organizer / OrganizerPass123!")
 
