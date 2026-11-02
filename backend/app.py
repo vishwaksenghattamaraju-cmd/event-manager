@@ -99,17 +99,28 @@ def create_app(config_class=Config) -> Flask:
         init_database(app.config["DATABASE_URL"])
         create_all_tables()
 
-        # Self-healing: auto-seed admin if database is newly initialized
+        # Self-healing: auto-seed or restore standard admin and organizer demo accounts
         try:
             from backend.models.user import User, UserRole
-            from backend.services.auth_service import register_organizer
-            if not db_session.query(User).filter(User.username == "admin").first():
+            from backend.services.auth_service import create_admin_user, register_organizer
+
+            admin = db_session.query(User).filter(User.username == "admin").first()
+            if not admin:
                 create_admin_user(db_session, "admin", "admin@eventinventory.com", "Admin@123")
                 logger.info("Auto-seeded default administrator: admin / Admin@123")
+            elif not admin.check_password("Admin@123"):
+                admin.set_password("Admin@123")
+                db_session.commit()
+                logger.info("Restored default administrator password: admin / Admin@123")
 
-            if not db_session.query(User).filter(User.username == "organizer").first():
+            organizer = db_session.query(User).filter(User.username == "organizer").first()
+            if not organizer:
                 register_organizer(db_session, "organizer", "organizer@eventinventory.com", "Organizer@123")
                 logger.info("Auto-seeded default organizer: organizer / Organizer@123")
+            elif not organizer.check_password("Organizer@123"):
+                organizer.set_password("Organizer@123")
+                db_session.commit()
+                logger.info("Restored default organizer password: organizer / Organizer@123")
         except Exception as seed_err:
             logger.warning(f"Default user initialization skipped: {seed_err}")
             db_session.rollback()
@@ -265,6 +276,15 @@ def create_app(config_class=Config) -> Flask:
     @app.teardown_appcontext
     def shutdown_session(exception=None):
         remove_session()
+
+    # Prevent caching of protected pages and sensitive API responses
+    @app.after_request
+    def set_security_cache_headers(response):
+        if request.path.startswith("/api/") or request.path in ("/dashboard", "/inventory", "/events"):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
 
     # CSRF protection check for mutating requests
     @app.before_request

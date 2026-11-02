@@ -173,9 +173,11 @@ def login():
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
-    """Endpoint to terminate user session."""
+    """Endpoint to terminate user session and invalidate cookies."""
     session.clear()
-    return jsonify({"message": "Logged out successfully."}), 200
+    resp = jsonify({"message": "Logged out successfully."})
+    resp.delete_cookie("session", path="/", samesite="Lax")
+    return resp, 200
 
 
 @auth_bp.route("/me", methods=["GET"])
@@ -251,10 +253,12 @@ def delete_account():
         return jsonify({"error": error}), 400
 
     session.clear()
-    return jsonify({
+    resp = jsonify({
         "message": "Your account has been permanently deleted.",
         "deleted": True
-    }), 200
+    })
+    resp.delete_cookie("session", path="/", samesite="Lax")
+    return resp, 200
 
 
 @auth_bp.route("/toggle-role", methods=["POST"])

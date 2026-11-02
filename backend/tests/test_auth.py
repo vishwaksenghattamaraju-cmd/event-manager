@@ -386,3 +386,58 @@ def test_duplicate_registration_prevented_case_insensitively(client):
     )
     assert dup_email_resp.status_code == 400
     assert "already registered" in dup_email_resp.get_json()["error"]
+
+
+
+def test_demo_accounts_seeded_and_can_login_repeatedly(client):
+    """
+    Ensure the standard demo accounts ('admin' and 'organizer') can be created/seeded
+    and can log in, log out, and log in repeatedly without credentials being corrupted.
+    """
+    from backend.services.auth_service import create_admin_user, register_organizer
+    from backend.models.base import db_session
+    from backend.models.user import User
+
+    # Seed demo accounts if not present
+    if not db_session.query(User).filter(User.username == "admin").first():
+        create_admin_user(db_session, "admin", "admin@eventinventory.com", "Admin@123")
+    if not db_session.query(User).filter(User.username == "organizer").first():
+        register_organizer(db_session, "organizer", "organizer@eventinventory.com", "Organizer@123")
+
+    # 1. Admin login
+    admin_login = client.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
+    assert admin_login.status_code == 200
+    assert admin_login.get_json()["user"]["role"] == "admin"
+
+    # Logout
+    logout_resp = client.post("/api/auth/logout")
+    assert logout_resp.status_code == 200
+    # Verify cookie invalidation header
+    set_cookie = logout_resp.headers.get("Set-Cookie", "")
+    assert "session=" in set_cookie or "session=;" in set_cookie
+
+    # 2. Organizer login
+    org_login = client.post("/api/auth/login", json={"username": "organizer", "password": "Organizer@123"})
+    assert org_login.status_code == 200
+    assert org_login.get_json()["user"]["role"] == "organizer"
+
+    # Logout
+    client.post("/api/auth/logout")
+
+    # 3. Repeat Admin login after logout to verify repeatability
+    repeat_admin = client.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
+    assert repeat_admin.status_code == 200
+    assert repeat_admin.get_json()["user"]["username"] == "admin"
+
+
+def test_protected_routes_return_no_cache_headers(client, organizer_user):
+    """
+    Ensure protected views and API routes return no-store/no-cache headers
+    to prevent browser back-navigation from restoring protected views after logout.
+    """
+    client.post("/api/auth/login", json={"username": organizer_user.username, "password": "OrganizerPass123!"})
+    resp = client.get("/api/inventory")
+    assert resp.status_code == 200
+    cache_control = resp.headers.get("Cache-Control", "")
+    assert "no-store" in cache_control
+    assert "no-cache" in cache_control

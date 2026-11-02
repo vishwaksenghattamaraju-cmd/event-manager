@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const user = await API.getCurrentUser();
     if (user) {
-      window.location.href = '/dashboard';
+      window.location.replace('/dashboard');
       return;
     }
   } catch (err) {
@@ -86,6 +86,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindToggle('btn-toggle-login-password', 'login-password');
   bindToggle('btn-toggle-reg-password', 'reg-password');
+
+  // 1-Click Demo Login Autofill Handlers
+  const populateDemo = (username, password, roleLabel) => {
+    // Ensure Sign In tab is active
+    if (!tabLogin?.classList.contains('active')) {
+      tabLogin?.click();
+    }
+
+    const userInput = document.getElementById('login-username');
+    const passInput = document.getElementById('login-password');
+    if (userInput) {
+      userInput.value = username;
+      userInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (passInput) {
+      passInput.value = password;
+      passInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    if (loginError) loginError.style.display = 'none';
+
+    if (window.UI?.toast) {
+      UI.toast(`Autofilled ${roleLabel} demo credentials!`, 'info');
+    }
+
+    // Focus submit button so user can press Enter or click Login
+    document.getElementById('btn-login-submit')?.focus();
+  };
+
+  document.getElementById('btn-fill-admin')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    populateDemo('admin', 'Admin@123', 'Administrator');
+  });
+
+  document.getElementById('btn-fill-organizer')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    populateDemo('organizer', 'Organizer@123', 'Organizer');
+  });
 
   // Tab switching
   tabLogin?.addEventListener('click', () => {
@@ -139,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         UI.toast(`Welcome back, ${result.user.username}!`, 'success');
       }
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.replace('/dashboard');
       }, 350);
     } else {
       if (loginError) {
@@ -187,12 +225,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         UI.toast(`${roleName} account created! Redirecting...`, 'success');
       }
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.replace('/dashboard');
       }, 350);
     } else {
       if (regError) {
         regError.textContent = result.error || 'Registration failed';
         regError.style.display = 'block';
+      }
+    }
+  });
+
+  // PageShow listener: if user navigates back to /login from browser history after logout
+  window.addEventListener('pageshow', async (event) => {
+    if (event.persisted) {
+      try {
+        const user = await API.getCurrentUser();
+        if (user) {
+          window.location.replace('/dashboard');
+        }
+      } catch (err) {
+        // Not authenticated - stay on login page with demo logins active
       }
     }
   });
