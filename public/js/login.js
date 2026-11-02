@@ -3,47 +3,74 @@
  * Simple, Minimal, Fast & Reliable
  */
 
-// Global Password Visibility Toggle (persistent show/hide on click)
+// Active password peek timeout tracker
+const passwordPeekTimeouts = {};
+
+/**
+ * Password Visibility Toggle: displays password in text form for exactly 1 second,
+ * then automatically reverts to hidden password. Clicking again before 1 second hides it early.
+ */
 window.togglePasswordVisibility = function(inputId, btn) {
   const input = document.getElementById(inputId);
   if (!input) return;
 
   const currentVal = input.value;
-  const isCurrentlyVisible = input.type === 'text';
-  const shouldShow = !isCurrentlyVisible;
-
-  // Toggle type
-  input.type = shouldShow ? 'text' : 'password';
-  input.value = currentVal; // preserve value exactly
-
   const targetBtn = btn || document.getElementById(`btn-toggle-${inputId}`);
-  if (targetBtn) {
-    const eyeIcon = targetBtn.querySelector('.eye-icon');
-    const eyeOffIcon = targetBtn.querySelector('.eye-off-icon');
+  const eyeIcon = targetBtn?.querySelector('.eye-icon');
+  const eyeOffIcon = targetBtn?.querySelector('.eye-off-icon');
 
-    if (shouldShow) {
-      if (eyeIcon) eyeIcon.style.display = 'none';
-      if (eyeOffIcon) eyeOffIcon.style.display = 'block';
-      targetBtn.setAttribute('aria-label', 'Hide password');
-      targetBtn.setAttribute('title', 'Hide password');
-      targetBtn.setAttribute('aria-pressed', 'true');
-    } else {
-      if (eyeIcon) eyeIcon.style.display = 'block';
-      if (eyeOffIcon) eyeOffIcon.style.display = 'none';
-      targetBtn.setAttribute('aria-label', 'Show password');
-      targetBtn.setAttribute('title', 'Show password');
-      targetBtn.setAttribute('aria-pressed', 'false');
-    }
+  // Clear existing auto-hide timeout
+  if (passwordPeekTimeouts[inputId]) {
+    clearTimeout(passwordPeekTimeouts[inputId]);
+    delete passwordPeekTimeouts[inputId];
   }
 
-  // Restore cursor position to end of input without clearing
+  // If already text, user clicked to hide early: revert immediately
+  if (input.type === 'text') {
+    input.type = 'password';
+    input.value = currentVal;
+    if (eyeIcon) eyeIcon.style.display = 'block';
+    if (eyeOffIcon) eyeOffIcon.style.display = 'none';
+    if (targetBtn) {
+      targetBtn.setAttribute('aria-label', 'View password for 1 second');
+      targetBtn.setAttribute('title', 'View password for 1 second');
+      targetBtn.setAttribute('aria-pressed', 'false');
+    }
+    input.focus();
+    return;
+  }
+
+  // Make password visible in text form
+  input.type = 'text';
+  input.value = currentVal;
+  if (eyeIcon) eyeIcon.style.display = 'none';
+  if (eyeOffIcon) eyeOffIcon.style.display = 'block';
+  if (targetBtn) {
+    targetBtn.setAttribute('aria-label', 'Password visible (1s)');
+    targetBtn.setAttribute('title', 'Password visible (1s)');
+    targetBtn.setAttribute('aria-pressed', 'true');
+  }
+
+  // Restore cursor position to end of input without clearing value
   try {
     input.focus();
     const len = input.value.length;
     input.setSelectionRange(len, len);
-  } catch (e) {
-    // Ignore on unsupported browsers
-  }
+  } catch (e) {}
+
+  // Automatically revert back to password after exactly 1 second (1000ms)
+  passwordPeekTimeouts[inputId] = setTimeout(() => {
+    input.type = 'password';
+    input.value = currentVal;
+    if (eyeIcon) eyeIcon.style.display = 'block';
+    if (eyeOffIcon) eyeOffIcon.style.display = 'none';
+    if (targetBtn) {
+      targetBtn.setAttribute('aria-label', 'View password for 1 second');
+      targetBtn.setAttribute('title', 'View password for 1 second');
+      targetBtn.setAttribute('aria-pressed', 'false');
+    }
+    delete passwordPeekTimeouts[inputId];
+  }, 1000);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -64,6 +91,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const formRegister = document.getElementById('form-register');
   const loginError = document.getElementById('login-error');
   const regError = document.getElementById('reg-error');
+
+  // Bind Theme Toggle Button if present
+  const themeToggleBtn = document.getElementById('btn-theme-toggle');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.UI?.toggleTheme) {
+        window.UI.toggleTheme();
+      } else if (window.API?.toggleTheme) {
+        window.API.toggleTheme();
+      }
+    });
+  }
 
   // Password Visibility Toggle Handlers
   const bindToggle = (btnId, inputId) => {
@@ -126,31 +166,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Tab switching
-  tabLogin?.addEventListener('click', () => {
-    tabLogin.classList.add('active');
+  const activateLoginTab = () => {
+    tabLogin?.classList.add('active');
     tabRegister?.classList.remove('active');
-    tabLogin.setAttribute('aria-selected', 'true');
+    tabLogin?.setAttribute('aria-selected', 'true');
     tabRegister?.setAttribute('aria-selected', 'false');
     if (formLogin) formLogin.style.display = 'block';
     if (formRegister) formRegister.style.display = 'none';
     if (loginError) loginError.style.display = 'none';
     document.getElementById('login-username')?.focus();
-  });
+  };
 
-  tabRegister?.addEventListener('click', () => {
-    tabRegister.classList.add('active');
+  const activateRegisterTab = () => {
+    tabRegister?.classList.add('active');
     tabLogin?.classList.remove('active');
-    tabRegister.setAttribute('aria-selected', 'true');
+    tabRegister?.setAttribute('aria-selected', 'true');
     tabLogin?.setAttribute('aria-selected', 'false');
     if (formRegister) formRegister.style.display = 'block';
     if (formLogin) formLogin.style.display = 'none';
     if (regError) regError.style.display = 'none';
     document.getElementById('reg-username')?.focus();
-  });
+  };
+
+  tabLogin?.addEventListener('click', activateLoginTab);
+  tabRegister?.addEventListener('click', activateRegisterTab);
+
+  // Keyboard accessibility for tabs
+  const handleTabKeyDown = (activateFn) => (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      activateFn();
+    }
+  };
+  tabLogin?.addEventListener('keydown', handleTabKeyDown(activateLoginTab));
+  tabRegister?.addEventListener('keydown', handleTabKeyDown(activateRegisterTab));
 
   // Check URL Hash for tab selection
   if (window.location.hash === '#register') {
-    tabRegister?.click();
+    activateRegisterTab();
   }
 
   // Handle Login submission

@@ -1,6 +1,6 @@
 /**
  * ui.js - Shared UI utilities, notifications, and interaction helpers for The Matrix
- * Provides fallback implementations and prevents 404 console errors.
+ * Provides theme toggles, floating notifications, and helper methods.
  */
 
 (function () {
@@ -8,16 +8,34 @@
 
   window.UI = window.UI || {
     /**
+     * Toggle between light and dark visual themes.
+     */
+    toggleTheme: function () {
+      if (window.API && typeof window.API.toggleTheme === 'function') {
+        return window.API.toggleTheme();
+      }
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (e) {}
+
+      const btns = document.querySelectorAll('.theme-toggle-btn');
+      btns.forEach(btn => {
+        btn.textContent = next === 'dark' ? '☀️' : '🌙';
+        btn.title = next === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        btn.setAttribute('aria-label', next === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+      });
+    },
+
+    /**
      * Display a temporary floating toast notification
      * @param {string} message - Message to display
      * @param {string} [type='info'] - 'info', 'success', 'warning', or 'error'
      * @param {number} [durationMs=3500] - Duration in milliseconds
      */
     showToast: function (message, type, durationMs) {
-      if (typeof window.showToast === 'function') {
-        return window.showToast(message, type);
-      }
-
       let toastContainer = document.getElementById('global-toast-container');
       if (!toastContainer) {
         toastContainer = document.createElement('div');
@@ -53,6 +71,13 @@
     },
 
     /**
+     * Alias for showToast for backwards/forwards API compatibility
+     */
+    toast: function (message, type, durationMs) {
+      return this.showToast(message, type, durationMs);
+    },
+
+    /**
      * Escape special HTML characters to prevent XSS
      * @param {string} str
      * @returns {string}
@@ -68,4 +93,3 @@
     },
   };
 })();
-
