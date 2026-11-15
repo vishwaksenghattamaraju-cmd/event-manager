@@ -239,3 +239,19 @@ mini project/
 ## 👨‍💻 Author & Academic Submission
 
 Developed for the Engineering Mini Project: **"AI-Based Event Inventory Management System for Small-Scale Events"**. Built with an emphasis on code clarity, database concurrency safety, statistical validation, and production deployment standards.
+
+
+---
+
+## Vercel production deployment (important)
+
+Vercel serverless functions must use a persistent hosted PostgreSQL database. Do not
+use SQLite or `/tmp` for production accounts. Configure `DATABASE_URL` (Neon or
+Supabase PostgreSQL) and a strong `SECRET_KEY` in Vercel Project Settings → Environment
+Variables, then redeploy. The application now rejects SQLite on Vercel, fails startup
+when the production database cannot initialize, and checks the database with a real
+`SELECT 1` query at `/api/health`.
+
+See [`VERCEL_DATABASE_SETUP.md`](VERCEL_DATABASE_SETUP.md) for setup and verification
+steps. Existing accounts stored in a temporary SQLite database are not migrated
+automatically.

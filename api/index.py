@@ -84,8 +84,8 @@ except Exception as e:
         <body>
             <div class="card">
                 <h2>⚠️ Server Initialization Diagnostic</h2>
-                <p>The application encountered an exception during cold start:</p>
-                <pre>{err_tb}</pre>
+                <p>The application could not start. Check the Vercel Function Logs for the detailed error.</p>
+                <p>Verify that DATABASE_URL points to a reachable persistent PostgreSQL database and that SECRET_KEY is configured.</p>
             </div>
         </body>
         </html>

@@ -137,62 +137,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindToggle('btn-toggle-login-password', 'login-password');
   bindToggle('btn-toggle-reg-password', 'reg-password');
 
-  // 1-Click Demo Login Autofill Handlers
-  const populateDemo = (username, password, roleLabel) => {
-    // Ensure Sign In tab is active
-    if (!tabLogin?.classList.contains('active')) {
-      activateLoginTab(false);
-    }
-
-    if (inputLoginUser) {
-      inputLoginUser.value = username;
-      inputLoginUser.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    if (inputLoginPass) {
-      inputLoginPass.value = password;
-      inputLoginPass.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-
-    if (loginError) loginError.style.display = 'none';
-
-    if (window.UI?.toast) {
-      UI.toast(`Autofilled ${roleLabel} demo credentials!`, 'info');
-    }
-
-    document.getElementById('btn-login-submit')?.focus();
-  };
-
-  document.getElementById('btn-fill-admin')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    populateDemo('admin', 'Admin@123', 'Administrator');
-  });
-
-  document.getElementById('btn-fill-organizer')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    populateDemo('organizer', 'Organizer@123', 'Organizer');
-  });
-
-  // Setup Registered User Quick-Fill Chip if present in vault
-  const setupRegisteredUserChip = () => {
-    try {
-      const vault = JSON.parse(localStorage.getItem('matrix_registered_accounts') || '[]');
-      const btnFillReg = document.getElementById('btn-fill-registered');
-      const nameSpan = document.getElementById('btn-fill-reg-name');
-      if (vault && vault.length > 0 && btnFillReg && nameSpan) {
-        const latest = vault[0];
-        nameSpan.textContent = latest.username.length > 14 ? latest.username.slice(0, 12) + '…' : latest.username;
-        btnFillReg.title = `Autofill ${latest.username} (${latest.role || 'organizer'})`;
-        btnFillReg.style.display = 'inline-flex';
-        btnFillReg.onclick = (e) => {
-          e.preventDefault();
-          populateDemo(latest.username, latest.password, latest.username);
-        };
-      }
-    } catch (e) {
-      console.warn('Registered chip setup notice:', e);
-    }
-  };
-  setupRegisteredUserChip();
+  // Legacy local storage cleanup
+  try {
+    localStorage.removeItem('matrix_registered_accounts');
+    localStorage.removeItem('matrix_last_password');
+  } catch (_) {}
 
   // Tab switching and synchronization
   const activateLoginTab = (shouldFocus = true) => {
@@ -398,7 +347,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const roleName = role === 'admin' ? 'Administrator' : 'Organizer';
       if (inputLoginUser) inputLoginUser.value = username;
       if (inputLoginPass) inputLoginPass.value = password;
-      setupRegisteredUserChip();
 
       if (window.UI?.toast) {
         UI.toast(`${roleName} account created! Redirecting to dashboard...`, 'success');
@@ -423,9 +371,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           window.location.replace('/dashboard');
         }
       } catch (err) {
-        // Not authenticated - stay on login page with demo logins active
+        // Not authenticated - stay on login page
       }
     }
-    setupRegisteredUserChip();
   });
 });

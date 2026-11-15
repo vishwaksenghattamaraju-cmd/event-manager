@@ -11,6 +11,7 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from flask import Flask, jsonify, request, session, send_from_directory
+from sqlalchemy import text
 from flask_cors import CORS
 import click
 
@@ -99,31 +100,27 @@ def create_app(config_class=Config) -> Flask:
         init_database(app.config["DATABASE_URL"])
         create_all_tables()
 
-        # Self-healing: auto-seed or restore standard admin and organizer demo accounts
-        try:
-            from backend.models.user import User, UserRole
-            from backend.services.auth_service import create_admin_user, register_organizer
+        # Demo credentials are only created for local development by default.
+        # Never create or reset well-known passwords on a production deployment.
+        allow_demo_users = (
+            not app.config.get("IS_VERCEL")
+            or os.getenv("SEED_DEMO_USERS", "").lower() == "true"
+        )
+        if allow_demo_users:
+            try:
+                from backend.models.user import User
+                from backend.services.auth_service import create_admin_user, register_organizer
 
-            admin = db_session.query(User).filter(User.username == "admin").first()
-            if not admin:
-                create_admin_user(db_session, "admin", "admin@eventinventory.com", "Admin@123")
-                logger.info("Auto-seeded default administrator: admin / Admin@123")
-            elif not admin.check_password("Admin@123"):
-                admin.set_password("Admin@123")
-                db_session.commit()
-                logger.info("Restored default administrator password: admin / Admin@123")
+                admin = db_session.query(User).filter(User.username == "admin").first()
+                if not admin:
+                    create_admin_user(db_session, "admin", "admin@eventinventory.com", "Admin@123")
 
-            organizer = db_session.query(User).filter(User.username == "organizer").first()
-            if not organizer:
-                register_organizer(db_session, "organizer", "organizer@eventinventory.com", "Organizer@123")
-                logger.info("Auto-seeded default organizer: organizer / Organizer@123")
-            elif not organizer.check_password("Organizer@123"):
-                organizer.set_password("Organizer@123")
-                db_session.commit()
-                logger.info("Restored default organizer password: organizer / Organizer@123")
-        except Exception as seed_err:
-            logger.warning(f"Default user initialization skipped: {seed_err}")
-            db_session.rollback()
+                organizer = db_session.query(User).filter(User.username == "organizer").first()
+                if not organizer:
+                    register_organizer(db_session, "organizer", "organizer@eventinventory.com", "Organizer@123")
+            except Exception as seed_err:
+                logger.warning("Default user initialization skipped: %s", seed_err)
+                db_session.rollback()
 
         # Self-healing: auto-seed demo inventory items if catalog is empty
         try:
@@ -213,7 +210,13 @@ def create_app(config_class=Config) -> Flask:
             db_session.rollback()
 
     except Exception as db_err:
-        logger.error(f"Database initialization warning: {db_err}")
+        logger.exception("Database initialization failed.")
+        # Do not serve a seemingly healthy authentication API without a database.
+        if app.config.get("IS_VERCEL") or os.getenv("VERCEL") == "1":
+            raise RuntimeError(
+                "Production database initialization failed. Check DATABASE_URL, "
+                "PostgreSQL network access, and database credentials."
+            ) from db_err
 
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -361,8 +364,18 @@ def create_app(config_class=Config) -> Flask:
 
     @app.route("/api/health", methods=["GET"])
     def health_check():
-        """Health check endpoint."""
-        return jsonify({"status": "healthy", "database": "connected"}), 200
+        """Health check endpoint that verifies a real database round trip."""
+        try:
+            db_session.execute(text("SELECT 1"))
+            return jsonify({"status": "healthy", "database": "connected"}), 200
+        except Exception:
+            logger.exception("Database health check failed.")
+            db_session.rollback()
+            return jsonify({
+                "status": "degraded",
+                "database": "disconnected",
+                "error": "Database connection check failed."
+            }), 503
 
     return app
 

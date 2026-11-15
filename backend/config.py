@@ -13,13 +13,14 @@ load_dotenv(BASE_DIR / ".env")
 class Config:
     """Base configuration loaded from environment variables."""
 
-    # Secret key for signing session cookies
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production-12345")
+    # Vercel is serverless: production data must live in a persistent hosted DB.
+    IS_VERCEL = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
 
-    # Database connection URL
-    # Automatically adapts to writable /tmp storage if running in Vercel serverless environment
-    _is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
-    _default_db = "sqlite:////tmp/event_inventory.db" if _is_vercel else f"sqlite:///{BASE_DIR / 'database' / 'event_inventory.db'}"
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    if IS_VERCEL and (not SECRET_KEY or SECRET_KEY == "dev-secret-key-change-in-production-12345"):
+        raise RuntimeError("SECRET_KEY must be configured in Vercel Environment Variables.")
+    SECRET_KEY = SECRET_KEY or "dev-secret-key-change-in-production-12345"
+
     _db_url = (
         os.getenv("DATABASE_URL")
         or os.getenv("POSTGRES_URL")
@@ -29,23 +30,35 @@ class Config:
         or os.getenv("SUPABASE_DB_URL")
         or os.getenv("NEON_DATABASE_URL")
         or os.getenv("VERCEL_POSTGRES_URL")
-        or _default_db
+        or ""
     ).strip()
 
-    # Normalization: ensure postgresql:// scheme for SQLAlchemy 2.0+
-    if _db_url.startswith("postgres://"):
-        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
-
-    # Safety checks for Vercel
-    if _is_vercel and _db_url.startswith("sqlite:///") and not _db_url.startswith("sqlite:////tmp/"):
-        _db_url = "sqlite:////tmp/event_inventory.db"
+    if IS_VERCEL:
+        if not _db_url:
+            raise RuntimeError(
+                "DATABASE_URL is missing. Configure a persistent PostgreSQL database "
+                "(for example Neon or Supabase) in Vercel Environment Variables."
+            )
+        if _db_url.startswith("postgres://"):
+            _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+        if not _db_url.startswith(("postgresql://", "postgresql+psycopg2://", "postgresql+pg8000://")):
+            raise RuntimeError(
+                "SQLite is not supported on Vercel because its filesystem is ephemeral. "
+                "Configure a persistent PostgreSQL DATABASE_URL."
+            )
+    else:
+        _db_url = _db_url or f"sqlite:///{BASE_DIR / 'database' / 'event_inventory.db'}"
+        if _db_url.startswith("postgres://"):
+            _db_url = _db_url.replace("postgres://", "postgresql://", 1)
 
     DATABASE_URL = _db_url
 
-    # Session cookie security settings
+    # Session cookies: Vercel serves the app over HTTPS.
     SESSION_COOKIE_HTTPONLY = os.getenv("SESSION_COOKIE_HTTPONLY", "True").lower() == "true"
     SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Lax")
-    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False").lower() == "true"
+    SESSION_COOKIE_SECURE = os.getenv(
+        "SESSION_COOKIE_SECURE", "True" if IS_VERCEL else "False"
+    ).lower() == "true"
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
 
     # Rate limiting configuration (max attempts per window)
