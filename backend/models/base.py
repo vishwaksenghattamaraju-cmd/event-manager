@@ -1,5 +1,6 @@
 """Database base configuration and session management using SQLAlchemy 2.0."""
 
+import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
@@ -16,14 +17,15 @@ db_session = scoped_session(SessionLocal)
 def get_engine(database_url: str):
     """
     Creates and configures the SQLAlchemy engine.
-    Applies SQLite-specific settings (foreign keys PRAGMA and StaticPool for in-memory tests).
-    Normalizes postgres:// scheme to postgresql:// for compatibility with Neon/Supabase/Vercel Postgres.
-    Gracefully handles psycopg2 vs pg8000 drivers in serverless environments.
+    - Normalizes postgres:// scheme to postgresql:// for compatibility with Render/PostgreSQL.
+    - Handles psycopg2 vs pg8000 drivers gracefully.
+    - Configures robust connection pooling for production multi-worker environments (Render/Gunicorn).
+    - Preserves StaticPool and SQLite PRAGMAs for automated in-memory testing.
     """
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-    # Driver fallback for serverless Python on PostgreSQL
+    # Driver selection / fallback for PostgreSQL
     if database_url.startswith("postgresql://"):
         try:
             import psycopg2  # noqa: F401
@@ -42,13 +44,17 @@ def get_engine(database_url: str):
         if database_url == "sqlite:///:memory:":
             engine_kwargs["poolclass"] = StaticPool
     else:
-        # Serverless PostgreSQL settings (auto-recycle connections, handle cold starts)
-        # Keep the pool small for serverless execution. Each function instance
-        # should not open a large number of idle PostgreSQL connections.
-        engine_kwargs["pool_recycle"] = 240
-        engine_kwargs["pool_size"] = 1
-        engine_kwargs["max_overflow"] = 0
-        engine_kwargs["pool_timeout"] = 10
+        # Production PostgreSQL connection pool settings for Render
+        pool_size = int(os.getenv("DB_POOL_SIZE", "10"))
+        max_overflow = int(os.getenv("DB_MAX_OVERFLOW", "20"))
+        pool_timeout = int(os.getenv("DB_POOL_TIMEOUT", "30"))
+        pool_recycle = int(os.getenv("DB_POOL_RECYCLE", "300"))
+
+        engine_kwargs["pool_size"] = pool_size
+        engine_kwargs["max_overflow"] = max_overflow
+        engine_kwargs["pool_timeout"] = pool_timeout
+        engine_kwargs["pool_recycle"] = pool_recycle
+
         if "pg8000" in database_url:
             import ssl
             if "localhost" not in database_url and "127.0.0.1" not in database_url:
@@ -60,7 +66,7 @@ def get_engine(database_url: str):
         **engine_kwargs,
     )
 
-    # Enable SQLite foreign key constraint enforcement
+    # Enable SQLite foreign key constraint enforcement in test mode
     if database_url.startswith("sqlite"):
         @event.listens_for(eng, "connect")
         def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -88,12 +94,12 @@ def remove_session():
 
 
 def create_all_tables():
-    """Helper to create all tables defined on Base (used in development and testing)."""
+    """Helper to create all tables defined on Base (used in migrations, setup, and tests)."""
     if engine is None:
         raise RuntimeError("Database engine is not initialized. Call init_database first.")
     Base.metadata.create_all(bind=engine)
 
-    # Safe lightweight schema sync for development database
+    # Safe schema sync for existing databases
     try:
         from sqlalchemy import inspect, text
         inspector = inspect(engine)

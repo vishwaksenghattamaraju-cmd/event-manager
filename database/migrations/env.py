@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 from logging.config import fileConfig
@@ -16,8 +17,14 @@ from backend.models import Base
 # this is the Alembic Config object
 config = context.config
 
-# Dynamically set sqlalchemy.url from our application configuration
-config.set_main_option("sqlalchemy.url", Config.DATABASE_URL)
+# Resolve database URL
+db_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL") or getattr(Config, "DATABASE_URL", "")
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+# Dynamically set sqlalchemy.url
+if db_url:
+    config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:
@@ -43,8 +50,12 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
+    section = config.get_section(config.config_ini_section, {})
+    if db_url:
+        section["sqlalchemy.url"] = db_url
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

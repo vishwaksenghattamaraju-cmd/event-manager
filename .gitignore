@@ -1,32 +1,49 @@
-# Environment files
+# Environment & secret files
 .env
-.env.local
+.env.*
+!.env.example
+*.local
 
-# Python cache & virtual environment
+# Python cache & bytecode
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+
+# Virtual environments
 .venv/
 venv/
 ENV/
+env/
 
-# Database files
+# Database files & backups
 *.db
+*.sqlite
 *.sqlite3
+*.db-shm
+*.db-wal
+*.bak
 database/*.db
+database/backups/
+backups/
 
-# Testing & coverage
+# Testing & code coverage
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+.nox/
+.tox/
 
-# ML models & artifacts
+# ML models & persistent weights
 backend/ml/saved_models/*.joblib
 
-# IDE & OS files
+# IDE, OS & temporary files
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
-
+*.log
 *.zip
+scratch/

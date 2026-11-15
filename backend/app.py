@@ -92,6 +92,19 @@ def create_app(config_class=Config) -> Flask:
     app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
     app.config.from_object(config_class)
 
+    # In runtime / non-test mode, validate DATABASE_URL and production secrets
+    if not app.config.get("TESTING", False):
+        db_url = app.config.get("DATABASE_URL", "")
+        if not db_url:
+            raise RuntimeError(
+                "CRITICAL: DATABASE_URL is missing. PostgreSQL is required for runtime and Render deployment. "
+                "Configure DATABASE_URL (or INTERNAL_DATABASE_URL) in Render Environment Variables."
+            )
+        if app.config.get("IS_RENDER") and app.config.get("SECRET_KEY") == "dev-secret-key-change-in-production-12345":
+            raise RuntimeError(
+                "CRITICAL: SECRET_KEY must be configured with a secure random key in Render Environment Variables."
+            )
+
     # Initialize CORS
     CORS(app, supports_credentials=True)
 
@@ -100,15 +113,15 @@ def create_app(config_class=Config) -> Flask:
         init_database(app.config["DATABASE_URL"])
         create_all_tables()
 
-        # Demo credentials are only created for local development by default.
+        # Demo credentials are only created if explicitly requested (e.g. SEED_DEMO_USERS=true)
         # Never create or reset well-known passwords on a production deployment.
         allow_demo_users = (
-            not app.config.get("IS_VERCEL")
+            (not app.config.get("IS_PRODUCTION") and not app.config.get("IS_RENDER"))
             or os.getenv("SEED_DEMO_USERS", "").lower() == "true"
         )
         if allow_demo_users:
             try:
-                from backend.models.user import User
+                from backend.models.user import User, UserRole
                 from backend.services.auth_service import create_admin_user, register_organizer
 
                 admin = db_session.query(User).filter(User.username == "admin").first()
@@ -122,97 +135,103 @@ def create_app(config_class=Config) -> Flask:
                 logger.warning("Default user initialization skipped: %s", seed_err)
                 db_session.rollback()
 
-        # Self-healing: auto-seed demo inventory items if catalog is empty
-        try:
-            from backend.models.inventory import InventoryItem
-            from backend.services.inventory_service import create_item
-            if db_session.query(InventoryItem).count() == 0:
-                sample_items = [
-                    {"name": "1000W Active PA Speaker", "category": "Audio", "total_stock": 24, "unavailable_stock": 0, "minimum_threshold": 4, "unit": "units", "purchase_cost": 350.0},
-                    {"name": "Wireless Handheld Microphone", "category": "Audio", "total_stock": 25, "unavailable_stock": 2, "minimum_threshold": 5, "unit": "mics", "purchase_cost": 120.0},
-                    {"name": "16-Channel Audio Mixer Console", "category": "Audio", "total_stock": 6, "unavailable_stock": 0, "minimum_threshold": 2, "unit": "consoles", "purchase_cost": 480.0},
-                    {"name": "4K Laser Projector 6000L", "category": "Visual", "total_stock": 8, "unavailable_stock": 1, "minimum_threshold": 2, "unit": "projectors", "purchase_cost": 1200.0},
-                    {"name": '120" Portable Motorized Screen', "category": "Visual", "total_stock": 10, "unavailable_stock": 0, "minimum_threshold": 2, "unit": "screens", "purchase_cost": 280.0},
-                    {"name": '65" 4K Commercial Display & Stand', "category": "Visual", "total_stock": 12, "unavailable_stock": 0, "minimum_threshold": 3, "unit": "displays", "purchase_cost": 650.0},
-                    {"name": "RGBW Stage Uplight Par", "category": "Lighting", "total_stock": 60, "unavailable_stock": 4, "minimum_threshold": 12, "unit": "lights", "purchase_cost": 45.0},
-                    {"name": "Moving Head Beam Spotlight", "category": "Lighting", "total_stock": 16, "unavailable_stock": 0, "minimum_threshold": 4, "unit": "fixtures", "purchase_cost": 320.0},
-                    {"name": "Deluxe Padded Banquet Chair", "category": "Furniture", "total_stock": 350, "unavailable_stock": 10, "minimum_threshold": 50, "unit": "chairs", "purchase_cost": 35.0},
-                    {"name": '60" Round Banquet Table (Seats 8)', "category": "Furniture", "total_stock": 45, "unavailable_stock": 2, "minimum_threshold": 8, "unit": "tables", "purchase_cost": 95.0},
-                    {"name": "6ft Rectangular Catering Table", "category": "Furniture", "total_stock": 30, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "tables", "purchase_cost": 75.0},
-                    {"name": "Cocktail High-Boy Bistro Table", "category": "Furniture", "total_stock": 25, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "tables", "purchase_cost": 55.0},
-                    {"name": "Pipe & Drape Velvet Backdrop (10ft)", "category": "Decor", "total_stock": 15, "unavailable_stock": 0, "minimum_threshold": 3, "unit": "sets", "purchase_cost": 180.0},
-                    {"name": "Acrylic Presidential Lectern", "category": "Decor", "total_stock": 5, "unavailable_stock": 0, "minimum_threshold": 1, "unit": "podiums", "purchase_cost": 220.0},
-                    {"name": "Premium Satin Napkins (Pack of 50)", "category": "Consumables", "total_stock": 70, "unavailable_stock": 0, "minimum_threshold": 15, "unit": "packs", "purchase_cost": 18.0, "is_consumable": True},
-                    {"name": "Biodegradable Party Confetti Cannon", "category": "Consumables", "total_stock": 35, "unavailable_stock": 0, "minimum_threshold": 10, "unit": "cannons", "purchase_cost": 8.0, "is_consumable": True},
-                    {"name": "Silicone Security Wristbands (100pk)", "category": "Consumables", "total_stock": 15, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "packs", "purchase_cost": 12.0, "is_consumable": True},
-                ]
-                admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
-                for item_data in sample_items:
-                    create_item(db_session, item_data, user_id=admin.id if admin else None)
-                logger.info("Auto-seeded catalog items for initial deployment.")
-        except Exception as cat_err:
-            logger.warning(f"Catalog auto-seed skipped: {cat_err}")
-            db_session.rollback()
+        # Demo seeding for empty databases only when explicitly permitted
+        allow_demo_seed = (
+            (not app.config.get("IS_PRODUCTION") and not app.config.get("IS_RENDER"))
+            or os.getenv("SEED_DEMO_DATA", "").lower() == "true"
+        )
+        if allow_demo_seed:
+            try:
+                from backend.models.inventory import InventoryItem
+                from backend.services.inventory_service import create_item
+                from backend.models.user import User, UserRole
+                if db_session.query(InventoryItem).count() == 0:
+                    sample_items = [
+                        {"name": "1000W Active PA Speaker", "category": "Audio", "total_stock": 24, "unavailable_stock": 0, "minimum_threshold": 4, "unit": "units", "purchase_cost": 350.0},
+                        {"name": "Wireless Handheld Microphone", "category": "Audio", "total_stock": 25, "unavailable_stock": 2, "minimum_threshold": 5, "unit": "mics", "purchase_cost": 120.0},
+                        {"name": "16-Channel Audio Mixer Console", "category": "Audio", "total_stock": 6, "unavailable_stock": 0, "minimum_threshold": 2, "unit": "consoles", "purchase_cost": 480.0},
+                        {"name": "4K Laser Projector 6000L", "category": "Visual", "total_stock": 8, "unavailable_stock": 1, "minimum_threshold": 2, "unit": "projectors", "purchase_cost": 1200.0},
+                        {"name": '120" Portable Motorized Screen', "category": "Visual", "total_stock": 10, "unavailable_stock": 0, "minimum_threshold": 2, "unit": "screens", "purchase_cost": 280.0},
+                        {"name": '65" 4K Commercial Display & Stand', "category": "Visual", "total_stock": 12, "unavailable_stock": 0, "minimum_threshold": 3, "unit": "displays", "purchase_cost": 650.0},
+                        {"name": "RGBW Stage Uplight Par", "category": "Lighting", "total_stock": 60, "unavailable_stock": 4, "minimum_threshold": 12, "unit": "lights", "purchase_cost": 45.0},
+                        {"name": "Moving Head Beam Spotlight", "category": "Lighting", "total_stock": 16, "unavailable_stock": 0, "minimum_threshold": 4, "unit": "fixtures", "purchase_cost": 320.0},
+                        {"name": "Deluxe Padded Banquet Chair", "category": "Furniture", "total_stock": 350, "unavailable_stock": 10, "minimum_threshold": 50, "unit": "chairs", "purchase_cost": 35.0},
+                        {"name": '60" Round Banquet Table (Seats 8)', "category": "Furniture", "total_stock": 45, "unavailable_stock": 2, "minimum_threshold": 8, "unit": "tables", "purchase_cost": 95.0},
+                        {"name": "6ft Rectangular Catering Table", "category": "Furniture", "total_stock": 30, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "tables", "purchase_cost": 75.0},
+                        {"name": "Cocktail High-Boy Bistro Table", "category": "Furniture", "total_stock": 25, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "tables", "purchase_cost": 55.0},
+                        {"name": "Pipe & Drape Velvet Backdrop (10ft)", "category": "Decor", "total_stock": 15, "unavailable_stock": 0, "minimum_threshold": 3, "unit": "sets", "purchase_cost": 180.0},
+                        {"name": "Acrylic Presidential Lectern", "category": "Decor", "total_stock": 5, "unavailable_stock": 0, "minimum_threshold": 1, "unit": "podiums", "purchase_cost": 220.0},
+                        {"name": "Premium Satin Napkins (Pack of 50)", "category": "Consumables", "total_stock": 70, "unavailable_stock": 0, "minimum_threshold": 15, "unit": "packs", "purchase_cost": 18.0, "is_consumable": True},
+                        {"name": "Biodegradable Party Confetti Cannon", "category": "Consumables", "total_stock": 35, "unavailable_stock": 0, "minimum_threshold": 10, "unit": "cannons", "purchase_cost": 8.0, "is_consumable": True},
+                        {"name": "Silicone Security Wristbands (100pk)", "category": "Consumables", "total_stock": 15, "unavailable_stock": 0, "minimum_threshold": 5, "unit": "packs", "purchase_cost": 12.0, "is_consumable": True},
+                    ]
+                    admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
+                    for item_data in sample_items:
+                        create_item(db_session, item_data, user_id=admin.id if admin else None)
+                    logger.info("Auto-seeded catalog items for initial deployment.")
+            except Exception as cat_err:
+                logger.warning(f"Catalog auto-seed skipped: {cat_err}")
+                db_session.rollback()
 
-        # Self-healing: auto-seed demo events if events table is empty
-        try:
-            from backend.models.event import Event, EventType
-            from backend.models.inventory import InventoryItem
-            from backend.services.event_service import create_event
-            from backend.services.booking_service import confirm_event_booking
-            from datetime import datetime, timezone, timedelta
-            if db_session.query(Event).count() == 0:
-                admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
-                organizer = db_session.query(User).filter(User.role == UserRole.ORGANIZER).first() or admin
-                first_item = db_session.query(InventoryItem).first()
-                item_spec = [{"item_id": first_item.id, "quantity": 2}] if first_item else []
-                now_utc = datetime.now(timezone.utc)
+            # Auto-seed demo events if events table is empty
+            try:
+                from backend.models.event import Event, EventType
+                from backend.models.inventory import InventoryItem
+                from backend.services.event_service import create_event
+                from backend.services.booking_service import confirm_event_booking
+                from datetime import datetime, timezone, timedelta
+                if db_session.query(Event).count() == 0:
+                    admin = db_session.query(User).filter(User.role == UserRole.ADMIN).first()
+                    organizer = db_session.query(User).filter(User.role == UserRole.ORGANIZER).first() or admin
+                    first_item = db_session.query(InventoryItem).first()
+                    item_spec = [{"item_id": first_item.id, "quantity": 2}] if first_item else []
+                    now_utc = datetime.now(timezone.utc)
 
-                evt1, _ = create_event(
-                    db_session,
-                    organizer_id=organizer.id if organizer else 1,
-                    data={
-                        "title": "Global Tech Summit 2026",
-                        "event_type": EventType.CONFERENCE,
-                        "start_time": (now_utc + timedelta(days=2)).isoformat(),
-                        "end_time": (now_utc + timedelta(days=2, hours=8)).isoformat(),
-                        "items": item_spec,
-                        "location": "Main Auditorium & Hall A",
-                        "expected_attendees": 250,
-                        "description": "Keynote technology summit featuring AI, cloud infrastructure, and autonomous agent tracks.",
-                        "image_url": "/images/events/conference.jpg",
-                    }
-                )
-                if evt1 and item_spec:
-                    confirm_event_booking(db_session, evt1.id, user_id=organizer.id if organizer else 1)
+                    evt1, _ = create_event(
+                        db_session,
+                        organizer_id=organizer.id if organizer else 1,
+                        data={
+                            "title": "Global Tech Summit 2026",
+                            "event_type": EventType.CONFERENCE,
+                            "start_time": (now_utc + timedelta(days=2)).isoformat(),
+                            "end_time": (now_utc + timedelta(days=2, hours=8)).isoformat(),
+                            "items": item_spec,
+                            "location": "Main Auditorium & Hall A",
+                            "expected_attendees": 250,
+                            "description": "Keynote technology summit featuring AI, cloud infrastructure, and autonomous agent tracks.",
+                            "image_url": "/images/events/conference.jpg",
+                        }
+                    )
+                    if evt1 and item_spec:
+                        confirm_event_booking(db_session, evt1.id, user_id=organizer.id if organizer else 1)
 
-                evt2, _ = create_event(
-                    db_session,
-                    organizer_id=admin.id if admin else 1,
-                    data={
-                        "title": "Acoustic Sunset Concert",
-                        "event_type": EventType.OTHER,
-                        "start_time": (now_utc + timedelta(days=5, hours=18)).isoformat(),
-                        "end_time": (now_utc + timedelta(days=5, hours=22)).isoformat(),
-                        "items": item_spec,
-                        "location": "Riverside Open Amphitheater",
-                        "expected_attendees": 180,
-                        "description": "Live acoustic performances and outdoor twilight musical celebration.",
-                        "image_url": "/images/events/concert.jpg",
-                    }
-                )
-                if evt2 and item_spec:
-                    confirm_event_booking(db_session, evt2.id, user_id=admin.id if admin else 1)
+                    evt2, _ = create_event(
+                        db_session,
+                        organizer_id=admin.id if admin else 1,
+                        data={
+                            "title": "Acoustic Sunset Concert",
+                            "event_type": EventType.OTHER,
+                            "start_time": (now_utc + timedelta(days=5, hours=18)).isoformat(),
+                            "end_time": (now_utc + timedelta(days=5, hours=22)).isoformat(),
+                            "items": item_spec,
+                            "location": "Riverside Open Amphitheater",
+                            "expected_attendees": 180,
+                            "description": "Live acoustic performances and outdoor twilight musical celebration.",
+                            "image_url": "/images/events/concert.jpg",
+                        }
+                    )
+                    if evt2 and item_spec:
+                        confirm_event_booking(db_session, evt2.id, user_id=admin.id if admin else 1)
 
-                logger.info("Auto-seeded demo events for initial deployment.")
-        except Exception as evt_seed_err:
-            logger.warning(f"Demo event auto-seed skipped: {evt_seed_err}")
-            db_session.rollback()
+                    logger.info("Auto-seeded demo events for initial deployment.")
+            except Exception as evt_seed_err:
+                logger.warning(f"Demo event auto-seed skipped: {evt_seed_err}")
+                db_session.rollback()
 
     except Exception as db_err:
         logger.exception("Database initialization failed.")
         # Do not serve a seemingly healthy authentication API without a database.
-        if app.config.get("IS_VERCEL") or os.getenv("VERCEL") == "1":
+        if app.config.get("IS_PRODUCTION") or app.config.get("IS_RENDER") or app.config.get("IS_VERCEL"):
             raise RuntimeError(
                 "Production database initialization failed. Check DATABASE_URL, "
                 "PostgreSQL network access, and database credentials."

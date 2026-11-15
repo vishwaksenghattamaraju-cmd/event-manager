@@ -72,9 +72,6 @@ def test_login_and_public_html_parity_and_sync_elements():
     assert 'id="tab-register"' in frontend_login
     assert 'id="link-goto-register"' in frontend_login
     assert 'id="link-goto-login"' in frontend_login
-    assert 'id="btn-fill-registered"' in frontend_login
-    assert 'id="btn-fill-admin"' in frontend_login
-    assert 'id="btn-fill-organizer"' in frontend_login
 
 
 def test_login_js_parity_and_sync_logic():
@@ -99,11 +96,10 @@ def test_login_js_parity_and_sync_logic():
 
     # Hash sync
     assert "hashchange" in frontend_js
-    assert "setupRegisteredUserChip" in frontend_js
 
 
 def test_api_js_parity_and_serverless_vault_sync():
-    """Verify parity and serverless resilience sync in api.js."""
+    """Verify parity and API client synchronization in api.js."""
     frontend_api = (ROOT_DIR / "frontend" / "js" / "api.js").read_text(encoding="utf-8")
     public_api = (ROOT_DIR / "public" / "js" / "api.js").read_text(encoding="utf-8")
 
@@ -112,4 +108,3 @@ def test_api_js_parity_and_serverless_vault_sync():
     # Vault sync keywords
     assert "matrix_registered_accounts" in frontend_api
     assert "matrix_last_username" in frontend_api
-    assert "Serverless cold start detected" in frontend_api

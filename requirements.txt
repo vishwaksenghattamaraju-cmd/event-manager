@@ -25,4 +25,5 @@ scikit-learn>=1.4.0
 joblib>=1.4.0
 
 # Production WSGI Server
+gunicorn>=23.0.0
 waitress>=3.0.0

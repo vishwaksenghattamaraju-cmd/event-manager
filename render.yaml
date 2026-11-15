@@ -1,0 +1,40 @@
+# Render Blueprint Specification for Event Inventory Management System
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Web Service (Flask + Gunicorn)
+  - type: web
+    name: event-inventory-app
+    runtime: python
+    region: oregon # or frankfurt, ohio, singapore
+    plan: free # or starter
+    branch: main
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120"
+    healthCheckPath: "/api/health"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: event-inventory-db
+          property: connectionString
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: SESSION_COOKIE_HTTPONLY
+        value: "True"
+      - key: SESSION_COOKIE_SAMESITE
+        value: Lax
+
+databases:
+  # Managed PostgreSQL Database
+  - name: event-inventory-db
+    databaseName: event_inventory
+    user: event_admin
+    region: oregon # match the web service region
+    plan: free # or starter
+    ipAllowList: [] # empty list allows internal connections from services in same account
