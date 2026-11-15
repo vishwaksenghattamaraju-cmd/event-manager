@@ -11,25 +11,41 @@ load_dotenv(BASE_DIR / ".env")
 
 
 class Config:
-    """Production & Runtime configuration for Render / PostgreSQL deployment."""
+    """Configuration supporting PostgreSQL in production and verified SQLite fallback in local development."""
 
-    ENV = os.getenv("FLASK_ENV", "production")
+    FLASK_ENV = os.getenv("FLASK_ENV", "").strip().lower()
     IS_RENDER = os.getenv("RENDER") == "true" or "RENDER" in os.environ
-    IS_PRODUCTION = ENV == "production" or IS_RENDER
+    IS_PRODUCTION = (FLASK_ENV == "production") or IS_RENDER
+    ENV = "production" if IS_PRODUCTION else "development"
     TESTING = False
 
     SECRET_KEY = os.getenv("SECRET_KEY") or "dev-secret-key-change-in-production-12345"
 
-    # Database URL configuration (PostgreSQL is the exclusive runtime database)
+    # Database URL resolution supporting PostgreSQL and local SQLite fallback
     _raw_db_url = (
         os.getenv("DATABASE_URL")
         or os.getenv("POSTGRES_URL")
         or os.getenv("INTERNAL_DATABASE_URL")
+        or os.getenv("POSTGRES_PRISMA_URL")
+        or os.getenv("POSTGRES_URL_NON_POOLING")
+        or os.getenv("SUPABASE_DATABASE_URL")
+        or os.getenv("SUPABASE_DB_URL")
+        or os.getenv("NEON_DATABASE_URL")
+        or os.getenv("VERCEL_POSTGRES_URL")
         or ""
     ).strip()
 
-    if _raw_db_url.startswith("postgres://"):
-        _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+    if _raw_db_url:
+        # Normalize postgres:// scheme to postgresql:// for SQLAlchemy 2.0
+        if _raw_db_url.startswith("postgres://"):
+            _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+    else:
+        # Production deployment: PostgreSQL is strictly mandatory. Never fall back to SQLite on Render.
+        # Local development: Safely fall back to the existing verified SQLite database if available.
+        if not IS_PRODUCTION and not IS_RENDER:
+            local_sqlite_path = BASE_DIR / "database" / "event_inventory.db"
+            if local_sqlite_path.exists():
+                _raw_db_url = f"sqlite:///{local_sqlite_path.resolve()}"
 
     DATABASE_URL = _raw_db_url
 
@@ -39,7 +55,7 @@ class Config:
     DB_POOL_TIMEOUT = int(os.getenv("DB_POOL_TIMEOUT", "30"))
     DB_POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "300"))
 
-    # Session cookie security settings (Render serves apps over HTTPS)
+    # Session cookie security settings (Secure on HTTPS/Render; unforced on local HTTP)
     SESSION_COOKIE_HTTPONLY = os.getenv("SESSION_COOKIE_HTTPONLY", "True").lower() == "true"
     SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Lax")
     SESSION_COOKIE_SECURE = os.getenv(
