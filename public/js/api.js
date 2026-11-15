@@ -14,8 +14,98 @@ try {
   localStorage.removeItem('matrix_registered_accounts');
 } catch (_) {}
 
-const API = {
+/**
+ * Safely extracts a human-readable error message from various backend/proxy error response formats.
+ * Handles strings, objects with error/message/detail, FastAPI-style detail arrays, validation error dicts, and HTTP statuses.
+ * Guarantees that a clean string is returned and NEVER raw JavaScript objects like "[object Object]".
+ */
+function extractErrorMessage(data, status = 0, defaultMsg = 'An unexpected error occurred.') {
+  if (!data) return status ? `Request failed with status ${status}. Please try again.` : defaultMsg;
+  if (typeof data === 'string') {
+    const trimmed = data.trim();
+    if (trimmed.startsWith('<')) {
+      return `Server error (${status || 500}). Please try again later.`;
+    }
+    return trimmed || defaultMsg;
+  }
+  if (typeof data !== 'object') {
+    return String(data);
+  }
 
+  // 1. data.error
+  if (data.error) {
+    if (typeof data.error === 'string' && data.error.trim()) return data.error.trim();
+    if (typeof data.error === 'object') {
+      if (data.error.message && typeof data.error.message === 'string') return data.error.message.trim();
+      if (data.error.detail && typeof data.error.detail === 'string') return data.error.detail.trim();
+      if (Array.isArray(data.error)) {
+        const msgs = data.error.map(e => (typeof e === 'object' ? (e.msg || e.message || JSON.stringify(e)) : String(e))).filter(Boolean);
+        if (msgs.length) return msgs.join('; ');
+      }
+    }
+  }
+
+  // 2. data.message
+  if (typeof data.message === 'string' && data.message.trim()) {
+    return data.message.trim();
+  }
+
+  // 3. data.detail
+  if (data.detail) {
+    if (typeof data.detail === 'string' && data.detail.trim()) return data.detail.trim();
+    if (Array.isArray(data.detail)) {
+      const msgs = data.detail.map(d => {
+        if (typeof d === 'string') return d;
+        if (d && typeof d === 'object') {
+          const loc = Array.isArray(d.loc) ? d.loc.filter(l => l !== 'body').join('.') : '';
+          const msg = d.msg || d.message || JSON.stringify(d);
+          return loc ? `${loc}: ${msg}` : msg;
+        }
+        return String(d);
+      }).filter(Boolean);
+      if (msgs.length) return msgs.join('; ');
+    }
+    if (typeof data.detail === 'object' && data.detail.message) {
+      return String(data.detail.message).trim();
+    }
+  }
+
+  // 4. data.errors
+  if (data.errors) {
+    if (typeof data.errors === 'string' && data.errors.trim()) return data.errors.trim();
+    if (Array.isArray(data.errors)) {
+      const msgs = data.errors.map(e => (typeof e === 'object' ? (e.msg || e.message || JSON.stringify(e)) : String(e))).filter(Boolean);
+      if (msgs.length) return msgs.join('; ');
+    }
+    if (typeof data.errors === 'object') {
+      const msgs = Object.entries(data.errors).map(([field, errs]) => {
+        const errStr = Array.isArray(errs) ? errs.join(', ') : (typeof errs === 'object' ? JSON.stringify(errs) : String(errs));
+        return `${field}: ${errStr}`;
+      });
+      if (msgs.length) return msgs.join('; ');
+    }
+  }
+
+  // 5. data.description
+  if (typeof data.description === 'string' && data.description.trim()) {
+    return data.description.trim();
+  }
+
+  // 6. data.msg
+  if (typeof data.msg === 'string' && data.msg.trim()) {
+    return data.msg.trim();
+  }
+
+  // 7. Status fallback
+  if (status && status >= 400) {
+    return `Request failed with status ${status}. Please try again.`;
+  }
+
+  return defaultMsg;
+}
+
+const API = {
+  extractErrorMessage,
   csrfToken: sessionStorage.getItem('csrf_token') || null,
 
   currentUser: null,
@@ -85,53 +175,30 @@ const API = {
       // Auto-redirect if unauthorized (unless on login page or role toggle)
 
       if (response.status === 401) {
-
         if (!window.location.pathname.includes('/login') && !url.includes('/api/auth/toggle-role')) {
-
           sessionStorage.removeItem('csrf_token');
-
           window.location.href = '/login';
-
         }
-
         const data = await response.json().catch(() => ({}));
-
-        return { ok: false, status: 401, error: data.error || 'Authentication required' };
-
+        return { ok: false, status: 401, error: extractErrorMessage(data, 401, 'Authentication required') };
       }
-
-
 
       const data = await response.json().catch(() => ({}));
 
-
-
       if (!response.ok) {
-
         return {
-
           ok: false,
-
           status: response.status,
-
-          error: data.error || `Request failed with status ${response.status}`,
-
+          error: extractErrorMessage(data, response.status, `Request failed with status ${response.status}`),
           details: data
-
         };
-
       }
 
-
-
       return { ok: true, status: response.status, data };
-
     } catch (err) {
-
       console.error('Network / Fetch Error:', err);
-
-      return { ok: false, status: 0, error: 'Network error or server unreachable. Please check connection.' };
-
+      const errMsg = (err && typeof err.message === 'string') ? err.message : 'Network error or server unreachable. Please check connection.';
+      return { ok: false, status: 0, error: errMsg };
     }
 
   },
@@ -202,7 +269,8 @@ const API = {
       return { success: true, user: res.data.user };
     }
 
-    return { success: false, error: res.error };
+    const errorMsg = extractErrorMessage(res.error || res.details, res.status, 'Invalid username or password.');
+    return { success: false, error: errorMsg };
   },
 
   /**
@@ -239,7 +307,8 @@ const API = {
       return { success: true, message: res.data ? res.data.message : 'Registration successful', user: res.data ? res.data.user : null };
     }
 
-    return { success: false, error: res.error };
+    const errorMsg = extractErrorMessage(res.error || res.details, res.status, 'Registration failed. Please check your details and try again.');
+    return { success: false, error: errorMsg };
   },
 
 
@@ -670,7 +739,7 @@ const API = {
 
 };
 
-
+window.API = API;
 
 /**
 
@@ -1908,7 +1977,7 @@ const UI = {
 
 };
 
-
+window.UI = UI;
 
 // Auto-initialize theme on load
 

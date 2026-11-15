@@ -95,7 +95,10 @@ def organizer_or_admin_required(f):
 @auth_bp.route("/register", methods=["POST"])
 def register():
     """Endpoint to register an account (Organizer or Admin)."""
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
+    if not data:
+        return jsonify({"error": "Registration data is required."}), 400
+
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")

@@ -306,7 +306,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 350);
     } else {
       if (loginError) {
-        loginError.textContent = result.error || 'Invalid username or password.';
+        const errorText = (typeof API?.extractErrorMessage === 'function')
+          ? API.extractErrorMessage(result?.error, 0, 'Invalid username or password.')
+          : (typeof result?.error === 'string' && result.error ? result.error : 'Invalid username or password.');
+        loginError.textContent = errorText;
         loginError.style.display = 'block';
       }
     }
@@ -356,7 +359,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }, 350);
     } else {
       if (regError) {
-        regError.textContent = result.error || 'Registration failed';
+        const errorText = (typeof API?.extractErrorMessage === 'function')
+          ? API.extractErrorMessage(result?.error, 0, 'Registration failed. Please check your information.')
+          : (typeof result?.error === 'string' && result.error ? result.error : 'Registration failed. Please check your information.');
+        regError.textContent = errorText;
         regError.style.display = 'block';
       }
     }

@@ -4,6 +4,7 @@ import time
 import logging
 from typing import Optional, Tuple
 from sqlalchemy import func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from backend.models.user import User, UserRole
 
@@ -176,10 +177,18 @@ def register_user(
         db.refresh(user)
         logger.info("New user registered successfully: username='%s', email='%s', role='%s' (id=%s)", user.username, user.email, user.role, user.id)
         return user, None
+    except IntegrityError as ie:
+        db.rollback()
+        err_msg = str(ie).lower()
+        if "username" in err_msg:
+            return None, f"Username '{username}' is already taken."
+        if "email" in err_msg:
+            return None, f"Email '{email}' is already registered."
+        return None, "A user with this username or email already exists."
     except Exception as e:
         db.rollback()
         logger.error("User registration database error for '%s': %s", username, e, exc_info=True)
-        return None, f"Registration failed due to a database error: {str(e)}"
+        return None, "Registration failed due to a database error. Please try again."
 
 
 def register_organizer(

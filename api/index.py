@@ -62,12 +62,16 @@ try:
 except Exception as e:
     err_tb = traceback.format_exc()
     print("FATAL STARTUP ERROR in wsgi:", err_tb)
-    from flask import Flask
+    from flask import Flask, jsonify
     app = Flask(__name__)
 
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
     def catch_all(path):
+        if path.startswith("api/") or path == "api":
+            return jsonify({
+                "error": "Database or server configuration error. Please verify your deployment settings."
+            }), 500
         return f"""
         <!DOCTYPE html>
         <html>
