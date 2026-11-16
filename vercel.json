@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "{frontend/**,public/**,ml/**}"
-    }
-  },
   "rewrites": [
     {
       "source": "/login",
@@ -23,7 +18,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.py?__path__=/api/$1"
+      "destination": "https://event-inventory-app.onrender.com/api/$1"
     }
   ]
 }

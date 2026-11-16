@@ -39,6 +39,17 @@ class Config:
         # Normalize postgres:// scheme to postgresql:// for SQLAlchemy 2.0
         if _raw_db_url.startswith("postgres://"):
             _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+        # Ensure SQLAlchemy 2.0 selects installed psycopg2 or pg8000 when bare postgresql:// is passed
+        if _raw_db_url.startswith("postgresql://"):
+            try:
+                import psycopg2  # noqa: F401
+                _raw_db_url = _raw_db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+            except ImportError:
+                try:
+                    import pg8000  # noqa: F401
+                    _raw_db_url = _raw_db_url.replace("postgresql://", "postgresql+pg8000://", 1)
+                except ImportError:
+                    pass
     else:
         # Production deployment: PostgreSQL is strictly mandatory. Never fall back to SQLite on Render.
         # Local development: Safely fall back to the existing verified SQLite database if available.
